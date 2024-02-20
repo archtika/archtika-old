@@ -1,0 +1,14 @@
+{
+	"scripts": {
+		"build": "tsc -w",
+		"start": "fastify start build/server.js"
+	},
+	"dependencies": {
+		"@fastify/postgres": "^5.2.2",
+		"fastify": "^4.26.1",
+		"fastify-cli": "^6.1.1",
+		"fastify-plugin": "^4.5.1",
+		"pg": "^8.11.3"
+	},
+	"type": "module"
+}
