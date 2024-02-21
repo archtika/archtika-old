@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./js-output",
+  },
+  "extends": "@tsconfig/node20/tsconfig.json"
+}

@@ -16,6 +16,10 @@ const signUpJTD = {
 }
 
 async function routes (fastify: FastifyInstance) {
+  fastify.get('/account', async (request, reply) => {
+    return 'This is an acccount route';
+  });
+
   fastify.post('/signup', signUpJTD, async (request, reply) => {
     return request.body
   })

@@ -1,7 +1,7 @@
 {
 	"scripts": {
-		"build": "tsc -w",
-		"start": "fastify start build/server.js"
+		"build": "tsc -p tsconfig.json -w",
+		"start": "node --watch ./js-output/server.js"
 	},
 	"dependencies": {
 		"@fastify/postgres": "^5.2.2",
@@ -10,5 +10,10 @@
 		"fastify-plugin": "^4.5.1",
 		"pg": "^8.11.3"
 	},
-	"type": "module"
+	"type": "module",
+	"devDependencies": {
+		"@tsconfig/node20": "^20.1.2",
+		"@types/node": "^20.11.19",
+		"typescript": "^5.3.3"
+	}
 }
