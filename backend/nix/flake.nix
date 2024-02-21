@@ -6,6 +6,8 @@
       allSystems =
         [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
 
+      forAllSystems = nixpkgs.lib.genAttrs allSystems;
+
       makeNixosConfiguration = system: {
         inherit system;
         modules = [
@@ -21,18 +23,21 @@
         ];
       };
     in {
-      devShells = nixpkgs.lib.genAttrs allSystems (system:
+      devShells = forAllSystems (system:
         let pkgs = nixpkgs.legacyPackages.${system};
         in {
           default = pkgs.mkShell {
             packages = with pkgs; [ nodejs nodePackages.pnpm dbmate ];
           };
         });
-      packages = nixpkgs.lib.genAttrs allSystems (system: {
+      packages = forAllSystems (system: {
         dev-vm = self.nixosConfigurations.${system}.config.system.build.vm;
       });
 
-      nixosConfigurations = nixpkgs.lib.genAttrs allSystems
+      nixosConfigurations = forAllSystems
         (system: nixpkgs.lib.nixosSystem (makeNixosConfiguration system));
+
+      formatter = forAllSystems
+        (system: let pkgs = nixpkgs.legacyPackages.${system}; in pkgs.nixfmt);
     };
 }
