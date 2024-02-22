@@ -2,3 +2,4 @@ node_modules
 *.qcow2
 result
 js-output
+.env

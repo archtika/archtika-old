@@ -28,6 +28,9 @@
         in {
           default = pkgs.mkShell {
             packages = with pkgs; [ nodejs nodePackages.pnpm dbmate ];
+            shellHook = ''
+              alias dbmate="dbmate -u 'postgres://postgres@localhost:15432/archtika?sslmode=disable'"
+            '';
           };
         });
       packages = forAllSystems (system: {

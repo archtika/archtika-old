@@ -1,10 +1,17 @@
 {
 	"scripts": {
 		"build": "tsc -p tsconfig.json -w",
-		"start": "node --watch ./js-output/server.js"
+		"start": "node --watch ./js-output/index.js"
 	},
 	"dependencies": {
+		"@fastify/cookie": "^9.3.1",
+		"@fastify/jwt": "^8.0.0",
 		"@fastify/postgres": "^5.2.2",
+		"@fastify/swagger": "^8.14.0",
+		"@fastify/swagger-ui": "^3.0.0",
+		"@fastify/type-provider-typebox": "^4.0.0",
+		"@sinclair/typebox": "^0.32.14",
+		"argon2": "^0.31.2",
 		"fastify": "^4.26.1",
 		"fastify-cli": "^6.1.1",
 		"fastify-plugin": "^4.5.1",
