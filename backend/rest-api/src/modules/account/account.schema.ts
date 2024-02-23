@@ -22,9 +22,3 @@ export const loginSchema = Type.Object({
 })
 
 export type LoginSchema = Static<typeof loginSchema>
-
-export const loginResponseSchema = Type.Object({
-  access_token: Type.String()
-})
-
-export type LoginResponseSchema = Static<typeof loginResponseSchema>

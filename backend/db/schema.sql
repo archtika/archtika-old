@@ -14,18 +14,14 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: account; Type: TABLE; Schema: public; Owner: -
+-- Name: auth_user; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.account (
-    account_id uuid DEFAULT gen_random_uuid() NOT NULL,
+CREATE TABLE public.auth_user (
+    id character varying NOT NULL,
     username character varying NOT NULL,
     email character varying NOT NULL,
-    password_hash character varying NOT NULL,
-    phone_number character varying,
-    is_two_factor_enabled boolean DEFAULT false,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp with time zone
+    password character varying NOT NULL
 );
 
 
@@ -39,27 +35,38 @@ CREATE TABLE public.schema_migrations (
 
 
 --
--- Name: account account_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: user_session; Type: TABLE; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.account
-    ADD CONSTRAINT account_email_key UNIQUE (email);
-
-
---
--- Name: account account_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.account
-    ADD CONSTRAINT account_pkey PRIMARY KEY (account_id);
+CREATE TABLE public.user_session (
+    id character varying NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    user_id character varying NOT NULL
+);
 
 
 --
--- Name: account account_username_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: auth_user auth_user_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.account
-    ADD CONSTRAINT account_username_key UNIQUE (username);
+ALTER TABLE ONLY public.auth_user
+    ADD CONSTRAINT auth_user_email_key UNIQUE (email);
+
+
+--
+-- Name: auth_user auth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_user
+    ADD CONSTRAINT auth_user_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_user auth_user_username_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_user
+    ADD CONSTRAINT auth_user_username_key UNIQUE (username);
 
 
 --
@@ -68,6 +75,22 @@ ALTER TABLE ONLY public.account
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: user_session user_session_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_session
+    ADD CONSTRAINT user_session_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_session user_session_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_session
+    ADD CONSTRAINT user_session_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
 
 
 --
@@ -80,4 +103,5 @@ ALTER TABLE ONLY public.schema_migrations
 --
 
 INSERT INTO public.schema_migrations (version) VALUES
-    ('20240222152009');
+    ('20240223085542'),
+    ('20240223085633');

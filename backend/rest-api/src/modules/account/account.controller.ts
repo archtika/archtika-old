@@ -1,7 +1,9 @@
-import { FastifyRequest, FastifyReply, FastifyInstance } from 'fastify'
-import * as argon2 from 'argon2'
+import { FastifyRequest, FastifyReply } from 'fastify'
 import { CreateAccountSchema, LoginSchema } from './account.schema.js'
 import { fastify } from '../../index.js'
+import { Argon2id } from 'oslo/password';
+import { lucia } from '../../utils/lucia.js';
+import { generateId } from 'lucia';
 
 export async function createAccount(
   req: FastifyRequest<{ Body: CreateAccountSchema }>,
@@ -10,22 +12,34 @@ export async function createAccount(
   const { username, email, password } = req.body
 
   const existingAccount = (await fastify.pg.query(
-    'SELECT * FROM account WHERE username = $1 OR email = $2',
+    'SELECT * FROM auth_user WHERE username = $1 OR email = $2',
     [username, email]
   )).rows[0];
   if (existingAccount) {
     return reply.code(401).send({
-      message: 'An account with that username or email already exists'
+      message: 'A user with that username or email already exists'
     })
   }
 
+  const hashedPassword = await new Argon2id().hash(password)
+  const userId = generateId(20)
+
   try {
-    const hashedPassword = await argon2.hash(password)
     const account = (await fastify.pg.query(
-      'INSERT INTO account (username, email, password_hash) VALUES ($1, $2, $3) RETURNING account_id, username, email',
-      [username, email, hashedPassword]
+      'INSERT INTO auth_user (id, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
+      [userId, username, email, hashedPassword]
     )).rows[0]
-    return reply.code(201).send(account)
+
+    const session = await lucia.createSession(userId, {})
+    const cookie = lucia.createSessionCookie(session.id)
+
+    reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+
+    return reply.code(201).send({
+      account_id: account.id,
+      username,
+      email
+    })
   } catch (err) {
     return reply.code(500).send(err)
   }
@@ -38,29 +52,39 @@ export async function login(
   const { email, password } = req.body
 
   const account = (await fastify.pg.query(
-    'SELECT * FROM account WHERE email = $1',
+    'SELECT * FROM auth_user WHERE email = $1',
     [email]
   )).rows[0]
 
-  const isValid = account && await argon2.verify(account.password_hash, password)
-  if (!isValid) {
-    return reply.code(401).send({
-      message: 'Invalid email or password'
-    })
+  if (!account) {
+    return reply.code(400).send({ message: 'Invalid email or password' })
   }
 
-  const payload = {
-    account_id: account.account_id,
-    username: account.username,
-    email: account.email
+  const validPassword = await new Argon2id().verify(account.password, password)
+  if (!validPassword) {
+    return reply.code(400).send({ message: 'Invalid email or password' })
   }
-  const token = req.jwt.sign(payload)
 
-  reply.setCookie('access_token', token, {
-    path: '/',
-    httpOnly: true,
-    secure: true
-  })
+  const session = await lucia.createSession(account.id, {})
+  const cookie = lucia.createSessionCookie(session.id)
 
-  return { access_token: token }
+  reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+
+  reply.status(302).send({ message: 'Successfully logged in' })
+}
+
+export async function logout(
+  req: FastifyRequest,
+  reply: FastifyReply
+) {
+  if (!req.session) {
+    return reply.status(401).send({ message: 'Not logged in' })
+  }
+  
+  await lucia.invalidateSession(req.session.id)
+
+  const cookie = lucia.createBlankSessionCookie()
+  reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+
+  return reply.status(200).send({ message: 'Successfully logged out' })
 }
