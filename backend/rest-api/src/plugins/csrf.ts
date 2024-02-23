@@ -24,7 +24,7 @@ async function csrf (fastify: FastifyInstance, opts: Options) {
       !verifyRequestOrigin(originHeader, [hostHeader])
     ) {
       console.error('Invalid origin', { originHeader, hostHeader })
-      return res.status(403)
+      return res.status(403).send('Invalid origin')
     }
   })
 }

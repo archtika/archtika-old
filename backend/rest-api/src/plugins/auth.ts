@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { fastifyPlugin } from 'fastify-plugin'
-import { lucia } from '../utils/lucia.js'
+import { lucia } from './lucia.js'
 
 async function auth (fastify: FastifyInstance) {
   fastify.addHook('preHandler', async (req, reply) => {

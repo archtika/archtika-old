@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { CreateAccountResponseSchema, CreateAccountSchema, LoginSchema, createAccountResponseSchema, createAccountSchema, loginSchema } from './account.schema.js'
-import { createAccount, login, logout } from './account.controller.js'
+import { CreateAccountResponseSchema, CreateAccountSchema, EmailVerificationSchema, LoginSchema, VerifyPasswordResetTokenSchema, createAccountResponseSchema, createAccountSchema, emailVerificationSchema, loginSchema, verifyPasswordResetTokenSchema } from './account.schema.js'
+import { createAccount, login, logout, requestEmailVerificationCode, resetPassword, verifyEmail, verifyPasswordResetToken } from './account.controller.js'
 import { getSession } from '../../utils/getSession.js';
 
 export async function accountRoutes(fastify: FastifyInstance) {
@@ -21,6 +21,51 @@ export async function accountRoutes(fastify: FastifyInstance) {
       },
     },
     createAccount
+  )
+
+  fastify.post<{ Body: EmailVerificationSchema }>(
+    '/email-verification',
+    {
+      schema: {
+        body: emailVerificationSchema
+      }
+    },
+    verifyEmail
+  )
+
+  fastify.post(
+    '/request-email-verification-code',
+    {
+      config: {
+        rateLimit: {
+          max: 1
+        }
+      }
+    },
+    requestEmailVerificationCode
+  )
+
+  fastify.post(
+    '/reset-password',
+    {
+      config: {
+        rateLimit: {
+          max: 1,
+          timeWindow: 2 * 60 * 60 * 1000
+        }
+      }
+    },
+    resetPassword
+  )
+
+  fastify.post<{ Body: VerifyPasswordResetTokenSchema }>(
+    '/reset-password/:token',
+    {
+      schema: {
+        body: verifyPasswordResetTokenSchema
+      }
+    },
+    verifyPasswordResetToken
   )
 
   fastify.post<{ Body: LoginSchema }>('/login',

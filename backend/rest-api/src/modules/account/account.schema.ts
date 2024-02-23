@@ -22,3 +22,15 @@ export const loginSchema = Type.Object({
 })
 
 export type LoginSchema = Static<typeof loginSchema>
+
+export const emailVerificationSchema = Type.Object({
+  code: Type.String({ minLength: 8, maxLength: 8 })
+})
+
+export type EmailVerificationSchema = Static<typeof emailVerificationSchema>
+
+export const verifyPasswordResetTokenSchema = Type.Object({
+  password: Type.String({ minLength: 8, maxLength: 64 })
+})
+
+export type VerifyPasswordResetTokenSchema = Static<typeof verifyPasswordResetTokenSchema>

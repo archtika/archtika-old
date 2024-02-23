@@ -21,7 +21,52 @@ CREATE TABLE public.auth_user (
     id character varying NOT NULL,
     username character varying NOT NULL,
     email character varying NOT NULL,
-    password character varying NOT NULL
+    password character varying NOT NULL,
+    email_verified boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: email_verification_code; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.email_verification_code (
+    id integer NOT NULL,
+    code character varying NOT NULL,
+    user_id character varying NOT NULL,
+    email character varying NOT NULL,
+    expires_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: email_verification_codes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.email_verification_codes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: email_verification_codes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.email_verification_codes_id_seq OWNED BY public.email_verification_code.id;
+
+
+--
+-- Name: password_reset_token; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.password_reset_token (
+    id character varying NOT NULL,
+    user_id character varying NOT NULL,
+    expires_at timestamp with time zone NOT NULL
 );
 
 
@@ -43,6 +88,13 @@ CREATE TABLE public.user_session (
     expires_at timestamp with time zone NOT NULL,
     user_id character varying NOT NULL
 );
+
+
+--
+-- Name: email_verification_code id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_verification_code ALTER COLUMN id SET DEFAULT nextval('public.email_verification_codes_id_seq'::regclass);
 
 
 --
@@ -70,6 +122,30 @@ ALTER TABLE ONLY public.auth_user
 
 
 --
+-- Name: email_verification_code email_verification_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_verification_code
+    ADD CONSTRAINT email_verification_codes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: email_verification_code email_verification_codes_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_verification_code
+    ADD CONSTRAINT email_verification_codes_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: password_reset_token password_reset_token_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_reset_token
+    ADD CONSTRAINT password_reset_token_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -83,6 +159,22 @@ ALTER TABLE ONLY public.schema_migrations
 
 ALTER TABLE ONLY public.user_session
     ADD CONSTRAINT user_session_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: email_verification_code email_verification_codes_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_verification_code
+    ADD CONSTRAINT email_verification_codes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
+
+
+--
+-- Name: password_reset_token password_reset_token_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_reset_token
+    ADD CONSTRAINT password_reset_token_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
 
 
 --
@@ -104,4 +196,8 @@ ALTER TABLE ONLY public.user_session
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('20240223085542'),
-    ('20240223085633');
+    ('20240223085633'),
+    ('20240223143704'),
+    ('20240223145048'),
+    ('20240223154958'),
+    ('20240223191322');
