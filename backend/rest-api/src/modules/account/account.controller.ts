@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { CreateAccountSchema, EmailVerificationSchema, LoginSchema, VerifyPasswordResetTokenSchema } from './account.schema.js'
+import { CreateAccountSchema, EmailVerificationSchema, LoginSchema, ValidateTwoFactorSchema, VerifyPasswordResetTokenSchema } from './account.schema.js'
 import { fastify } from '../../index.js'
 import { Argon2id } from 'oslo/password';
 import { lucia } from '../../plugins/lucia.js';
@@ -8,6 +8,8 @@ import { generateEmailVerificationCode, verifyVerificationCode } from '../../uti
 import { getSession } from '../../utils/getSession.js';
 import { createPasswordResetToken } from '../../utils/password-reset.js';
 import { isWithinExpirationDate } from 'oslo';
+import { decodeHex, encodeHex } from 'oslo/encoding';
+import { TOTPController, createTOTPKeyURI } from 'oslo/otp';
 
 export async function createAccount(
   req: FastifyRequest<{ Body: CreateAccountSchema }>,
@@ -26,25 +28,26 @@ export async function createAccount(
   const hashedPassword = await new Argon2id().hash(password)
   const userId = generateId(20)
 
-  try {
-    const account = (await fastify.pg.query(
-      'INSERT INTO auth_user (id, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
-      [userId, username, email, hashedPassword]
-    )).rows[0]
+  const account = (await fastify.pg.query(
+    'INSERT INTO auth_user (id, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
+    [userId, username, email, hashedPassword]
+  )).rows[0]
 
-    const session = await lucia.createSession(userId, {})
-    const cookie = lucia.createSessionCookie(session.id)
+  await fastify.pg.query(
+    'INSERT INTO two_factor_authorization_code (code, user_id) VALUES ($1, $2)',
+    [null, userId]
+  )
 
-    reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+  const session = await lucia.createSession(userId, {})
+  const cookie = lucia.createSessionCookie(session.id)
 
-    return reply.code(201).send({
-      account_id: account.id,
-      username,
-      email
-    })
-  } catch (err) {
-    return reply.internalServerError()
-  }
+  reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+
+  return reply.code(201).send({
+    account_id: account.id,
+    username,
+    email
+  })
 }
 
 export async function login(
@@ -175,7 +178,7 @@ export async function verifyPasswordResetToken(
 
   const { password } = req.body
 
-  const { token } = req.params
+  const { token } = req.params as { token: string }
 
   const databaseToken = (await fastify.pg.query(
     'SELECT * FROM password_reset_token WHERE id = $1',
@@ -206,4 +209,44 @@ export async function verifyPasswordResetToken(
   reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
   return reply.status(200).send({ message: 'Password successfully reset' })
+}
+
+export async function createTwoFactor(
+  req: FastifyRequest,
+  reply: FastifyReply
+) {
+  const activeSesion = await getSession(req, reply)
+
+  if (!req.user) return
+
+  const twoFactorSecret = crypto.getRandomValues(new Uint8Array(20))
+
+  await fastify.pg.query(
+    'UPDATE two_factor_authorization_code SET code = $1 WHERE user_id = $2',
+    [encodeHex(twoFactorSecret), req.user.id]
+  )
+
+  const uri = createTOTPKeyURI('archtika', req.user.email, twoFactorSecret)
+
+  return reply.status(200).send({ uri })
+}
+
+export async function validateTwoFactor(
+  req: FastifyRequest<{ Body: ValidateTwoFactorSchema }>,
+  reply: FastifyReply
+) {
+  const activeSesion = await getSession(req, reply)
+
+  if (!req.user) return
+
+  const { otp } = req.body
+
+  const twoFactorSecret = (await fastify.pg.query(
+    'SELECT code FROM two_factor_authorization_code WHERE user_id = $1',
+    [req.user.id]
+  )).rows[0].code
+  const validOTP = await new TOTPController().verify(otp, decodeHex(twoFactorSecret))
+
+  if (validOTP) return reply.status(200).send({ message: 'Two factor successfully validated' })
+  else return reply.notAcceptable('Invalid OTP')
 }

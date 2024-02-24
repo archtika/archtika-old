@@ -34,3 +34,9 @@ export const verifyPasswordResetTokenSchema = Type.Object({
 })
 
 export type VerifyPasswordResetTokenSchema = Static<typeof verifyPasswordResetTokenSchema>
+
+export const validateTwoFactorSchema = Type.Object({
+  otp: Type.String()
+})
+
+export type ValidateTwoFactorSchema = Static<typeof validateTwoFactorSchema>

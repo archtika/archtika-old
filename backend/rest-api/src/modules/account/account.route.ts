@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { CreateAccountResponseSchema, CreateAccountSchema, EmailVerificationSchema, LoginSchema, VerifyPasswordResetTokenSchema, createAccountResponseSchema, createAccountSchema, emailVerificationSchema, loginSchema, verifyPasswordResetTokenSchema } from './account.schema.js'
-import { createAccount, login, logout, requestEmailVerificationCode, resetPassword, verifyEmail, verifyPasswordResetToken } from './account.controller.js'
+import { CreateAccountResponseSchema, CreateAccountSchema, EmailVerificationSchema, LoginSchema, ValidateTwoFactorSchema, VerifyPasswordResetTokenSchema, createAccountResponseSchema, createAccountSchema, emailVerificationSchema, loginSchema, validateTwoFactorSchema, verifyPasswordResetTokenSchema } from './account.schema.js'
+import { createAccount, createTwoFactor, login, logout, requestEmailVerificationCode, resetPassword, validateTwoFactor, verifyEmail, verifyPasswordResetToken } from './account.controller.js'
 import { getSession } from '../../utils/getSession.js';
 
 export async function accountRoutes(fastify: FastifyInstance) {
@@ -75,6 +75,21 @@ export async function accountRoutes(fastify: FastifyInstance) {
       }
     },
     login
+  )
+
+  fastify.post(
+    '/two-factor',
+    createTwoFactor
+  )
+
+  fastify.post<{ Body: ValidateTwoFactorSchema }>(
+    '/validate-two-factor',
+    {
+      schema: {
+        body: validateTwoFactorSchema
+      }
+    },
+    validateTwoFactor
   )
 
   fastify.post('/logout',

@@ -80,6 +80,37 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: two_factor_authorization_code; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.two_factor_authorization_code (
+    id integer NOT NULL,
+    code character varying,
+    user_id character varying NOT NULL
+);
+
+
+--
+-- Name: two_factor_authorization_code_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.two_factor_authorization_code_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: two_factor_authorization_code_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.two_factor_authorization_code_id_seq OWNED BY public.two_factor_authorization_code.id;
+
+
+--
 -- Name: user_session; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -95,6 +126,13 @@ CREATE TABLE public.user_session (
 --
 
 ALTER TABLE ONLY public.email_verification_code ALTER COLUMN id SET DEFAULT nextval('public.email_verification_codes_id_seq'::regclass);
+
+
+--
+-- Name: two_factor_authorization_code id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.two_factor_authorization_code ALTER COLUMN id SET DEFAULT nextval('public.two_factor_authorization_code_id_seq'::regclass);
 
 
 --
@@ -154,6 +192,22 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: two_factor_authorization_code two_factor_authorization_code_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.two_factor_authorization_code
+    ADD CONSTRAINT two_factor_authorization_code_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: two_factor_authorization_code two_factor_authorization_code_user_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.two_factor_authorization_code
+    ADD CONSTRAINT two_factor_authorization_code_user_id_key UNIQUE (user_id);
+
+
+--
 -- Name: user_session user_session_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -175,6 +229,14 @@ ALTER TABLE ONLY public.email_verification_code
 
 ALTER TABLE ONLY public.password_reset_token
     ADD CONSTRAINT password_reset_token_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
+
+
+--
+-- Name: two_factor_authorization_code two_factor_authorization_code_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.two_factor_authorization_code
+    ADD CONSTRAINT two_factor_authorization_code_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
 
 
 --
@@ -200,4 +262,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20240223143704'),
     ('20240223145048'),
     ('20240223154958'),
-    ('20240223191322');
+    ('20240223191322'),
+    ('20240224184413');

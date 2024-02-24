@@ -2,6 +2,7 @@ import { Lucia } from 'lucia'
 import { NodePostgresAdapter } from '@lucia-auth/adapter-postgresql'
 import pg from 'pg'
 import { type User, type Session } from 'lucia'
+import { RequestGenericInterface } from 'fastify'
 
 const pool = new pg.Pool({
   connectionString: 'postgres://postgres@localhost:15432/archtika'
@@ -21,17 +22,11 @@ export const lucia = new Lucia(adapter, {
   getUserAttributes: (attributes) => {
     return {
       username: attributes.username,
-      email: attributes.email
+      email: attributes.email,
+      setupTwoFactor: attributes.two_factor_secret !== null
     }
   }
 })
-
-interface DatabaseUser {
-  id: string
-  username: string
-  email: string
-  password: string
-}
 
 declare module 'lucia' {
   interface Register {
@@ -40,6 +35,7 @@ declare module 'lucia' {
       username: string
       email: string
       email_verified: boolean
+      two_factor_secret: string | null
     }
   }
 }
