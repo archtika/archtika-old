@@ -1,12 +1,9 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { CreateAccountSchema, EmailVerificationSchema, LoginSchema, ValidateTwoFactorSchema, VerifyPasswordResetTokenSchema } from './account.schema.js'
-import { fastify } from '../../index.js'
 import { Argon2id } from 'oslo/password';
-import { lucia, github } from '../../plugins/lucia.js';
+import { lucia } from '../../plugins/lucia.js';
 import { generateId } from 'lucia';
-import { generateEmailVerificationCode, verifyVerificationCode } from '../../utils/email-verification.js';
 import { getSession } from '../../utils/getSession.js';
-import { createPasswordResetToken } from '../../utils/password-reset.js';
 import { isWithinExpirationDate } from 'oslo';
 import { decodeHex, encodeHex } from 'oslo/encoding';
 import { TOTPController, createTOTPKeyURI } from 'oslo/otp';
@@ -19,7 +16,7 @@ export async function createAccount(
 ) {
   const { username, email, password } = req.body
 
-  const existingAccount = (await fastify.pg.query(
+  const existingAccount = (await req.server.pg.query(
     'SELECT * FROM auth_user WHERE username = $1 OR email = $2',
     [username, email]
   )).rows[0];
@@ -30,12 +27,12 @@ export async function createAccount(
   const hashedPassword = await new Argon2id().hash(password)
   const userId = generateId(20)
 
-  const account = (await fastify.pg.query(
+  const account = (await req.server.pg.query(
     'INSERT INTO auth_user (id, username, email, password) VALUES ($1, $2, $3, $4) RETURNING id, username, email',
     [userId, username, email, hashedPassword]
   )).rows[0]
 
-  await fastify.pg.query(
+  await req.server.pg.query(
     'INSERT INTO two_factor_authorization_code (code, user_id) VALUES ($1, $2)',
     [null, userId]
   )
@@ -58,7 +55,7 @@ export async function login(
 ) {
   const { email, password } = req.body
 
-  const account = (await fastify.pg.query(
+  const account = (await req.server.pg.query(
     'SELECT * FROM auth_user WHERE email = $1',
     [email]
   )).rows[0]
@@ -106,14 +103,14 @@ export async function verifyEmail(
 
   const { code } = req.body
 
-  const validCode = await verifyVerificationCode(req.user, code)
+  const validCode = await req.verifyVerificationCode(req.user, code)
   
   if (!validCode) {
     return reply.notAcceptable()
   }
 
   await lucia.invalidateUserSessions(req.user.id)
-  await fastify.pg.query(
+  await req.server.pg.query(
     'UPDATE auth_user SET email_verified = true WHERE id = $1',
     [req.user.id]
   )
@@ -134,7 +131,7 @@ export async function requestEmailVerificationCode(
 
   if (!req.user) return
 
-  const alreadyVerified = (await fastify.pg.query(
+  const alreadyVerified = (await req.server.pg.query(
     'SELECT email_verified FROM auth_user WHERE id = $1',
     [req.user.id]
   )).rows[0].email_verified
@@ -143,7 +140,7 @@ export async function requestEmailVerificationCode(
     return reply.conflict('Email already verified')
   }
 
-  const verificationCode = await generateEmailVerificationCode(req.user?.id, req.user?.email)
+  const verificationCode = await req.generateEmailVerificationCode(req.user?.id, req.user?.email)
   return reply.status(200).send({ message: 'Code saved'})
 }
 
@@ -155,7 +152,7 @@ export async function resetPassword(
 
   if (!req.user) return
 
-  const user = (await fastify.pg.query(
+  const user = (await req.server.pg.query(
     'SELECT * FROM auth_user WHERE id = $1',
     [req.user.id]
   )).rows[0]
@@ -164,7 +161,7 @@ export async function resetPassword(
     return reply.expectationFailed('Email not verified')
   }
 
-  const verificationToken = await createPasswordResetToken(user.id)
+  const verificationToken = await req.createPasswordResetToken(user.id)
   const verificationLink = 'http://localhost:3000/reset-password/' + verificationToken
 
   return reply.status(200).send({ message: 'Password reset token generated' })
@@ -182,13 +179,13 @@ export async function verifyPasswordResetToken(
 
   const { token } = req.params as { token: string }
 
-  const databaseToken = (await fastify.pg.query(
+  const databaseToken = (await req.server.pg.query(
     'SELECT * FROM password_reset_token WHERE id = $1',
     [token]
   )).rows[0]
 
   if (databaseToken) {
-    await fastify.pg.query(
+    await req.server.pg.query(
       'DELETE FROM password_reset_token WHERE id = $1',
       [token]
     )
@@ -201,7 +198,7 @@ export async function verifyPasswordResetToken(
   await lucia.invalidateUserSessions(req.user.id)
 
   const hashedPassword = await new Argon2id().hash(password)
-  await fastify.pg.query(
+  await req.server.pg.query(
     'UPDATE auth_user SET password = $1 WHERE id = $2',
     [hashedPassword, req.user.id]
   )
@@ -223,7 +220,7 @@ export async function createTwoFactor(
 
   const twoFactorSecret = crypto.getRandomValues(new Uint8Array(20))
 
-  await fastify.pg.query(
+  await req.server.pg.query(
     'UPDATE two_factor_authorization_code SET code = $1 WHERE user_id = $2',
     [encodeHex(twoFactorSecret), req.user.id]
   )
@@ -243,7 +240,7 @@ export async function validateTwoFactor(
 
   const { otp } = req.body
 
-  const twoFactorSecret = (await fastify.pg.query(
+  const twoFactorSecret = (await req.server.pg.query(
     'SELECT code FROM two_factor_authorization_code WHERE user_id = $1',
     [req.user.id]
   )).rows[0].code
@@ -258,7 +255,7 @@ export async function loginWithGithub(
   reply: FastifyReply
 ) {
   const state = generateState()
-  const url = await github.createAuthorizationURL(state)
+  const url = await req.github.createAuthorizationURL(state)
 
   reply.setCookie('github_oauth_state', state, {
     path: '/',
@@ -279,5 +276,41 @@ export async function loginWithGithubCallback(
   const state = (req.query as any).state?.toString() ?? null
   const storedState = parseCookies(req.headers.cookie ?? "").get('github_oauth_state') ?? null
 
+  if (!code || !state || state !== storedState) {
+    return reply.unauthorized()
+  }
 
+  const tokens = await req.github.validateAuthorizationCode(code)
+  const githubUserResponse = await fetch('https://api.github.com/user', {
+    headers: {
+      Authorization: `Bearer ${tokens.accessToken}`
+    }
+  })
+  const githubUser = await githubUserResponse.json()
+  const existingUser = (await req.server.pg.query(
+    'SELECT * FROM auth_user WHERE github_id = $1',
+    [githubUser.id]
+  )).rows[0]
+
+  if (existingUser) {
+    const session = await lucia.createSession(existingUser.id, {})
+    const cookie = lucia.createSessionCookie(session.id)
+
+    reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+
+    return reply.redirect('/')
+  }
+
+  const userId = generateId(20)
+  await req.server.pg.query(
+    'INSERT INTO auth_user (id, username, email, github_id) VALUES ($1, $2, $3, $4)',
+    [userId, githubUser.login, githubUser.email, githubUser.id]
+  )
+
+  const session = await lucia.createSession(userId, {})
+  const cookie = lucia.createSessionCookie(session.id)
+
+  reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+
+  reply.redirect('/')
 }

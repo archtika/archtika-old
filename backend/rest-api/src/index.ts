@@ -11,6 +11,8 @@ import csrf from './plugins/csrf.js'
 import auth from './plugins/auth.js'
 import sensible from './plugins/sensible.js'
 import rateLimit from './plugins/rate-limit.js'
+import emailVerification from './plugins/email-verification.js'
+import passwordReset from './plugins/password-reset.js'
 
 export const fastify = Fastify({
   logger: true
@@ -26,6 +28,8 @@ fastify.register(csrf, {
 fastify.register(auth)
 fastify.register(sensible)
 fastify.register(rateLimit)
+fastify.register(emailVerification)
+fastify.register(passwordReset)
 
 fastify.register(accountRoutes, { prefix: '/account'})
 

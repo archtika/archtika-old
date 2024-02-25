@@ -21,7 +21,7 @@ CREATE TABLE public.auth_user (
     id character varying NOT NULL,
     username character varying NOT NULL,
     email character varying NOT NULL,
-    password character varying NOT NULL,
+    password character varying,
     email_verified boolean DEFAULT false NOT NULL,
     github_id integer
 );
@@ -273,4 +273,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20240223154958'),
     ('20240223191322'),
     ('20240224184413'),
-    ('20240225003529');
+    ('20240225003529'),
+    ('20240225131732');
