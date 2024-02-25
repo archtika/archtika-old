@@ -11,7 +11,7 @@
       makeNixosConfiguration = system: {
         inherit system;
         modules = [
-          ./dev-vm
+          ./dev-vm.nix
           ({ pkgs, ... }: {
             virtualisation = nixpkgs.lib.optionalAttrs
               (nixpkgs.lib.elem system [ "x86_64-darwin" "aarch64-darwin" ]) {

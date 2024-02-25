@@ -1,7 +1,11 @@
 { pkgs, lib, ... }: {
   imports = [ <nixpkgs/nixos/modules/virtualisation/qemu-vm.nix> ];
 
-  users.users.root = { password = "root"; };
+  users.users.dev-vm = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    password = "dev";
+  };
 
   virtualisation.forwardPorts = [{
     from = "host";
