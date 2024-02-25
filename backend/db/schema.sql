@@ -22,7 +22,8 @@ CREATE TABLE public.auth_user (
     username character varying NOT NULL,
     email character varying NOT NULL,
     password character varying NOT NULL,
-    email_verified boolean DEFAULT false NOT NULL
+    email_verified boolean DEFAULT false NOT NULL,
+    github_id integer
 );
 
 
@@ -141,6 +142,14 @@ ALTER TABLE ONLY public.two_factor_authorization_code ALTER COLUMN id SET DEFAUL
 
 ALTER TABLE ONLY public.auth_user
     ADD CONSTRAINT auth_user_email_key UNIQUE (email);
+
+
+--
+-- Name: auth_user auth_user_github_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_user
+    ADD CONSTRAINT auth_user_github_id_key UNIQUE (github_id);
 
 
 --
@@ -263,4 +272,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20240223145048'),
     ('20240223154958'),
     ('20240223191322'),
-    ('20240224184413');
+    ('20240224184413'),
+    ('20240225003529');

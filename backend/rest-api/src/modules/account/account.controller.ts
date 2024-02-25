@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { CreateAccountSchema, EmailVerificationSchema, LoginSchema, ValidateTwoFactorSchema, VerifyPasswordResetTokenSchema } from './account.schema.js'
 import { fastify } from '../../index.js'
 import { Argon2id } from 'oslo/password';
-import { lucia } from '../../plugins/lucia.js';
+import { lucia, github } from '../../plugins/lucia.js';
 import { generateId } from 'lucia';
 import { generateEmailVerificationCode, verifyVerificationCode } from '../../utils/email-verification.js';
 import { getSession } from '../../utils/getSession.js';
@@ -10,6 +10,8 @@ import { createPasswordResetToken } from '../../utils/password-reset.js';
 import { isWithinExpirationDate } from 'oslo';
 import { decodeHex, encodeHex } from 'oslo/encoding';
 import { TOTPController, createTOTPKeyURI } from 'oslo/otp';
+import { generateState } from 'arctic';
+import { parseCookies } from 'oslo/cookie';
 
 export async function createAccount(
   req: FastifyRequest<{ Body: CreateAccountSchema }>,
@@ -249,4 +251,33 @@ export async function validateTwoFactor(
 
   if (validOTP) return reply.status(200).send({ message: 'Two factor successfully validated' })
   else return reply.notAcceptable('Invalid OTP')
+}
+
+export async function loginWithGithub(
+  req: FastifyRequest,
+  reply: FastifyReply
+) {
+  const state = generateState()
+  const url = await github.createAuthorizationURL(state)
+
+  reply.setCookie('github_oauth_state', state, {
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 60 * 10,
+    sameSite: 'lax'
+  })
+
+  reply.redirect(url.toString())
+}
+
+export async function loginWithGithubCallback(
+  req: FastifyRequest,
+  reply: FastifyReply
+) {
+  const code = (req.query as any).code?.toString() ?? null
+  const state = (req.query as any).state?.toString() ?? null
+  const storedState = parseCookies(req.headers.cookie ?? "").get('github_oauth_state') ?? null
+
+
 }

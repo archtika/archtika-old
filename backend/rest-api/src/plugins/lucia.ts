@@ -2,7 +2,8 @@ import { Lucia } from 'lucia'
 import { NodePostgresAdapter } from '@lucia-auth/adapter-postgresql'
 import pg from 'pg'
 import { type User, type Session } from 'lucia'
-import { RequestGenericInterface } from 'fastify'
+import { GitHub } from 'arctic'
+import { fastify } from '../index.js'
 
 const pool = new pg.Pool({
   connectionString: 'postgres://postgres@localhost:15432/archtika'
@@ -23,10 +24,13 @@ export const lucia = new Lucia(adapter, {
     return {
       username: attributes.username,
       email: attributes.email,
-      setupTwoFactor: attributes.two_factor_secret !== null
+      setupTwoFactor: attributes.two_factor_secret !== null,
+      githubId: attributes.github_id
     }
   }
 })
+
+export const github = new GitHub(fastify.config.DEV_GITHUB_CLIENT_ID, fastify.config.DEV_GITHUB_CLIENT_SECRET)
 
 declare module 'lucia' {
   interface Register {
@@ -36,11 +40,18 @@ declare module 'lucia' {
       email: string
       email_verified: boolean
       two_factor_secret: string | null
+      github_id: number
     }
   }
 }
 
 declare module 'fastify' {
+  interface FastifyInstance {
+    config: {
+      DEV_GITHUB_CLIENT_ID: string
+      DEV_GITHUB_CLIENT_SECRET: string
+    }
+  }
   interface FastifyRequest {
     user: User | null
     session: Session | null

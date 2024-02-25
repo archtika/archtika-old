@@ -3,6 +3,7 @@ import { TypeBoxTypeProvider, TypeBoxValidatorCompiler } from '@fastify/type-pro
 
 import { accountRoutes } from './modules/account/account.route.js'
 
+import env from './plugins/env.js'
 import dbConnector from './plugins/postgres.js'
 import swagger from './plugins/swagger.js'
 import cookie from './plugins/cookie.js'
@@ -15,6 +16,7 @@ export const fastify = Fastify({
   logger: true
 }).withTypeProvider<TypeBoxTypeProvider>().setValidatorCompiler(TypeBoxValidatorCompiler)
 
+fastify.register(env)
 fastify.register(swagger)
 fastify.register(dbConnector)
 fastify.register(cookie)

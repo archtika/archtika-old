@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { CreateAccountResponseSchema, CreateAccountSchema, EmailVerificationSchema, LoginSchema, ValidateTwoFactorSchema, VerifyPasswordResetTokenSchema, createAccountResponseSchema, createAccountSchema, emailVerificationSchema, loginSchema, validateTwoFactorSchema, verifyPasswordResetTokenSchema } from './account.schema.js'
-import { createAccount, createTwoFactor, login, logout, requestEmailVerificationCode, resetPassword, validateTwoFactor, verifyEmail, verifyPasswordResetToken } from './account.controller.js'
+import { createAccount, createTwoFactor, login, loginWithGithub, loginWithGithubCallback, logout, requestEmailVerificationCode, resetPassword, validateTwoFactor, verifyEmail, verifyPasswordResetToken } from './account.controller.js'
 import { getSession } from '../../utils/getSession.js';
 
 export async function accountRoutes(fastify: FastifyInstance) {
@@ -90,6 +90,16 @@ export async function accountRoutes(fastify: FastifyInstance) {
       }
     },
     validateTwoFactor
+  )
+
+  fastify.get(
+    '/login/github',
+    loginWithGithub
+  )
+
+  fastify.get(
+    '/login/github/callback',
+    loginWithGithubCallback
   )
 
   fastify.post('/logout',
