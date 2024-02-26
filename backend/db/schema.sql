@@ -22,8 +22,7 @@ CREATE TABLE public.auth_user (
     username character varying NOT NULL,
     email character varying NOT NULL,
     password character varying,
-    email_verified boolean DEFAULT false NOT NULL,
-    github_id integer
+    email_verified boolean DEFAULT false NOT NULL
 );
 
 
@@ -58,6 +57,17 @@ CREATE SEQUENCE public.email_verification_codes_id_seq
 --
 
 ALTER SEQUENCE public.email_verification_codes_id_seq OWNED BY public.email_verification_code.id;
+
+
+--
+-- Name: oauth_account; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oauth_account (
+    provider_id character varying NOT NULL,
+    provider_user_id character varying NOT NULL,
+    user_id character varying NOT NULL
+);
 
 
 --
@@ -145,14 +155,6 @@ ALTER TABLE ONLY public.auth_user
 
 
 --
--- Name: auth_user auth_user_github_id_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.auth_user
-    ADD CONSTRAINT auth_user_github_id_key UNIQUE (github_id);
-
-
---
 -- Name: auth_user auth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -182,6 +184,14 @@ ALTER TABLE ONLY public.email_verification_code
 
 ALTER TABLE ONLY public.email_verification_code
     ADD CONSTRAINT email_verification_codes_user_id_key UNIQUE (user_id);
+
+
+--
+-- Name: oauth_account oauth_account_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_account
+    ADD CONSTRAINT oauth_account_pkey PRIMARY KEY (provider_id, provider_user_id);
 
 
 --
@@ -233,6 +243,14 @@ ALTER TABLE ONLY public.email_verification_code
 
 
 --
+-- Name: oauth_account oauth_account_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oauth_account
+    ADD CONSTRAINT oauth_account_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
+
+
+--
 -- Name: password_reset_token password_reset_token_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -274,4 +292,6 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20240223191322'),
     ('20240224184413'),
     ('20240225003529'),
-    ('20240225131732');
+    ('20240225131732'),
+    ('20240226173510'),
+    ('20240226174747');
