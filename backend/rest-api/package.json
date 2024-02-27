@@ -21,7 +21,6 @@
         "fastify-cli": "^6.1.1",
         "fastify-plugin": "^4.5.1",
         "lucia": "^3.0.1",
-        "oslo": "^1.1.2",
         "pg": "^8.11.3",
         "prettier": "^3.2.5"
     },
@@ -29,6 +28,7 @@
     "devDependencies": {
         "@tsconfig/node20": "^20.1.2",
         "@types/node": "^20.11.19",
+        "pino-pretty": "^10.3.1",
         "typescript": "^5.3.3"
     }
 }

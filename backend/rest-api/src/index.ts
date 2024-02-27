@@ -14,12 +14,24 @@ import csrf from './plugins/csrf.js'
 import auth from './plugins/auth.js'
 import sensible from './plugins/sensible.js'
 import rateLimit from './plugins/rate-limit.js'
-import emailVerification from './plugins/email-verification.js'
-import passwordReset from './plugins/password-reset.js'
 import oAuth from './plugins/oAuth.js'
 
+const envToLogger = {
+    development: {
+        transport: {
+            target: 'pino-pretty',
+            options: {
+                translateTime: 'HH:MM:ss Z',
+                ignore: 'pid,hostname',
+            },
+        },
+    },
+    production: true,
+    test: false,
+}
+
 export const fastify = Fastify({
-    logger: true,
+    logger: envToLogger['development'] ?? true,
 })
     .withTypeProvider<TypeBoxTypeProvider>()
     .setValidatorCompiler(TypeBoxValidatorCompiler)
@@ -35,8 +47,6 @@ fastify.register(csrf, {
 fastify.register(auth)
 fastify.register(sensible)
 fastify.register(rateLimit)
-fastify.register(emailVerification)
-fastify.register(passwordReset)
 
 fastify.register(accountRoutes, { prefix: '/account' })
 

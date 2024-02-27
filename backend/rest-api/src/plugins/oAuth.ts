@@ -13,8 +13,10 @@ async function oAuth(fastify: FastifyInstance) {
         'http://localhost:3000/account/login/google/callback'
     )
 
-    fastify.decorateRequest('github', github)
-    fastify.decorateRequest('google', google)
+    fastify.decorate('oAuth', {
+        github,
+        google,
+    })
 }
 
 export default fastifyPlugin(oAuth)

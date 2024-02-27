@@ -4,7 +4,7 @@ import { lucia } from './lucia.js'
 
 async function auth(fastify: FastifyInstance) {
     fastify.addHook('preHandler', async (req, reply) => {
-        const sessionId = lucia.readSessionCookie(req.headers.cookie ?? '')
+        const sessionId = req.cookies[lucia.sessionCookieName]
 
         if (!sessionId) {
             req.user = null

@@ -23,6 +23,7 @@ export const lucia = new Lucia(adapter, {
         return {
             username: attributes.username,
             email: attributes.email,
+            email_verified: attributes.email_verified,
             setupTwoFactor: attributes.two_factor_secret !== null,
             githubId: attributes.github_id,
         }
@@ -50,17 +51,26 @@ declare module 'fastify' {
             DEV_GOOGLE_CLIENT_ID: string
             DEV_GOOGLE_CLIENT_SECRET: string
         }
+        emailVerification: {
+            generateEmailVerificationCode: (
+                userId: string,
+                email: string
+            ) => Promise<string>
+            verifyVerificationCode: (
+                user: User,
+                code: string
+            ) => Promise<boolean>
+        }
+        passwordReset: {
+            createPasswordResetToken: (userId: string) => Promise<string>
+        }
+        oAuth: {
+            github: GitHub
+            google: Google
+        }
     }
     interface FastifyRequest {
         user: User | null
         session: Session | null
-        generateEmailVerificationCode: (
-            userId: string,
-            email: string
-        ) => Promise<string>
-        verifyVerificationCode: (user: User, code: string) => Promise<boolean>
-        createPasswordResetToken: (userId: string) => Promise<string>
-        github: GitHub
-        google: Google
     }
 }
