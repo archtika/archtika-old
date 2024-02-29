@@ -8,29 +8,26 @@ import fastifyPlugin from 'fastify-plugin'
 import { verifyRequestOrigin } from 'lucia'
 
 const pool = new pg.Pool({
-    connectionString: 'postgres://postgres@localhost:15432/archtika',
+    connectionString: 'postgres://postgres@localhost:15432/archtika'
 })
 
 const adapter = new NodePostgresAdapter(pool, {
     user: 'auth_user',
-    session: 'user_session',
+    session: 'user_session'
 })
 
 const lucia = new Lucia(adapter, {
     sessionCookie: {
         attributes: {
-            secure: process.env.NODE_ENV === 'production',
-        },
+            secure: process.env.NODE_ENV === 'production'
+        }
     },
     getUserAttributes: (attributes) => {
         return {
             username: attributes.username,
-            email: attributes.email,
-            email_verified: attributes.email_verified,
-            setupTwoFactor: attributes.two_factor_secret !== null,
-            githubId: attributes.github_id,
+            email: attributes.email
         }
-    },
+    }
 })
 
 async function luciaAuth(fastify: FastifyInstance) {
@@ -41,7 +38,7 @@ async function luciaAuth(fastify: FastifyInstance) {
     const google = new Google(
         fastify.config.DEV_GOOGLE_CLIENT_ID,
         fastify.config.DEV_GOOGLE_CLIENT_SECRET,
-        'http://localhost:3000/account/login/google/callback'
+        'http://localhost:3000/api/v1/account/login/google/callback'
     )
 
     async function getSession(req: FastifyRequest, reply: FastifyReply) {
@@ -60,9 +57,9 @@ async function luciaAuth(fastify: FastifyInstance) {
         luciaInstance: lucia,
         oAuth: {
             github,
-            google,
+            google
         },
-        getSession,
+        getSession
     })
 
     fastify.addHook('preHandler', async (req, reply) => {
@@ -119,9 +116,6 @@ declare module 'lucia' {
         DatabaseUserAttributes: {
             username: string
             email: string
-            email_verified: boolean
-            two_factor_secret: string | null
-            github_id: number
         }
     }
 }

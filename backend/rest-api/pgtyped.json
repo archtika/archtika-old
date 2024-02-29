@@ -1,0 +1,16 @@
+{
+    "transforms": [
+        {
+            "mode": "sql",
+            "include": "**/*.sql",
+            "emitTemplate": "{{dir}}/{{name}}.ts"
+        },
+        {
+            "mode": "ts",
+            "include": "**/*.ts",
+            "emitTemplate": "{{dir}}/{{name}}-types.ts"
+        }
+    ],
+    "srcDir": "./src/",
+    "dbUrl": "postgres://postgres@localhost:15432/archtika"
+}

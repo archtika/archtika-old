@@ -6,13 +6,13 @@ import {
     loginWithGoogle,
     loginWithGoogleCallback,
     logout,
-    deleteAccount,
-} from './account.controller.js'
+    deleteAccount
+} from './controller.js'
 
 const commonSchema = {
     schema: {
-        tags: ['account'],
-    },
+        tags: ['account']
+    }
 }
 
 export default async function (fastify: FastifyInstance) {
@@ -20,19 +20,11 @@ export default async function (fastify: FastifyInstance) {
 
     fastify.get('/login/github', commonSchema, loginWithGithub)
 
-    fastify.post(
-        '/login/github/callback',
-        commonSchema,
-        loginWithGithubCallback
-    )
+    fastify.get('/login/github/callback', commonSchema, loginWithGithubCallback)
 
     fastify.get('/login/google', commonSchema, loginWithGoogle)
 
-    fastify.post(
-        '/login/google/callback',
-        commonSchema,
-        loginWithGoogleCallback
-    )
+    fastify.get('/login/google/callback', commonSchema, loginWithGoogleCallback)
 
     fastify.get('/logout', commonSchema, logout)
 

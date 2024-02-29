@@ -4,13 +4,13 @@ import {
     getWebsiteById,
     updateWebsiteById,
     deleteWebsite,
-    getAllWebsites,
-} from './websites.controller.js'
+    getAllWebsites
+} from './controller.js'
 
 const commonSchema = {
     schema: {
-        tags: ['websites'],
-    },
+        tags: ['websites']
+    }
 }
 
 export default async function (fastify: FastifyInstance) {

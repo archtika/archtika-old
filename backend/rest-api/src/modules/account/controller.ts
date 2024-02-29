@@ -1,6 +1,12 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { generateId } from 'lucia'
 import { generateCodeVerifier, generateState } from 'arctic'
+import {
+    findExistingUser,
+    findExistingOAuthAccount,
+    createUser,
+    createOAuthAccount
+} from './queries.js'
 
 export async function viewAccountInformation(
     req: FastifyRequest,
@@ -8,7 +14,14 @@ export async function viewAccountInformation(
 ) {
     await req.server.lucia.getSession(req, reply)
 
-    reply.send({ user: req.user, session: req.session })
+    const user = (
+        await findExistingUser.run(
+            { email: 'thilo.hohlt@tutanota.com' },
+            req.server.pg.pool
+        )
+    )[0]
+
+    return reply.send({ user })
 }
 
 export async function loginWithGithub(
@@ -19,7 +32,7 @@ export async function loginWithGithub(
     const url = await req.server.lucia.oAuth.github.createAuthorizationURL(
         state,
         {
-            scopes: ['user:email'],
+            scopes: ['user:email']
         }
     )
 
@@ -28,7 +41,7 @@ export async function loginWithGithub(
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 60 * 10,
-        sameSite: 'lax',
+        sameSite: 'lax'
     })
 
     return reply.redirect(url.toString())
@@ -50,15 +63,15 @@ export async function loginWithGithubCallback(
         await req.server.lucia.oAuth.github.validateAuthorizationCode(code)
     const githubUserResponse = await fetch('https://api.github.com/user', {
         headers: {
-            Authorization: `Bearer ${tokens.accessToken}`,
-        },
+            Authorization: `Bearer ${tokens.accessToken}`
+        }
     })
     const githubUserEmailsResponse = await fetch(
         'https://api.github.com/user/emails',
         {
             headers: {
-                Authorization: `Bearer ${tokens.accessToken}`,
-            },
+                Authorization: `Bearer ${tokens.accessToken}`
+            }
         }
     )
     const githubUser = await githubUserResponse.json()
@@ -75,23 +88,31 @@ export async function loginWithGithubCallback(
     }
 
     const existingUser = (
-        await req.server.pg.query('SELECT * FROM auth_user WHERE email = $1', [
-            primaryEmail.email,
-        ])
-    ).rows[0]
+        await findExistingUser.run(
+            { email: primaryEmail.email },
+            req.server.pg.pool
+        )
+    )[0]
 
     if (existingUser) {
         const existingOauthAccount = (
-            await req.server.pg.query(
-                'SELECT * FROM oauth_account WHERE provider_id = $1 AND provider_user_id = $2',
-                ['github', githubUser.id]
+            await findExistingOAuthAccount.run(
+                {
+                    providerId: 'github',
+                    providerUserId: githubUser.id
+                },
+                req.server.pg.pool
             )
-        ).rows[0]
+        )[0]
 
         if (!existingOauthAccount) {
-            await req.server.pg.query(
-                'INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES ($1, $2, $3)',
-                ['github', githubUser.id, existingUser.id]
+            await createOAuthAccount.run(
+                {
+                    providerId: 'github',
+                    providerUserId: githubUser.id,
+                    userId: existingUser.id
+                },
+                req.server.pg.pool
             )
         }
 
@@ -110,13 +131,21 @@ export async function loginWithGithubCallback(
 
     const userId = generateId(20)
 
-    await req.server.pg.query(
-        'INSERT INTO auth_user (id, username, email) VALUES ($1, $2, $3)',
-        [userId, githubUser.login, primaryEmail.email]
+    await createUser.run(
+        {
+            id: userId,
+            username: githubUser.login,
+            email: primaryEmail.email
+        },
+        req.server.pg.pool
     )
-    await req.server.pg.query(
-        'INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES ($1, $2, $3)',
-        ['github', githubUser.id, userId]
+    await createOAuthAccount.run(
+        {
+            providerId: 'github',
+            providerUserId: githubUser.id,
+            userId: userId
+        },
+        req.server.pg.pool
     )
 
     const session = await req.server.lucia.luciaInstance.createSession(
@@ -142,7 +171,7 @@ export async function loginWithGoogle(
         state,
         codeVerifier,
         {
-            scopes: ['profile', 'email'],
+            scopes: ['profile', 'email']
         }
     )
     url.searchParams.set('access_type', 'offline')
@@ -152,7 +181,7 @@ export async function loginWithGoogle(
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 60 * 10,
-        sameSite: 'lax',
+        sameSite: 'lax'
     })
 
     reply.setCookie('google_oauth_code_verifier', codeVerifier, {
@@ -160,7 +189,7 @@ export async function loginWithGoogle(
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 60 * 10,
-        sameSite: 'lax',
+        sameSite: 'lax'
     })
 
     return reply.redirect(url.toString())
@@ -189,8 +218,8 @@ export async function loginWithGoogleCallback(
         'https://openidconnect.googleapis.com/v1/userinfo',
         {
             headers: {
-                Authorization: `Bearer ${tokens.accessToken}`,
-            },
+                Authorization: `Bearer ${tokens.accessToken}`
+            }
         }
     )
     const googleUser = await googleUserResponse.json()
@@ -200,23 +229,31 @@ export async function loginWithGoogleCallback(
     }
 
     const existingUser = (
-        await req.server.pg.query('SELECT * FROM auth_user WHERE email = $1', [
-            googleUser.email,
-        ])
-    ).rows[0]
+        await findExistingUser.run(
+            { email: googleUser.email },
+            req.server.pg.pool
+        )
+    )[0]
 
     if (existingUser) {
         const existingOauthAccount = (
-            await req.server.pg.query(
-                'SELECT * FROM oauth_account WHERE provider_id = $1 AND provider_user_id = $2',
-                ['google', googleUser.sub]
+            await findExistingOAuthAccount.run(
+                {
+                    providerId: 'google',
+                    providerUserId: googleUser.sub
+                },
+                req.server.pg.pool
             )
-        ).rows[0]
+        )[0]
 
         if (!existingOauthAccount) {
-            await req.server.pg.query(
-                'INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES ($1, $2, $3)',
-                ['google', googleUser.sub, existingUser.id]
+            await createOAuthAccount.run(
+                {
+                    providerId: 'google',
+                    providerUserId: googleUser.sub,
+                    userId: existingUser.id
+                },
+                req.server.pg.pool
             )
         }
 
@@ -235,13 +272,21 @@ export async function loginWithGoogleCallback(
 
     const userId = generateId(20)
 
-    await req.server.pg.query(
-        'INSERT INTO auth_user (id, username, email) VALUES ($1, $2, $3)',
-        [userId, googleUser.name, googleUser.email]
+    await createUser.run(
+        {
+            id: userId,
+            username: googleUser.name,
+            email: googleUser.email
+        },
+        req.server.pg.pool
     )
-    await req.server.pg.query(
-        'INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES ($1, $2, $3)',
-        ['google', googleUser.sub, userId]
+    await createOAuthAccount.run(
+        {
+            providerId: 'google',
+            providerUserId: googleUser.sub,
+            userId: userId
+        },
+        req.server.pg.pool
     )
 
     const session = await req.server.lucia.luciaInstance.createSession(
@@ -271,5 +316,5 @@ export async function logout(req: FastifyRequest, reply: FastifyReply) {
 }
 
 export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {
-    console.log('delete account')
+    console.log('test')
 }

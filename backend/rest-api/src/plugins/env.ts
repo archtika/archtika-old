@@ -11,10 +11,10 @@ async function env(fastify: FastifyInstance) {
                 DEV_GITHUB_CLIENT_ID: { type: 'string' },
                 DEV_GITHUB_CLIENT_SECRET: { type: 'string' },
                 DEV_GOOGLE_CLIENT_ID: { type: 'string' },
-                DEV_GOOGLE_CLIENT_SECRET: { type: 'string' },
-            },
+                DEV_GOOGLE_CLIENT_SECRET: { type: 'string' }
+            }
         },
-        dotenv: true,
+        dotenv: true
     })
 }
 

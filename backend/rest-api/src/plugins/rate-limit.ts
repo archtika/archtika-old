@@ -8,12 +8,12 @@ async function rateLimit(fastify: FastifyInstance) {
         timeWindow: 5 * 60 * 1000,
         keyGenerator: (req) => {
             return req.user ? req.user.id || req.ip : req.ip
-        },
+        }
     })
 
     fastify.setNotFoundHandler(
         {
-            preHandler: fastify.rateLimit(),
+            preHandler: fastify.rateLimit()
         },
         (request, reply) => {
             reply.code(404).send(null)

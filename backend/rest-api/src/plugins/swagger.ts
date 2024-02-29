@@ -8,18 +8,18 @@ async function swagger(fastify: FastifyInstance) {
         swagger: {
             info: {
                 title: 'Archtika API',
-                version: '1',
+                version: '1'
             },
             tags: [
                 {
-                    name: 'account',
-                },
-            ],
-        },
+                    name: 'account'
+                }
+            ]
+        }
     })
 
     fastify.register(fastifySwaggerUi, {
-        routePrefix: '/docs',
+        routePrefix: '/docs'
     })
 }
 
