@@ -6,6 +6,7 @@ import {
     deleteWebsite,
     getAllWebsites
 } from './controller.js'
+import { CreateWebsiteSchemaType, createWebsiteSchema } from './schemas.js'
 
 const commonSchema = {
     schema: {
@@ -14,7 +15,16 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.post('/', commonSchema, createWebsite)
+    fastify.post<{ Body: CreateWebsiteSchemaType }>(
+        '/',
+        {
+            schema: {
+                body: createWebsiteSchema,
+                tags: commonSchema.schema.tags
+            }
+        },
+        createWebsite
+    )
 
     fastify.get('/:id', commonSchema, getWebsiteById)
 

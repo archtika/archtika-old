@@ -92,7 +92,7 @@ async function luciaAuth(fastify: FastifyInstance) {
         return
     })
 
-    fastify.addHook('preHandler', (req, res, done) => {
+    /* fastify.addHook('preHandler', (req, res, done) => {
         if (req.method === 'GET') {
             return done()
         }
@@ -107,7 +107,7 @@ async function luciaAuth(fastify: FastifyInstance) {
             console.error('Invalid origin', { originHeader, hostHeader })
             return res.status(403).send('Invalid origin')
         }
-    })
+    }) */
 }
 
 declare module 'lucia' {

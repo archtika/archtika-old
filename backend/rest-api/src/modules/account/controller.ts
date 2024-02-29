@@ -2,10 +2,10 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { generateId } from 'lucia'
 import { generateCodeVerifier, generateState } from 'arctic'
 import {
-    findExistingUser,
-    findExistingOAuthAccount,
-    createUser,
-    createOAuthAccount
+    findExistingUserQuery,
+    findExistingOAuthAccountQuery,
+    createUserQuery,
+    createOAuthAccountQuery
 } from './queries.js'
 
 export async function viewAccountInformation(
@@ -15,7 +15,7 @@ export async function viewAccountInformation(
     await req.server.lucia.getSession(req, reply)
 
     const user = (
-        await findExistingUser.run(
+        await findExistingUserQuery.run(
             { email: 'thilo.hohlt@tutanota.com' },
             req.server.pg.pool
         )
@@ -88,7 +88,7 @@ export async function loginWithGithubCallback(
     }
 
     const existingUser = (
-        await findExistingUser.run(
+        await findExistingUserQuery.run(
             { email: primaryEmail.email },
             req.server.pg.pool
         )
@@ -96,7 +96,7 @@ export async function loginWithGithubCallback(
 
     if (existingUser) {
         const existingOauthAccount = (
-            await findExistingOAuthAccount.run(
+            await findExistingOAuthAccountQuery.run(
                 {
                     providerId: 'github',
                     providerUserId: githubUser.id
@@ -106,11 +106,13 @@ export async function loginWithGithubCallback(
         )[0]
 
         if (!existingOauthAccount) {
-            await createOAuthAccount.run(
+            await createOAuthAccountQuery.run(
                 {
-                    providerId: 'github',
-                    providerUserId: githubUser.id,
-                    userId: existingUser.id
+                    oAuthAccount: {
+                        providerId: 'github',
+                        providerUserId: githubUser.id,
+                        userId: existingUser.id
+                    }
                 },
                 req.server.pg.pool
             )
@@ -131,19 +133,23 @@ export async function loginWithGithubCallback(
 
     const userId = generateId(20)
 
-    await createUser.run(
+    await createUserQuery.run(
         {
-            id: userId,
-            username: githubUser.login,
-            email: primaryEmail.email
+            user: {
+                id: userId,
+                username: githubUser.login,
+                email: primaryEmail.email
+            }
         },
         req.server.pg.pool
     )
-    await createOAuthAccount.run(
+    await createOAuthAccountQuery.run(
         {
-            providerId: 'github',
-            providerUserId: githubUser.id,
-            userId: userId
+            oAuthAccount: {
+                providerId: 'github',
+                providerUserId: githubUser.id,
+                userId: userId
+            }
         },
         req.server.pg.pool
     )
@@ -229,7 +235,7 @@ export async function loginWithGoogleCallback(
     }
 
     const existingUser = (
-        await findExistingUser.run(
+        await findExistingUserQuery.run(
             { email: googleUser.email },
             req.server.pg.pool
         )
@@ -237,7 +243,7 @@ export async function loginWithGoogleCallback(
 
     if (existingUser) {
         const existingOauthAccount = (
-            await findExistingOAuthAccount.run(
+            await findExistingOAuthAccountQuery.run(
                 {
                     providerId: 'google',
                     providerUserId: googleUser.sub
@@ -247,11 +253,13 @@ export async function loginWithGoogleCallback(
         )[0]
 
         if (!existingOauthAccount) {
-            await createOAuthAccount.run(
+            await createOAuthAccountQuery.run(
                 {
-                    providerId: 'google',
-                    providerUserId: googleUser.sub,
-                    userId: existingUser.id
+                    oAuthAccount: {
+                        providerId: 'google',
+                        providerUserId: googleUser.sub,
+                        userId: existingUser.id
+                    }
                 },
                 req.server.pg.pool
             )
@@ -272,19 +280,23 @@ export async function loginWithGoogleCallback(
 
     const userId = generateId(20)
 
-    await createUser.run(
+    await createUserQuery.run(
         {
-            id: userId,
-            username: googleUser.name,
-            email: googleUser.email
+            user: {
+                id: userId,
+                username: googleUser.name,
+                email: googleUser.email
+            }
         },
         req.server.pg.pool
     )
-    await createOAuthAccount.run(
+    await createOAuthAccountQuery.run(
         {
-            providerId: 'google',
-            providerUserId: googleUser.sub,
-            userId: userId
+            oAuthAccount: {
+                providerId: 'google',
+                providerUserId: googleUser.sub,
+                userId: userId
+            }
         },
         req.server.pg.pool
     )

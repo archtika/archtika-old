@@ -1,11 +1,17 @@
-/* @name FindExistingUser */
-SELECT * FROM auth_user WHERE email = :email;
+/* @name FindExistingUserQuery */
+SELECT * FROM auth_user WHERE email = :email!;
 
-/* @name FindExistingOAuthAccount */
-SELECT * FROM oauth_account WHERE provider_id = :providerId AND provider_user_id = :providerUserId;
+/* @name FindExistingOAuthAccountQuery */
+SELECT * FROM oauth_account WHERE provider_id = :providerId! AND provider_user_id = :providerUserId!;
 
-/* @name CreateUser */
-INSERT INTO auth_user (id, username, email) VALUES (:id, :username, :email);
+/*
+  @name CreateUserQuery
+  @param user -> (id, username, email)
+*/
+INSERT INTO auth_user (id, username, email) VALUES :user;
 
-/* @name CreateOAuthAccount */
-INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES (:providerId, :providerUserId, :userId);
+/*
+  @name CreateOAuthAccountQuery
+  @param oAuthAccount -> (providerId, providerUserId, userId)
+*/
+INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES :oAuthAccount;

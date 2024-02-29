@@ -1,200 +1,193 @@
 /** Types generated for queries found in "src/modules/account/queries.sql" */
 import { PreparedQuery } from '@pgtyped/runtime'
 
-/** 'FindExistingUser' parameters type */
-export interface IFindExistingUserParams {
-    email?: string | null | void
+/** 'FindExistingUserQuery' parameters type */
+export interface IFindExistingUserQueryParams {
+    email: string
 }
 
-/** 'FindExistingUser' return type */
-export interface IFindExistingUserResult {
+/** 'FindExistingUserQuery' return type */
+export interface IFindExistingUserQueryResult {
     email: string
     id: string
     username: string
 }
 
-/** 'FindExistingUser' query type */
-export interface IFindExistingUserQuery {
-    params: IFindExistingUserParams
-    result: IFindExistingUserResult
+/** 'FindExistingUserQuery' query type */
+export interface IFindExistingUserQueryQuery {
+    params: IFindExistingUserQueryParams
+    result: IFindExistingUserQueryResult
 }
 
-const findExistingUserIR: any = {
+const findExistingUserQueryIR: any = {
     usedParamSet: { email: true },
     params: [
         {
             name: 'email',
-            required: false,
+            required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 38, b: 43 }]
+            locs: [{ a: 38, b: 44 }]
         }
     ],
-    statement: 'SELECT * FROM auth_user WHERE email = :email'
+    statement: 'SELECT * FROM auth_user WHERE email = :email!'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT * FROM auth_user WHERE email = :email
+ * SELECT * FROM auth_user WHERE email = :email!
  * ```
  */
-export const findExistingUser = new PreparedQuery<
-    IFindExistingUserParams,
-    IFindExistingUserResult
->(findExistingUserIR)
+export const findExistingUserQuery = new PreparedQuery<
+    IFindExistingUserQueryParams,
+    IFindExistingUserQueryResult
+>(findExistingUserQueryIR)
 
-/** 'FindExistingOAuthAccount' parameters type */
-export interface IFindExistingOAuthAccountParams {
-    providerId?: string | null | void
-    providerUserId?: string | null | void
+/** 'FindExistingOAuthAccountQuery' parameters type */
+export interface IFindExistingOAuthAccountQueryParams {
+    providerId: string
+    providerUserId: string
 }
 
-/** 'FindExistingOAuthAccount' return type */
-export interface IFindExistingOAuthAccountResult {
+/** 'FindExistingOAuthAccountQuery' return type */
+export interface IFindExistingOAuthAccountQueryResult {
     provider_id: string
     provider_user_id: string
     user_id: string
 }
 
-/** 'FindExistingOAuthAccount' query type */
-export interface IFindExistingOAuthAccountQuery {
-    params: IFindExistingOAuthAccountParams
-    result: IFindExistingOAuthAccountResult
+/** 'FindExistingOAuthAccountQuery' query type */
+export interface IFindExistingOAuthAccountQueryQuery {
+    params: IFindExistingOAuthAccountQueryParams
+    result: IFindExistingOAuthAccountQueryResult
 }
 
-const findExistingOAuthAccountIR: any = {
+const findExistingOAuthAccountQueryIR: any = {
     usedParamSet: { providerId: true, providerUserId: true },
     params: [
         {
             name: 'providerId',
-            required: false,
+            required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 48, b: 58 }]
+            locs: [{ a: 48, b: 59 }]
         },
         {
             name: 'providerUserId',
-            required: false,
+            required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 83, b: 97 }]
+            locs: [{ a: 84, b: 99 }]
         }
     ],
     statement:
-        'SELECT * FROM oauth_account WHERE provider_id = :providerId AND provider_user_id = :providerUserId'
+        'SELECT * FROM oauth_account WHERE provider_id = :providerId! AND provider_user_id = :providerUserId!'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT * FROM oauth_account WHERE provider_id = :providerId AND provider_user_id = :providerUserId
+ * SELECT * FROM oauth_account WHERE provider_id = :providerId! AND provider_user_id = :providerUserId!
  * ```
  */
-export const findExistingOAuthAccount = new PreparedQuery<
-    IFindExistingOAuthAccountParams,
-    IFindExistingOAuthAccountResult
->(findExistingOAuthAccountIR)
+export const findExistingOAuthAccountQuery = new PreparedQuery<
+    IFindExistingOAuthAccountQueryParams,
+    IFindExistingOAuthAccountQueryResult
+>(findExistingOAuthAccountQueryIR)
 
-/** 'CreateUser' parameters type */
-export interface ICreateUserParams {
-    email?: string | null | void
-    id?: string | null | void
-    username?: string | null | void
+/** 'CreateUserQuery' parameters type */
+export interface ICreateUserQueryParams {
+    user: {
+        id: string | null | void
+        username: string | null | void
+        email: string | null | void
+    }
 }
 
-/** 'CreateUser' return type */
-export type ICreateUserResult = void
+/** 'CreateUserQuery' return type */
+export type ICreateUserQueryResult = void
 
-/** 'CreateUser' query type */
-export interface ICreateUserQuery {
-    params: ICreateUserParams
-    result: ICreateUserResult
+/** 'CreateUserQuery' query type */
+export interface ICreateUserQueryQuery {
+    params: ICreateUserQueryParams
+    result: ICreateUserQueryResult
 }
 
-const createUserIR: any = {
-    usedParamSet: { id: true, username: true, email: true },
+const createUserQueryIR: any = {
+    usedParamSet: { user: true },
     params: [
         {
-            name: 'id',
+            name: 'user',
             required: false,
-            transform: { type: 'scalar' },
-            locs: [{ a: 52, b: 54 }]
-        },
-        {
-            name: 'username',
-            required: false,
-            transform: { type: 'scalar' },
-            locs: [{ a: 57, b: 65 }]
-        },
-        {
-            name: 'email',
-            required: false,
-            transform: { type: 'scalar' },
-            locs: [{ a: 68, b: 73 }]
+            transform: {
+                type: 'pick_tuple',
+                keys: [
+                    { name: 'id', required: false },
+                    { name: 'username', required: false },
+                    { name: 'email', required: false }
+                ]
+            },
+            locs: [{ a: 51, b: 55 }]
         }
     ],
-    statement:
-        'INSERT INTO auth_user (id, username, email) VALUES (:id, :username, :email)'
+    statement: 'INSERT INTO auth_user (id, username, email) VALUES :user'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * INSERT INTO auth_user (id, username, email) VALUES (:id, :username, :email)
+ * INSERT INTO auth_user (id, username, email) VALUES :user
  * ```
  */
-export const createUser = new PreparedQuery<
-    ICreateUserParams,
-    ICreateUserResult
->(createUserIR)
+export const createUserQuery = new PreparedQuery<
+    ICreateUserQueryParams,
+    ICreateUserQueryResult
+>(createUserQueryIR)
 
-/** 'CreateOAuthAccount' parameters type */
-export interface ICreateOAuthAccountParams {
-    providerId?: string | null | void
-    providerUserId?: string | null | void
-    userId?: string | null | void
+/** 'CreateOAuthAccountQuery' parameters type */
+export interface ICreateOAuthAccountQueryParams {
+    oAuthAccount: {
+        providerId: string | null | void
+        providerUserId: string | null | void
+        userId: string | null | void
+    }
 }
 
-/** 'CreateOAuthAccount' return type */
-export type ICreateOAuthAccountResult = void
+/** 'CreateOAuthAccountQuery' return type */
+export type ICreateOAuthAccountQueryResult = void
 
-/** 'CreateOAuthAccount' query type */
-export interface ICreateOAuthAccountQuery {
-    params: ICreateOAuthAccountParams
-    result: ICreateOAuthAccountResult
+/** 'CreateOAuthAccountQuery' query type */
+export interface ICreateOAuthAccountQueryQuery {
+    params: ICreateOAuthAccountQueryParams
+    result: ICreateOAuthAccountQueryResult
 }
 
-const createOAuthAccountIR: any = {
-    usedParamSet: { providerId: true, providerUserId: true, userId: true },
+const createOAuthAccountQueryIR: any = {
+    usedParamSet: { oAuthAccount: true },
     params: [
         {
-            name: 'providerId',
+            name: 'oAuthAccount',
             required: false,
-            transform: { type: 'scalar' },
-            locs: [{ a: 75, b: 85 }]
-        },
-        {
-            name: 'providerUserId',
-            required: false,
-            transform: { type: 'scalar' },
-            locs: [{ a: 88, b: 102 }]
-        },
-        {
-            name: 'userId',
-            required: false,
-            transform: { type: 'scalar' },
-            locs: [{ a: 105, b: 111 }]
+            transform: {
+                type: 'pick_tuple',
+                keys: [
+                    { name: 'providerId', required: false },
+                    { name: 'providerUserId', required: false },
+                    { name: 'userId', required: false }
+                ]
+            },
+            locs: [{ a: 74, b: 86 }]
         }
     ],
     statement:
-        'INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES (:providerId, :providerUserId, :userId)'
+        'INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES :oAuthAccount'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES (:providerId, :providerUserId, :userId)
+ * INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES :oAuthAccount
  * ```
  */
-export const createOAuthAccount = new PreparedQuery<
-    ICreateOAuthAccountParams,
-    ICreateOAuthAccountResult
->(createOAuthAccountIR)
+export const createOAuthAccountQuery = new PreparedQuery<
+    ICreateOAuthAccountQueryParams,
+    ICreateOAuthAccountQueryResult
+>(createOAuthAccountQueryIR)
