@@ -6,7 +6,14 @@ import {
     deleteWebsite,
     getAllWebsites
 } from './controller.js'
-import { CreateWebsiteSchemaType, createWebsiteSchema } from './schemas.js'
+import {
+    CreateWebsiteSchemaType,
+    createWebsiteSchema,
+    updateWebsiteSchema,
+    UpdateWebsiteSchemaType,
+    updateWebsiteParamsSchema,
+    UpdateWebsiteParamsSchemaType
+} from './schemas.js'
 
 const commonSchema = {
     schema: {
@@ -28,7 +35,20 @@ export default async function (fastify: FastifyInstance) {
 
     fastify.get('/:id', commonSchema, getWebsiteById)
 
-    fastify.put('/:id', commonSchema, updateWebsiteById)
+    fastify.patch<{
+        Params: UpdateWebsiteParamsSchemaType
+        Body: UpdateWebsiteSchemaType
+    }>(
+        '/:id',
+        {
+            schema: {
+                params: updateWebsiteParamsSchema,
+                body: updateWebsiteSchema,
+                tags: commonSchema.schema.tags
+            }
+        },
+        updateWebsiteById
+    )
 
     fastify.delete('/:id', commonSchema, deleteWebsite)
 

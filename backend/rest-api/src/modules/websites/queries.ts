@@ -6,7 +6,7 @@ export interface ICreateWebsiteQueryParams {
     website: {
         userId: string
         title: string
-        meta_description: string | null | void
+        metaDescription: string | null | void
     }
 }
 
@@ -30,7 +30,7 @@ const createWebsiteQueryIR: any = {
                 keys: [
                     { name: 'userId', required: true },
                     { name: 'title', required: true },
-                    { name: 'meta_description', required: false }
+                    { name: 'metaDescription', required: false }
                 ]
             },
             locs: [{ a: 62, b: 69 }]
@@ -177,35 +177,35 @@ const updateWebsiteQueryIR: any = {
             name: 'title',
             required: false,
             transform: { type: 'scalar' },
-            locs: [{ a: 27, b: 32 }]
+            locs: [{ a: 36, b: 41 }]
         },
         {
             name: 'metaDescription',
             required: false,
             transform: { type: 'scalar' },
-            locs: [{ a: 54, b: 69 }]
+            locs: [{ a: 80, b: 95 }]
         },
         {
             name: 'id',
             required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 82, b: 85 }]
+            locs: [{ a: 127, b: 130 }]
         },
         {
             name: 'userId',
             required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 101, b: 108 }]
+            locs: [{ a: 146, b: 153 }]
         }
     ],
     statement:
-        'UPDATE website SET title = :title, meta_description = :metaDescription WHERE id = :id! AND user_id = :userId!'
+        'UPDATE website SET title = COALESCE(:title, title), meta_description = COALESCE(:metaDescription, meta_description) WHERE id = :id! AND user_id = :userId!'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * UPDATE website SET title = :title, meta_description = :metaDescription WHERE id = :id! AND user_id = :userId!
+ * UPDATE website SET title = COALESCE(:title, title), meta_description = COALESCE(:metaDescription, meta_description) WHERE id = :id! AND user_id = :userId!
  * ```
  */
 export const updateWebsiteQuery = new PreparedQuery<

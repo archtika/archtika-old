@@ -1,6 +1,6 @@
 /*
   @name CreateWebsiteQuery
-  @param website -> (userId!, title!, meta_description)
+  @param website -> (userId!, title!, metaDescription)
 */
 INSERT INTO website (user_id, title, meta_description) VALUES :website;
 
@@ -11,7 +11,7 @@ SELECT * FROM website WHERE user_id = :userId!;
 SELECT * FROM website WHERE id = :id! AND user_id = :userId!;
 
 /* @name UpdateWebsiteQuery */
-UPDATE website SET title = :title, meta_description = :metaDescription WHERE id = :id! AND user_id = :userId!;
+UPDATE website SET title = COALESCE(:title, title), meta_description = COALESCE(:metaDescription, meta_description) WHERE id = :id! AND user_id = :userId!;
 
 /* @name DeleteWebsiteQuery */
 DELETE FROM website WHERE id = :id! AND user_id = :userId!;
