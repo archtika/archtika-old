@@ -56,6 +56,47 @@ CREATE TABLE public.user_session (
 
 
 --
+-- Name: website; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.website (
+    id integer NOT NULL,
+    user_id character varying NOT NULL,
+    title character varying NOT NULL,
+    meta_description character varying,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone
+);
+
+
+--
+-- Name: website_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.website_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: website_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.website_id_seq OWNED BY public.website.id;
+
+
+--
+-- Name: website id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.website ALTER COLUMN id SET DEFAULT nextval('public.website_id_seq'::regclass);
+
+
+--
 -- Name: auth_user auth_user_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -104,11 +145,19 @@ ALTER TABLE ONLY public.user_session
 
 
 --
+-- Name: website website_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.website
+    ADD CONSTRAINT website_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: oauth_account oauth_account_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.oauth_account
-    ADD CONSTRAINT oauth_account_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
+    ADD CONSTRAINT oauth_account_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id) ON DELETE CASCADE;
 
 
 --
@@ -116,7 +165,15 @@ ALTER TABLE ONLY public.oauth_account
 --
 
 ALTER TABLE ONLY public.user_session
-    ADD CONSTRAINT user_session_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id);
+    ADD CONSTRAINT user_session_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id) ON DELETE CASCADE;
+
+
+--
+-- Name: website website_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.website
+    ADD CONSTRAINT website_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.auth_user(id) ON DELETE CASCADE;
 
 
 --
@@ -140,4 +197,6 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20240225131732'),
     ('20240226173510'),
     ('20240226174747'),
-    ('20240227160724');
+    ('20240227160724'),
+    ('20240229104246'),
+    ('20240229104831');

@@ -3,18 +3,12 @@ import {
     TypeBoxTypeProvider,
     TypeBoxValidatorCompiler,
 } from '@fastify/type-provider-typebox'
+import fastifyAutoload from '@fastify/autoload'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 
-import { accountRoutes } from './modules/account/account.route.js'
-
-import env from './plugins/env.js'
-import dbConnector from './plugins/postgres.js'
-import swagger from './plugins/swagger.js'
-import cookie from './plugins/cookie.js'
-import csrf from './plugins/csrf.js'
-import auth from './plugins/auth.js'
-import sensible from './plugins/sensible.js'
-import rateLimit from './plugins/rate-limit.js'
-import oAuth from './plugins/oAuth.js'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const envToLogger = {
     development: {
@@ -30,24 +24,21 @@ const envToLogger = {
     test: false,
 }
 
-export const fastify = Fastify({
+const fastify = Fastify({
     logger: envToLogger['development'] ?? true,
 })
     .withTypeProvider<TypeBoxTypeProvider>()
     .setValidatorCompiler(TypeBoxValidatorCompiler)
 
-fastify.register(env)
-fastify.register(oAuth)
-fastify.register(swagger)
-fastify.register(dbConnector)
-fastify.register(cookie)
-fastify.register(csrf, {
-    enabled: process.env.NODE_ENV === 'production',
+fastify.register(fastifyAutoload, {
+    dir: join(__dirname, 'plugins'),
 })
-fastify.register(auth)
-fastify.register(sensible)
-fastify.register(rateLimit)
 
-fastify.register(accountRoutes, { prefix: '/account' })
+fastify.register(fastifyAutoload, {
+    dir: join(__dirname, 'modules'),
+    options: Object.assign({ prefix: '/api/v1' }),
+    ignoreFilter: (path) =>
+        path.endsWith('.controller.js') || path.endsWith('.schema.js'),
+})
 
 fastify.listen({ port: 3000 })

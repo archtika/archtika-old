@@ -1,29 +1,42 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyInstance } from 'fastify'
 import {
+    viewAccountInformation,
     loginWithGithub,
     loginWithGithubCallback,
     loginWithGoogle,
     loginWithGoogleCallback,
     logout,
+    deleteAccount,
 } from './account.controller.js'
-import { getSession } from '../../utils/getSession.js'
 
-export async function accountRoutes(fastify: FastifyInstance) {
-    fastify.get('/', async (req: FastifyRequest, reply: FastifyReply) => {
-        await getSession(req, reply)
-
-        reply.send({ user: req.user, session: req.session })
-    })
-
-    fastify.get('/login/github', loginWithGithub)
-
-    fastify.get('/login/github/callback', loginWithGithubCallback)
-
-    fastify.get('/login/google', loginWithGoogle)
-
-    fastify.get('/login/google/callback', loginWithGoogleCallback)
-
-    fastify.get('/logout', logout)
-
-    fastify.log.info('Account routes registered')
+const commonSchema = {
+    schema: {
+        tags: ['account'],
+    },
 }
+
+export default async function (fastify: FastifyInstance) {
+    fastify.get('/', commonSchema, viewAccountInformation)
+
+    fastify.get('/login/github', commonSchema, loginWithGithub)
+
+    fastify.post(
+        '/login/github/callback',
+        commonSchema,
+        loginWithGithubCallback
+    )
+
+    fastify.get('/login/google', commonSchema, loginWithGoogle)
+
+    fastify.post(
+        '/login/google/callback',
+        commonSchema,
+        loginWithGoogleCallback
+    )
+
+    fastify.get('/logout', commonSchema, logout)
+
+    fastify.delete('/', commonSchema, deleteAccount)
+}
+
+export const autoPrefix = '/account'

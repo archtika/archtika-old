@@ -1,16 +1,27 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
-import { lucia } from '../../plugins/lucia.js'
 import { generateId } from 'lucia'
 import { generateCodeVerifier, generateState } from 'arctic'
+
+export async function viewAccountInformation(
+    req: FastifyRequest,
+    reply: FastifyReply
+) {
+    await req.server.lucia.getSession(req, reply)
+
+    reply.send({ user: req.user, session: req.session })
+}
 
 export async function loginWithGithub(
     req: FastifyRequest,
     reply: FastifyReply
 ) {
     const state = generateState()
-    const url = await req.server.oAuth.github.createAuthorizationURL(state, {
-        scopes: ['user:email'],
-    })
+    const url = await req.server.lucia.oAuth.github.createAuthorizationURL(
+        state,
+        {
+            scopes: ['user:email'],
+        }
+    )
 
     reply.setCookie('github_oauth_state', state, {
         path: '/',
@@ -35,7 +46,8 @@ export async function loginWithGithubCallback(
         return reply.unauthorized()
     }
 
-    const tokens = await req.server.oAuth.github.validateAuthorizationCode(code)
+    const tokens =
+        await req.server.lucia.oAuth.github.validateAuthorizationCode(code)
     const githubUserResponse = await fetch('https://api.github.com/user', {
         headers: {
             Authorization: `Bearer ${tokens.accessToken}`,
@@ -83,8 +95,13 @@ export async function loginWithGithubCallback(
             )
         }
 
-        const session = await lucia.createSession(existingUser.id, {})
-        const cookie = lucia.createSessionCookie(session.id)
+        const session = await req.server.lucia.luciaInstance.createSession(
+            existingUser.id,
+            {}
+        )
+        const cookie = req.server.lucia.luciaInstance.createSessionCookie(
+            session.id
+        )
 
         reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
@@ -102,8 +119,13 @@ export async function loginWithGithubCallback(
         ['github', githubUser.id, userId]
     )
 
-    const session = await lucia.createSession(userId, {})
-    const cookie = lucia.createSessionCookie(session.id)
+    const session = await req.server.lucia.luciaInstance.createSession(
+        userId,
+        {}
+    )
+    const cookie = req.server.lucia.luciaInstance.createSessionCookie(
+        session.id
+    )
 
     reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
@@ -116,7 +138,7 @@ export async function loginWithGoogle(
 ) {
     const state = generateState()
     const codeVerifier = generateCodeVerifier()
-    const url = await req.server.oAuth.google.createAuthorizationURL(
+    const url = await req.server.lucia.oAuth.google.createAuthorizationURL(
         state,
         codeVerifier,
         {
@@ -157,10 +179,11 @@ export async function loginWithGoogleCallback(
         return reply.unauthorized()
     }
 
-    const tokens = await req.server.oAuth.google.validateAuthorizationCode(
-        code,
-        codeVerifier
-    )
+    const tokens =
+        await req.server.lucia.oAuth.google.validateAuthorizationCode(
+            code,
+            codeVerifier
+        )
 
     const googleUserResponse = await fetch(
         'https://openidconnect.googleapis.com/v1/userinfo',
@@ -197,8 +220,13 @@ export async function loginWithGoogleCallback(
             )
         }
 
-        const session = await lucia.createSession(existingUser.id, {})
-        const cookie = lucia.createSessionCookie(session.id)
+        const session = await req.server.lucia.luciaInstance.createSession(
+            existingUser.id,
+            {}
+        )
+        const cookie = req.server.lucia.luciaInstance.createSessionCookie(
+            session.id
+        )
 
         reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
@@ -216,8 +244,13 @@ export async function loginWithGoogleCallback(
         ['google', googleUser.sub, userId]
     )
 
-    const session = await lucia.createSession(userId, {})
-    const cookie = lucia.createSessionCookie(session.id)
+    const session = await req.server.lucia.luciaInstance.createSession(
+        userId,
+        {}
+    )
+    const cookie = req.server.lucia.luciaInstance.createSessionCookie(
+        session.id
+    )
 
     reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
@@ -229,10 +262,14 @@ export async function logout(req: FastifyRequest, reply: FastifyReply) {
         return reply.unauthorized()
     }
 
-    await lucia.invalidateSession(req.session.id)
+    await req.server.lucia.luciaInstance.invalidateSession(req.session.id)
 
-    const cookie = lucia.createBlankSessionCookie()
+    const cookie = req.server.lucia.luciaInstance.createBlankSessionCookie()
     reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
     return reply.status(200).send({ message: 'Successfully logged out' })
+}
+
+export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {
+    console.log('delete account')
 }

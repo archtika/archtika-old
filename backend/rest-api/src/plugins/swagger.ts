@@ -10,6 +10,11 @@ async function swagger(fastify: FastifyInstance) {
                 title: 'Archtika API',
                 version: '1',
             },
+            tags: [
+                {
+                    name: 'account',
+                },
+            ],
         },
     })
 
