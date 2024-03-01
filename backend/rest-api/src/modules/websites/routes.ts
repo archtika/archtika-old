@@ -11,8 +11,8 @@ import {
     createWebsiteSchema,
     updateWebsiteSchema,
     UpdateWebsiteSchemaType,
-    updateWebsiteParamsSchema,
-    UpdateWebsiteParamsSchemaType
+    websiteParamsSchema,
+    WebsiteParamsSchemaType
 } from './schemas.js'
 
 const commonSchema = {
@@ -36,13 +36,13 @@ export default async function (fastify: FastifyInstance) {
     fastify.get('/:id', commonSchema, getWebsiteById)
 
     fastify.patch<{
-        Params: UpdateWebsiteParamsSchemaType
+        Params: WebsiteParamsSchemaType
         Body: UpdateWebsiteSchemaType
     }>(
         '/:id',
         {
             schema: {
-                params: updateWebsiteParamsSchema,
+                params: websiteParamsSchema,
                 body: updateWebsiteSchema,
                 tags: commonSchema.schema.tags
             }
@@ -50,7 +50,16 @@ export default async function (fastify: FastifyInstance) {
         updateWebsiteById
     )
 
-    fastify.delete('/:id', commonSchema, deleteWebsite)
+    fastify.delete<{ Params: WebsiteParamsSchemaType }>(
+        '/:id',
+        {
+            schema: {
+                params: websiteParamsSchema,
+                tags: commonSchema.schema.tags
+            }
+        },
+        deleteWebsite
+    )
 
     fastify.get('/', commonSchema, getAllWebsites)
 }

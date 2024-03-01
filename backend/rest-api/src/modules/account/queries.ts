@@ -26,16 +26,16 @@ const findExistingUserQueryIR: any = {
             name: 'email',
             required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 38, b: 44 }]
+            locs: [{ a: 43, b: 49 }]
         }
     ],
-    statement: 'SELECT * FROM auth_user WHERE email = :email!'
+    statement: 'SELECT * FROM auth.auth_user WHERE email = :email!'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT * FROM auth_user WHERE email = :email!
+ * SELECT * FROM auth.auth_user WHERE email = :email!
  * ```
  */
 export const findExistingUserQuery = new PreparedQuery<
@@ -69,23 +69,23 @@ const findExistingOAuthAccountQueryIR: any = {
             name: 'providerId',
             required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 48, b: 59 }]
+            locs: [{ a: 53, b: 64 }]
         },
         {
             name: 'providerUserId',
             required: true,
             transform: { type: 'scalar' },
-            locs: [{ a: 84, b: 99 }]
+            locs: [{ a: 89, b: 104 }]
         }
     ],
     statement:
-        'SELECT * FROM oauth_account WHERE provider_id = :providerId! AND provider_user_id = :providerUserId!'
+        'SELECT * FROM auth.oauth_account WHERE provider_id = :providerId! AND provider_user_id = :providerUserId!'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * SELECT * FROM oauth_account WHERE provider_id = :providerId! AND provider_user_id = :providerUserId!
+ * SELECT * FROM auth.oauth_account WHERE provider_id = :providerId! AND provider_user_id = :providerUserId!
  * ```
  */
 export const findExistingOAuthAccountQuery = new PreparedQuery<
@@ -125,16 +125,16 @@ const createUserQueryIR: any = {
                     { name: 'email', required: false }
                 ]
             },
-            locs: [{ a: 51, b: 55 }]
+            locs: [{ a: 56, b: 60 }]
         }
     ],
-    statement: 'INSERT INTO auth_user (id, username, email) VALUES :user'
+    statement: 'INSERT INTO auth.auth_user (id, username, email) VALUES :user'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * INSERT INTO auth_user (id, username, email) VALUES :user
+ * INSERT INTO auth.auth_user (id, username, email) VALUES :user
  * ```
  */
 export const createUserQuery = new PreparedQuery<
@@ -174,17 +174,17 @@ const createOAuthAccountQueryIR: any = {
                     { name: 'userId', required: false }
                 ]
             },
-            locs: [{ a: 74, b: 86 }]
+            locs: [{ a: 79, b: 91 }]
         }
     ],
     statement:
-        'INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES :oAuthAccount'
+        'INSERT INTO auth.oauth_account (provider_id, provider_user_id, user_id) VALUES :oAuthAccount'
 }
 
 /**
  * Query generated from SQL:
  * ```
- * INSERT INTO oauth_account (provider_id, provider_user_id, user_id) VALUES :oAuthAccount
+ * INSERT INTO auth.oauth_account (provider_id, provider_user_id, user_id) VALUES :oAuthAccount
  * ```
  */
 export const createOAuthAccountQuery = new PreparedQuery<

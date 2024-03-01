@@ -14,10 +14,8 @@ export const updateWebsiteSchema = Type.Object({
 
 export type UpdateWebsiteSchemaType = Static<typeof updateWebsiteSchema>
 
-export const updateWebsiteParamsSchema = Type.Object({
+export const websiteParamsSchema = Type.Object({
     id: Type.Integer({ minimum: 1 })
 })
 
-export type UpdateWebsiteParamsSchemaType = Static<
-    typeof updateWebsiteParamsSchema
->
+export type WebsiteParamsSchemaType = Static<typeof websiteParamsSchema>

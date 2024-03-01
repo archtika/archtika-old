@@ -12,8 +12,8 @@ const pool = new pg.Pool({
 })
 
 const adapter = new NodePostgresAdapter(pool, {
-    user: 'auth_user',
-    session: 'user_session'
+    user: 'auth.auth_user',
+    session: 'auth.user_session'
 })
 
 const lucia = new Lucia(adapter, {
