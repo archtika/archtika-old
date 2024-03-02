@@ -1,4 +1,4 @@
-/** Types generated for queries found in "src/modules/websites/pages/queries.sql" */
+/** Types generated for queries found in "src/modules/pages/queries.sql" */
 import { PreparedQuery } from '@pgtyped/runtime'
 
 /** 'CreatePageQuery' parameters type */

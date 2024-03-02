@@ -5,16 +5,11 @@ import fastifyPlugin from 'fastify-plugin'
 
 async function swagger(fastify: FastifyInstance) {
     fastify.register(fastifySwagger, {
-        swagger: {
+        openapi: {
             info: {
                 title: 'Archtika API',
                 version: '1'
-            },
-            tags: [
-                {
-                    name: 'account'
-                }
-            ]
+            }
         }
     })
 

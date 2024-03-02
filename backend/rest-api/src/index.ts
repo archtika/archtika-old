@@ -25,7 +25,14 @@ const envToLogger = {
 }
 
 const fastify = Fastify({
-    logger: envToLogger['development'] ?? true
+    logger: envToLogger['development'] ?? true,
+    ajv: {
+        plugins: [
+            function (ajv: any) {
+                ajv.addKeyword({ keyword: 'x-examples' })
+            }
+        ]
+    }
 })
     .withTypeProvider<TypeBoxTypeProvider>()
     .setValidatorCompiler(TypeBoxValidatorCompiler)

@@ -116,7 +116,9 @@ CREATE TABLE components.component (
     page_id integer NOT NULL,
     custom_style character varying,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp with time zone
+    updated_at timestamp with time zone,
+    content jsonb,
+    asset_id integer
 );
 
 
@@ -150,74 +152,6 @@ CREATE TABLE components.component_position (
     grid_y integer NOT NULL,
     grid_width integer NOT NULL,
     grid_height integer NOT NULL
-);
-
-
---
--- Name: component_type_accordion; Type: TABLE; Schema: components; Owner: -
---
-
-CREATE TABLE components.component_type_accordion (
-    component_id integer NOT NULL,
-    title character varying NOT NULL,
-    content character varying NOT NULL,
-    isopen boolean DEFAULT false
-);
-
-
---
--- Name: component_type_audio; Type: TABLE; Schema: components; Owner: -
---
-
-CREATE TABLE components.component_type_audio (
-    component_id integer NOT NULL,
-    asset_id integer NOT NULL,
-    alt_text character varying NOT NULL,
-    is_looped boolean DEFAULT false
-);
-
-
---
--- Name: component_type_button; Type: TABLE; Schema: components; Owner: -
---
-
-CREATE TABLE components.component_type_button (
-    component_id integer NOT NULL,
-    label character varying NOT NULL,
-    hyperlink character varying NOT NULL
-);
-
-
---
--- Name: component_type_image; Type: TABLE; Schema: components; Owner: -
---
-
-CREATE TABLE components.component_type_image (
-    component_id integer NOT NULL,
-    asset_id integer NOT NULL,
-    alt_text character varying NOT NULL
-);
-
-
---
--- Name: component_type_text; Type: TABLE; Schema: components; Owner: -
---
-
-CREATE TABLE components.component_type_text (
-    component_id integer NOT NULL,
-    content character varying NOT NULL
-);
-
-
---
--- Name: component_type_video; Type: TABLE; Schema: components; Owner: -
---
-
-CREATE TABLE components.component_type_video (
-    component_id integer NOT NULL,
-    asset_id integer NOT NULL,
-    alt_text character varying NOT NULL,
-    is_looped boolean DEFAULT false
 );
 
 
@@ -424,54 +358,6 @@ ALTER TABLE ONLY components.component_position
 
 
 --
--- Name: component_type_accordion component_type_accordion_pkey; Type: CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_accordion
-    ADD CONSTRAINT component_type_accordion_pkey PRIMARY KEY (component_id);
-
-
---
--- Name: component_type_audio component_type_audio_pkey; Type: CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_audio
-    ADD CONSTRAINT component_type_audio_pkey PRIMARY KEY (component_id);
-
-
---
--- Name: component_type_button component_type_button_pkey; Type: CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_button
-    ADD CONSTRAINT component_type_button_pkey PRIMARY KEY (component_id);
-
-
---
--- Name: component_type_image component_type_image_pkey; Type: CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_image
-    ADD CONSTRAINT component_type_image_pkey PRIMARY KEY (component_id);
-
-
---
--- Name: component_type_text component_type_text_pkey; Type: CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_text
-    ADD CONSTRAINT component_type_text_pkey PRIMARY KEY (component_id);
-
-
---
--- Name: component_type_video component_type_video_pkey; Type: CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_video
-    ADD CONSTRAINT component_type_video_pkey PRIMARY KEY (component_id);
-
-
---
 -- Name: media_asset media_asset_pkey; Type: CONSTRAINT; Schema: media; Owner: -
 --
 
@@ -528,6 +414,14 @@ ALTER TABLE ONLY auth.user_session
 
 
 --
+-- Name: component component_asset_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
+--
+
+ALTER TABLE ONLY components.component
+    ADD CONSTRAINT component_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES media.media_asset(id);
+
+
+--
 -- Name: component component_page_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
 --
 
@@ -541,78 +435,6 @@ ALTER TABLE ONLY components.component
 
 ALTER TABLE ONLY components.component_position
     ADD CONSTRAINT component_position_component_id_fkey FOREIGN KEY (component_id) REFERENCES components.component(id) ON DELETE CASCADE;
-
-
---
--- Name: component_type_accordion component_type_accordion_component_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_accordion
-    ADD CONSTRAINT component_type_accordion_component_id_fkey FOREIGN KEY (component_id) REFERENCES components.component(id) ON DELETE CASCADE;
-
-
---
--- Name: component_type_audio component_type_audio_asset_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_audio
-    ADD CONSTRAINT component_type_audio_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES media.media_asset(id);
-
-
---
--- Name: component_type_audio component_type_audio_component_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_audio
-    ADD CONSTRAINT component_type_audio_component_id_fkey FOREIGN KEY (component_id) REFERENCES components.component(id) ON DELETE CASCADE;
-
-
---
--- Name: component_type_button component_type_button_component_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_button
-    ADD CONSTRAINT component_type_button_component_id_fkey FOREIGN KEY (component_id) REFERENCES components.component(id) ON DELETE CASCADE;
-
-
---
--- Name: component_type_image component_type_image_asset_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_image
-    ADD CONSTRAINT component_type_image_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES media.media_asset(id);
-
-
---
--- Name: component_type_image component_type_image_component_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_image
-    ADD CONSTRAINT component_type_image_component_id_fkey FOREIGN KEY (component_id) REFERENCES components.component(id) ON DELETE CASCADE;
-
-
---
--- Name: component_type_text component_type_text_component_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_text
-    ADD CONSTRAINT component_type_text_component_id_fkey FOREIGN KEY (component_id) REFERENCES components.component(id) ON DELETE CASCADE;
-
-
---
--- Name: component_type_video component_type_video_asset_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_video
-    ADD CONSTRAINT component_type_video_asset_id_fkey FOREIGN KEY (asset_id) REFERENCES media.media_asset(id);
-
-
---
--- Name: component_type_video component_type_video_component_id_fkey; Type: FK CONSTRAINT; Schema: components; Owner: -
---
-
-ALTER TABLE ONLY components.component_type_video
-    ADD CONSTRAINT component_type_video_component_id_fkey FOREIGN KEY (component_id) REFERENCES components.component(id) ON DELETE CASCADE;
 
 
 --
@@ -665,4 +487,6 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20240229104831'),
     ('20240301071938'),
     ('20240301120121'),
-    ('20240301121311');
+    ('20240301121311'),
+    ('20240302150715'),
+    ('20240302154258');

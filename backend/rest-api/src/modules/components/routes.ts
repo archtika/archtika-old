@@ -1,4 +1,15 @@
 import { FastifyInstance } from 'fastify'
+import {
+    componentParamsSchema,
+    ComponentParamsSchemaType,
+    componentSingleParamsSchema,
+    ComponentSingleParamsSchemaType,
+    createComponentSchema,
+    CreateComponentSchemaType,
+    updateComponentSchema,
+    UpdateComponentSchemaType
+} from './schemas.js'
+import { createComponent, findComponentById } from './controller.js'
 
 const commonSchema = {
     schema: {
@@ -7,31 +18,42 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.post(
+    fastify.post<{
+        Params: ComponentSingleParamsSchemaType
+        Body: CreateComponentSchemaType
+    }>(
         '/:id/components',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: componentSingleParamsSchema,
+                body: createComponentSchema
             }
         },
-        async () => {}
+        createComponent
     )
 
-    fastify.get(
+    fastify.get<{ Params: ComponentParamsSchemaType }>(
         '/:pageId/components/:componentId',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: componentParamsSchema
             }
         },
-        async () => {}
+        findComponentById
     )
 
-    fastify.patch(
+    fastify.patch<{
+        Params: ComponentParamsSchemaType
+        Body: UpdateComponentSchemaType
+    }>(
         '/:pageId/components/:componentId',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: componentParamsSchema,
+                body: updateComponentSchema
             }
         },
         async () => {}
