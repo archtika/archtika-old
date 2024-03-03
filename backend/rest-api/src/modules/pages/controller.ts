@@ -1,11 +1,3 @@
-import { findWebsiteByIdQuery } from '../websites/queries.js'
-import {
-    findAllPagesQuery,
-    findPageByIdQuery,
-    updatePageQuery,
-    deletePageQuery,
-    createPageQuery
-} from './queries.js'
 import {
     CreatePageSchemaType,
     UpdatePageSchemaType,
@@ -30,17 +22,15 @@ export async function createPage(
     const { websiteId } = req.params
     const { route, title, metaDescription } = req.body
 
-    await createPageQuery.run(
-        {
-            page: {
-                websiteId,
-                route: `/${route}`,
-                title,
-                metaDescription
-            }
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .insertInto('website_structure.page')
+        .values({
+            website_id: websiteId,
+            route: `/${route}`,
+            title,
+            meta_description: metaDescription
+        })
+        .execute()
 
     return reply.status(201).send({ message: 'Page created' })
 }
@@ -57,12 +47,10 @@ export async function getPageById(
 
     const { pageId, websiteId } = req.params
 
-    const page = (
-        await findPageByIdQuery.run(
-            { id: pageId, websiteId },
-            req.server.pg.pool
-        )
-    )[0]
+    const page = req.server.kysely.db
+        .selectFrom('website_structure.page')
+        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
+        .executeTakeFirst()
 
     if (!page) {
         return reply
@@ -89,12 +77,10 @@ export async function updatePageById(
     const { pageId, websiteId } = req.params
     const { route, title, metaDescription } = req.body
 
-    const page = (
-        await findPageByIdQuery.run(
-            { id: pageId, websiteId },
-            req.server.pg.pool
-        )
-    )[0]
+    const page = await req.server.kysely.db
+        .selectFrom('website_structure.page')
+        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
+        .executeTakeFirst()
 
     if (!page) {
         return reply
@@ -102,10 +88,11 @@ export async function updatePageById(
             .send({ message: 'Page not found for that website' })
     }
 
-    await updatePageQuery.run(
-        { route, title, metaDescription, id: pageId, websiteId },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .updateTable('website_structure.page')
+        .set({ route: `/${route}`, title, meta_description: metaDescription })
+        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
+        .execute()
 
     return reply.status(200).send({ message: 'Page updated' })
 }
@@ -122,12 +109,10 @@ export async function deletePage(
 
     const { pageId, websiteId } = req.params
 
-    const page = (
-        await findPageByIdQuery.run(
-            { id: pageId, websiteId },
-            req.server.pg.pool
-        )
-    )[0]
+    const page = await req.server.kysely.db
+        .selectFrom('website_structure.page')
+        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
+        .executeTakeFirst()
 
     if (!page) {
         return reply
@@ -135,13 +120,10 @@ export async function deletePage(
             .send({ message: 'Page not found for that website' })
     }
 
-    await deletePageQuery.run(
-        {
-            id: pageId,
-            websiteId
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .deleteFrom('website_structure.page')
+        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
+        .execute()
 
     return reply.status(200).send({ message: 'Page deleted' })
 }
@@ -158,21 +140,19 @@ export async function getAllPages(
 
     const { websiteId } = req.params
 
-    const website = (
-        await findWebsiteByIdQuery.run(
-            { id: websiteId, userId: req.user.id },
-            req.server.pg.pool
-        )
-    )[0]
+    const website = await req.server.kysely.db
+        .selectFrom('website_structure.website')
+        .where((eb) => eb.and({ id: websiteId, userId: req.user?.id }))
+        .executeTakeFirst()
 
     if (!website) {
         return reply.status(404).send({ message: 'Website not found' })
     }
 
-    const allPages = await findAllPagesQuery.run(
-        { websiteId },
-        req.server.pg.pool
-    )
+    const allPages = await req.server.kysely.db
+        .selectFrom('website_structure.page')
+        .where((eb) => eb.and({ website_id: websiteId }))
+        .execute()
 
     return allPages
 }

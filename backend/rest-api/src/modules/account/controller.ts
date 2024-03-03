@@ -1,12 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { generateId } from 'lucia'
 import { generateCodeVerifier, generateState } from 'arctic'
-import {
-    findExistingUserQuery,
-    findExistingOAuthAccountQuery,
-    createUserQuery,
-    createOAuthAccountQuery
-} from './queries.js'
 
 export async function viewAccountInformation(
     req: FastifyRequest,
@@ -14,12 +8,15 @@ export async function viewAccountInformation(
 ) {
     await req.server.lucia.getSession(req, reply)
 
-    const user = (
-        await findExistingUserQuery.run(
-            { email: 'thilo.hohlt@tutanota.com' },
-            req.server.pg.pool
-        )
-    )[0]
+    if (!req.user) {
+        return reply.status(401).send({ message: 'Unauthorized' })
+    }
+
+    const user = await req.server.kysely.db
+        .selectFrom('auth.auth_user')
+        .selectAll()
+        .where('id', '=', req.user.id)
+        .execute()
 
     return reply.send({ user })
 }
@@ -87,35 +84,29 @@ export async function loginWithGithubCallback(
         return reply.unauthorized('Primary email not verified')
     }
 
-    const existingUser = (
-        await findExistingUserQuery.run(
-            { email: primaryEmail.email },
-            req.server.pg.pool
-        )
-    )[0]
+    const existingUser = await req.server.kysely.db
+        .selectFrom('auth.auth_user')
+        .selectAll()
+        .where('email', '=', primaryEmail.email)
+        .executeTakeFirst()
 
     if (existingUser) {
-        const existingOauthAccount = (
-            await findExistingOAuthAccountQuery.run(
-                {
-                    providerId: 'github',
-                    providerUserId: githubUser.id
-                },
-                req.server.pg.pool
-            )
-        )[0]
+        const existingOauthAccount = await req.server.kysely.db
+            .selectFrom('auth.oauth_account')
+            .selectAll()
+            .where('provider_id', '=', 'github')
+            .where('provider_user_id', '=', githubUser.id)
+            .executeTakeFirst()
 
         if (!existingOauthAccount) {
-            await createOAuthAccountQuery.run(
-                {
-                    oAuthAccount: {
-                        providerId: 'github',
-                        providerUserId: githubUser.id,
-                        userId: existingUser.id
-                    }
-                },
-                req.server.pg.pool
-            )
+            await req.server.kysely.db
+                .insertInto('auth.oauth_account')
+                .values({
+                    provider_id: 'github',
+                    provider_user_id: githubUser.id,
+                    user_id: existingUser.id
+                })
+                .execute()
         }
 
         const session = await req.server.lucia.luciaInstance.createSession(
@@ -133,26 +124,22 @@ export async function loginWithGithubCallback(
 
     const userId = generateId(20)
 
-    await createUserQuery.run(
-        {
-            user: {
-                id: userId,
-                username: githubUser.login,
-                email: primaryEmail.email
-            }
-        },
-        req.server.pg.pool
-    )
-    await createOAuthAccountQuery.run(
-        {
-            oAuthAccount: {
-                providerId: 'github',
-                providerUserId: githubUser.id,
-                userId: userId
-            }
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .insertInto('auth.auth_user')
+        .values({
+            id: userId,
+            username: githubUser.login,
+            email: primaryEmail.email
+        })
+        .execute()
+    await req.server.kysely.db
+        .insertInto('auth.oauth_account')
+        .values({
+            provider_id: 'github',
+            provider_user_id: githubUser.id,
+            user_id: userId
+        })
+        .execute()
 
     const session = await req.server.lucia.luciaInstance.createSession(
         userId,
@@ -234,35 +221,29 @@ export async function loginWithGoogleCallback(
         return reply.unauthorized('Email not verified')
     }
 
-    const existingUser = (
-        await findExistingUserQuery.run(
-            { email: googleUser.email },
-            req.server.pg.pool
-        )
-    )[0]
+    const existingUser = await req.server.kysely.db
+        .selectFrom('auth.auth_user')
+        .selectAll()
+        .where('email', '=', googleUser.email)
+        .executeTakeFirst()
 
     if (existingUser) {
-        const existingOauthAccount = (
-            await findExistingOAuthAccountQuery.run(
-                {
-                    providerId: 'google',
-                    providerUserId: googleUser.sub
-                },
-                req.server.pg.pool
-            )
-        )[0]
+        const existingOauthAccount = await req.server.kysely.db
+            .selectFrom('auth.oauth_account')
+            .selectAll()
+            .where('provider_id', '=', 'google')
+            .where('provider_user_id', '=', googleUser.sub)
+            .execute()
 
         if (!existingOauthAccount) {
-            await createOAuthAccountQuery.run(
-                {
-                    oAuthAccount: {
-                        providerId: 'google',
-                        providerUserId: googleUser.sub,
-                        userId: existingUser.id
-                    }
-                },
-                req.server.pg.pool
-            )
+            await req.server.kysely.db
+                .insertInto('auth.oauth_account')
+                .values({
+                    provider_id: 'google',
+                    provider_user_id: googleUser.sub,
+                    user_id: existingUser.id
+                })
+                .execute()
         }
 
         const session = await req.server.lucia.luciaInstance.createSession(
@@ -280,26 +261,23 @@ export async function loginWithGoogleCallback(
 
     const userId = generateId(20)
 
-    await createUserQuery.run(
-        {
-            user: {
-                id: userId,
-                username: googleUser.name,
-                email: googleUser.email
-            }
-        },
-        req.server.pg.pool
-    )
-    await createOAuthAccountQuery.run(
-        {
-            oAuthAccount: {
-                providerId: 'google',
-                providerUserId: googleUser.sub,
-                userId: userId
-            }
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .insertInto('auth.auth_user')
+        .values({
+            id: userId,
+            username: googleUser.name,
+            email: googleUser.email
+        })
+        .execute()
+
+    await req.server.kysely.db
+        .insertInto('auth.oauth_account')
+        .values({
+            provider_id: 'google',
+            provider_user_id: googleUser.sub,
+            user_id: userId
+        })
+        .execute()
 
     const session = await req.server.lucia.luciaInstance.createSession(
         userId,
@@ -315,8 +293,10 @@ export async function loginWithGoogleCallback(
 }
 
 export async function logout(req: FastifyRequest, reply: FastifyReply) {
-    if (!req.session) {
-        return reply.unauthorized()
+    await req.server.lucia.getSession(req, reply)
+
+    if (!req.user || !req.session) {
+        return reply.status(401).send({ message: 'Unauthorized' })
     }
 
     await req.server.lucia.luciaInstance.invalidateSession(req.session.id)
@@ -328,5 +308,16 @@ export async function logout(req: FastifyRequest, reply: FastifyReply) {
 }
 
 export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {
-    console.log('test')
+    await req.server.lucia.getSession(req, reply)
+
+    if (!req.user || !req.session) {
+        return reply.status(401).send({ message: 'Unauthorized' })
+    }
+
+    await req.server.kysely.db
+        .deleteFrom('auth.auth_user')
+        .where('id', '=', req.user.id)
+        .execute()
+
+    return reply.status(200).send({ message: 'User deleted' })
 }

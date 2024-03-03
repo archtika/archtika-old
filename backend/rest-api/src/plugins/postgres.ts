@@ -8,4 +8,6 @@ async function dbConnector(fastify: FastifyInstance) {
     })
 }
 
-export default fastifyPlugin(dbConnector)
+export default fastifyPlugin(dbConnector, {
+    name: 'postgres'
+})

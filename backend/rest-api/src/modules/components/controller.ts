@@ -5,11 +5,6 @@ import {
     ComponentParamsSchemaType,
     UpdateComponentSchemaType
 } from './schemas.js'
-import {
-    createComponentQuery,
-    findComponentByIdQuery,
-    updateComponentQuery
-} from './queries.js'
 
 export async function createComponent(
     req: FastifyRequest<{
@@ -33,17 +28,15 @@ export async function createComponent(
         assetId = req.body.assetId
     }
 
-    await createComponentQuery.run(
-        {
-            component: {
-                type,
-                pageId: id,
-                content,
-                assetId
-            }
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .insertInto('components.component')
+        .values({
+            type,
+            page_id: id,
+            content: JSON.stringify(content),
+            asset_id: assetId
+        })
+        .execute()
 
     return reply.send('Component created successfully')
 }
@@ -60,12 +53,10 @@ export async function findComponentById(
 
     const { pageId, componentId } = req.params
 
-    const component = (
-        await findComponentByIdQuery.run(
-            { pageId, componentId },
-            req.server.pg.pool
-        )
-    )[0]
+    const component = await req.server.kysely.db
+        .selectFrom('components.component')
+        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
+        .executeTakeFirst()
 
     if (!component) {
         return reply
@@ -98,12 +89,10 @@ export async function updateComponentById(
         assetId = req.body.assetId
     }
 
-    const component = (
-        await findComponentByIdQuery.run(
-            { pageId, componentId },
-            req.server.pg.pool
-        )
-    )[0]
+    const component = await req.server.kysely.db
+        .selectFrom('components.component')
+        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
+        .executeTakeFirst()
 
     if (!component) {
         return reply
@@ -111,15 +100,11 @@ export async function updateComponentById(
             .send({ message: 'Component not found for that page' })
     }
 
-    await updateComponentQuery.run(
-        {
-            content,
-            pageId,
-            componentId,
-            assetId
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .updateTable('components.component')
+        .set({ content: JSON.stringify(content), asset_id: assetId })
+        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
+        .execute()
 
     return reply.status(200).send({ message: 'Component updated' })
 }

@@ -1,12 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import {
-    findWebsiteByIdQuery,
-    findAllWebsitesQuery,
-    createWebsiteQuery,
-    deleteWebsiteQuery,
-    updateWebsiteQuery
-} from './queries.js'
-import {
     CreateWebsiteSchemaType,
     UpdateWebsiteSchemaType,
     WebsiteParamsSchemaType
@@ -24,16 +17,14 @@ export async function createWebsite(
 
     const { title, metaDescription } = req.body
 
-    await createWebsiteQuery.run(
-        {
-            website: {
-                userId: req.user.id,
-                title,
-                metaDescription
-            }
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .insertInto('website_structure.website')
+        .values({
+            user_id: req.user.id,
+            title,
+            meta_description: metaDescription
+        })
+        .execute()
 
     return reply.status(201).send({ message: 'Website created' })
 }
@@ -50,12 +41,10 @@ export async function getWebsiteById(
 
     const { id } = req.params
 
-    const website = (
-        await findWebsiteByIdQuery.run(
-            { id, userId: req.user.id },
-            req.server.pg.pool
-        )
-    )[0]
+    const website = req.server.kysely.db
+        .selectFrom('website_structure.website')
+        .where((eb) => eb.and({ id, user_id: req.user?.id }))
+        .executeTakeFirst()
 
     if (!website) {
         return reply.status(404).send({ message: 'Website not found' })
@@ -80,26 +69,20 @@ export async function updateWebsiteById(
     const { id } = req.params
     const { title, metaDescription } = req.body
 
-    const website = (
-        await findWebsiteByIdQuery.run(
-            { id, userId: req.user.id },
-            req.server.pg.pool
-        )
-    )[0]
+    const website = req.server.kysely.db
+        .selectFrom('website_structure.website')
+        .where((eb) => eb.and({ id, user_id: req.user?.id }))
+        .executeTakeFirst()
 
     if (!website) {
         return reply.status(404).send({ message: 'Website not found' })
     }
 
-    updateWebsiteQuery.run(
-        {
-            title,
-            metaDescription,
-            id,
-            userId: req.user.id
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .updateTable('website_structure.website')
+        .set({ title, meta_description: metaDescription })
+        .where((eb) => eb.and({ id, user_id: req.user?.id }))
+        .execute()
 
     return reply.status(200).send({ message: 'Website updated' })
 }
@@ -116,24 +99,19 @@ export async function deleteWebsite(
 
     const { id } = req.params
 
-    const website = (
-        await findWebsiteByIdQuery.run(
-            { id, userId: req.user.id },
-            req.server.pg.pool
-        )
-    )[0]
+    const website = req.server.kysely.db
+        .selectFrom('website_structure.website')
+        .where((eb) => eb.and({ id, user_id: req.user?.id }))
+        .executeTakeFirst()
 
     if (!website) {
         return reply.status(404).send({ message: 'Website not found' })
     }
 
-    await deleteWebsiteQuery.run(
-        {
-            id,
-            userId: req.user.id
-        },
-        req.server.pg.pool
-    )
+    await req.server.kysely.db
+        .deleteFrom('website_structure.website')
+        .where((eb) => eb.and({ id, user_id: req.user?.id }))
+        .execute()
 
     return reply.status(200).send({ message: 'Website deleted' })
 }
@@ -145,10 +123,10 @@ export async function getAllWebsites(req: FastifyRequest, reply: FastifyReply) {
         return reply.status(401).send({ message: 'Unauthorized' })
     }
 
-    const allWebsites = await findAllWebsitesQuery.run(
-        { userId: req.user.id },
-        req.server.pg.pool
-    )
+    const allWebsites = req.server.kysely.db
+        .selectFrom('website_structure.website')
+        .where('user_id', '=', req.user.id)
+        .execute()
 
     return allWebsites
 }

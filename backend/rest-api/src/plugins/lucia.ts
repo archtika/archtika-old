@@ -6,6 +6,8 @@ import { GitHub, Google } from 'arctic'
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 import { verifyRequestOrigin } from 'lucia'
+import { Kysely } from 'kysely'
+import { DB } from 'kysely-codegen'
 
 const pool = new pg.Pool({
     connectionString: 'postgres://postgres@localhost:15432/archtika'
@@ -138,6 +140,9 @@ declare module 'fastify' {
                 req: FastifyRequest,
                 reply: FastifyReply
             ) => Promise<Session>
+        }
+        kysely: {
+            db: Kysely<DB>
         }
     }
     interface FastifyRequest {
