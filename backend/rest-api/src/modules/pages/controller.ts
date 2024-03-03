@@ -20,10 +20,10 @@ export async function createPage(
     }
 
     const { websiteId } = req.params
-    const { route, title, metaDescription } = req.body
+    const { route, title = '', metaDescription } = req.body
 
     await req.server.kysely.db
-        .insertInto('website_structure.page')
+        .insertInto('structure.page')
         .values({
             website_id: websiteId,
             route: `/${route}`,
@@ -47,8 +47,9 @@ export async function getPageById(
 
     const { pageId, websiteId } = req.params
 
-    const page = req.server.kysely.db
-        .selectFrom('website_structure.page')
+    const page = await req.server.kysely.db
+        .selectFrom('structure.page')
+        .selectAll()
         .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
         .executeTakeFirst()
 
@@ -78,7 +79,8 @@ export async function updatePageById(
     const { route, title, metaDescription } = req.body
 
     const page = await req.server.kysely.db
-        .selectFrom('website_structure.page')
+        .selectFrom('structure.page')
+        .selectAll()
         .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
         .executeTakeFirst()
 
@@ -89,7 +91,7 @@ export async function updatePageById(
     }
 
     await req.server.kysely.db
-        .updateTable('website_structure.page')
+        .updateTable('structure.page')
         .set({ route: `/${route}`, title, meta_description: metaDescription })
         .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
         .execute()
@@ -110,7 +112,8 @@ export async function deletePage(
     const { pageId, websiteId } = req.params
 
     const page = await req.server.kysely.db
-        .selectFrom('website_structure.page')
+        .selectFrom('structure.page')
+        .selectAll()
         .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
         .executeTakeFirst()
 
@@ -121,7 +124,7 @@ export async function deletePage(
     }
 
     await req.server.kysely.db
-        .deleteFrom('website_structure.page')
+        .deleteFrom('structure.page')
         .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
         .execute()
 
@@ -141,8 +144,9 @@ export async function getAllPages(
     const { websiteId } = req.params
 
     const website = await req.server.kysely.db
-        .selectFrom('website_structure.website')
-        .where((eb) => eb.and({ id: websiteId, userId: req.user?.id }))
+        .selectFrom('structure.website')
+        .selectAll()
+        .where((eb) => eb.and({ id: websiteId, user_id: req.user?.id }))
         .executeTakeFirst()
 
     if (!website) {
@@ -150,7 +154,8 @@ export async function getAllPages(
     }
 
     const allPages = await req.server.kysely.db
-        .selectFrom('website_structure.page')
+        .selectFrom('structure.page')
+        .selectAll()
         .where((eb) => eb.and({ website_id: websiteId }))
         .execute()
 

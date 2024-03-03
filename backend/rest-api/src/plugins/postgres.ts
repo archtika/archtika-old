@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify'
 
 async function dbConnector(fastify: FastifyInstance) {
     fastify.register(fastifyPostgres, {
-        connectionString: 'postgres://postgres@localhost:15432/archtika'
+        connectionString: fastify.config.DATABASE_URL
     })
 }
 

@@ -55,6 +55,7 @@ export async function findComponentById(
 
     const component = await req.server.kysely.db
         .selectFrom('components.component')
+        .selectAll()
         .where((eb) => eb.and({ page_id: pageId, id: componentId }))
         .executeTakeFirst()
 
@@ -91,6 +92,7 @@ export async function updateComponentById(
 
     const component = await req.server.kysely.db
         .selectFrom('components.component')
+        .selectAll()
         .where((eb) => eb.and({ page_id: pageId, id: componentId }))
         .executeTakeFirst()
 
@@ -107,4 +109,69 @@ export async function updateComponentById(
         .execute()
 
     return reply.status(200).send({ message: 'Component updated' })
+}
+
+export async function deleteComponent(
+    req: FastifyRequest<{
+        Params: ComponentParamsSchemaType
+    }>,
+    reply: FastifyReply
+) {
+    await req.server.lucia.getSession(req, reply)
+
+    if (!req.user) {
+        return reply.status(401).send({ message: 'Unauthorized' })
+    }
+
+    const { pageId, componentId } = req.params
+
+    const component = await req.server.kysely.db
+        .selectFrom('components.component')
+        .selectAll()
+        .where((eb) => eb.and({ id: componentId, page_id: pageId }))
+        .executeTakeFirst()
+
+    if (!component) {
+        return reply
+            .status(404)
+            .send({ message: 'Component not found for that page' })
+    }
+
+    await req.server.kysely.db
+        .deleteFrom('components.component')
+        .where((eb) => eb.and({ id: componentId, page_id: pageId }))
+        .execute()
+
+    return reply.status(200).send({ message: 'Component deleted' })
+}
+
+export async function getAllComponents(
+    req: FastifyRequest<{ Params: ComponentSingleParamsSchemaType }>,
+    reply: FastifyReply
+) {
+    await req.server.lucia.getSession(req, reply)
+
+    if (!req.user) {
+        return reply.status(401).send({ message: 'Unauthorized' })
+    }
+
+    const { id } = req.params
+
+    const page = await req.server.kysely.db
+        .selectFrom('structure.page')
+        .selectAll()
+        .where((eb) => eb.and({ id }))
+        .executeTakeFirst()
+
+    if (!page) {
+        return reply.status(404).send({ message: 'Page not found' })
+    }
+
+    const allComponents = await req.server.kysely.db
+        .selectFrom('components.component')
+        .selectAll()
+        .where((eb) => eb.and({ page_id: id }))
+        .execute()
+
+    return allComponents
 }

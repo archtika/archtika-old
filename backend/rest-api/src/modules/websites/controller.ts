@@ -18,7 +18,7 @@ export async function createWebsite(
     const { title, metaDescription } = req.body
 
     await req.server.kysely.db
-        .insertInto('website_structure.website')
+        .insertInto('structure.website')
         .values({
             user_id: req.user.id,
             title,
@@ -41,8 +41,9 @@ export async function getWebsiteById(
 
     const { id } = req.params
 
-    const website = req.server.kysely.db
-        .selectFrom('website_structure.website')
+    const website = await req.server.kysely.db
+        .selectFrom('structure.website')
+        .selectAll()
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .executeTakeFirst()
 
@@ -69,8 +70,9 @@ export async function updateWebsiteById(
     const { id } = req.params
     const { title, metaDescription } = req.body
 
-    const website = req.server.kysely.db
-        .selectFrom('website_structure.website')
+    const website = await req.server.kysely.db
+        .selectFrom('structure.website')
+        .selectAll()
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .executeTakeFirst()
 
@@ -79,7 +81,7 @@ export async function updateWebsiteById(
     }
 
     await req.server.kysely.db
-        .updateTable('website_structure.website')
+        .updateTable('structure.website')
         .set({ title, meta_description: metaDescription })
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .execute()
@@ -99,8 +101,9 @@ export async function deleteWebsite(
 
     const { id } = req.params
 
-    const website = req.server.kysely.db
-        .selectFrom('website_structure.website')
+    const website = await req.server.kysely.db
+        .selectFrom('structure.website')
+        .selectAll()
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .executeTakeFirst()
 
@@ -109,7 +112,7 @@ export async function deleteWebsite(
     }
 
     await req.server.kysely.db
-        .deleteFrom('website_structure.website')
+        .deleteFrom('structure.website')
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .execute()
 
@@ -123,8 +126,9 @@ export async function getAllWebsites(req: FastifyRequest, reply: FastifyReply) {
         return reply.status(401).send({ message: 'Unauthorized' })
     }
 
-    const allWebsites = req.server.kysely.db
-        .selectFrom('website_structure.website')
+    const allWebsites = await req.server.kysely.db
+        .selectFrom('structure.website')
+        .selectAll()
         .where('user_id', '=', req.user.id)
         .execute()
 

@@ -9,30 +9,32 @@ import { verifyRequestOrigin } from 'lucia'
 import { Kysely } from 'kysely'
 import { DB } from 'kysely-codegen'
 
-const pool = new pg.Pool({
-    connectionString: 'postgres://postgres@localhost:15432/archtika'
-})
-
-const adapter = new NodePostgresAdapter(pool, {
-    user: 'auth.auth_user',
-    session: 'auth.user_session'
-})
-
-const lucia = new Lucia(adapter, {
-    sessionCookie: {
-        attributes: {
-            secure: process.env.NODE_ENV === 'production'
-        }
-    },
-    getUserAttributes: (attributes) => {
-        return {
-            username: attributes.username,
-            email: attributes.email
-        }
-    }
-})
+let lucia: Lucia
 
 async function luciaAuth(fastify: FastifyInstance) {
+    const pool = new pg.Pool({
+        connectionString: fastify.config.DATABASE_URL
+    })
+
+    const adapter = new NodePostgresAdapter(pool, {
+        user: 'auth.auth_user',
+        session: 'auth.user_session'
+    })
+
+    lucia = new Lucia(adapter, {
+        sessionCookie: {
+            attributes: {
+                secure: process.env.NODE_ENV === 'production'
+            }
+        },
+        getUserAttributes: (attributes) => {
+            return {
+                username: attributes.username,
+                email: attributes.email
+            }
+        }
+    })
+
     const github = new GitHub(
         fastify.config.DEV_GITHUB_CLIENT_ID,
         fastify.config.DEV_GITHUB_CLIENT_SECRET
@@ -129,6 +131,7 @@ declare module 'fastify' {
             DEV_GITHUB_CLIENT_SECRET: string
             DEV_GOOGLE_CLIENT_ID: string
             DEV_GOOGLE_CLIENT_SECRET: string
+            DATABASE_URL: string
         }
         lucia: {
             luciaInstance: Lucia

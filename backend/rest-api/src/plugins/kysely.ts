@@ -46,14 +46,16 @@ async function kyselyQueryBuilder(fastify: FastifyInstance) {
             console.error(error)
             process.exit(1)
         }
-
-        await kyselyDB.destroy()
     }
 
     migrateToLatest()
 
     fastify.decorate('kysely', {
         db: kyselyDB
+    })
+
+    fastify.addHook('onClose', async (instance) => {
+        await kyselyDB.destroy()
     })
 }
 

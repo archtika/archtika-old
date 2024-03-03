@@ -9,7 +9,13 @@ import {
     updateComponentSchema,
     UpdateComponentSchemaType
 } from './schemas.js'
-import { createComponent, findComponentById } from './controller.js'
+import {
+    createComponent,
+    deleteComponent,
+    findComponentById,
+    getAllComponents,
+    updateComponentById
+} from './controller.js'
 
 const commonSchema = {
     schema: {
@@ -56,7 +62,7 @@ export default async function (fastify: FastifyInstance) {
                 body: updateComponentSchema
             }
         },
-        async () => {}
+        updateComponentById
     )
 
     fastify.delete(
@@ -64,7 +70,7 @@ export default async function (fastify: FastifyInstance) {
         {
             schema: { tags: commonSchema.schema.tags }
         },
-        async () => {}
+        deleteComponent
     )
 
     fastify.get(
@@ -74,7 +80,7 @@ export default async function (fastify: FastifyInstance) {
                 tags: commonSchema.schema.tags
             }
         },
-        async () => {}
+        getAllComponents
     )
 }
 

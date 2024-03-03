@@ -27,10 +27,9 @@
         let pkgs = nixpkgs.legacyPackages.${system};
         in {
           default = pkgs.mkShell {
-            packages = with pkgs; [ nodejs nodePackages.pnpm dbmate ];
+            packages = with pkgs; [ nodejs nodePackages.pnpm ];
             shellHook = ''
-              alias dbmate="dbmate -u 'postgres://postgres@localhost:15432/archtika?sslmode=disable'"
-              alias datestring="TZ=UTC date "+%Y-%m-%d-%H-%M-%S"
+              alias datestring="TZ=UTC date '+%Y%m%d%H%M%S'"
             '';
           };
         });
