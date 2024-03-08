@@ -17,9 +17,6 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('asset_type', sql`media.asset_type`, (col) => col.notNull())
         .addColumn('asset_name', 'varchar', (col) => col.notNull())
         .addColumn('asset_url', 'varchar', (col) => col.notNull())
-        .addColumn('file_size', 'integer', (col) => col.notNull())
-        .addColumn('pixel_width', 'integer')
-        .addColumn('pixel_height', 'integer')
         .addColumn('created_at', 'timestamptz', (col) =>
             col.notNull().defaultTo(sql`now()`)
         )
