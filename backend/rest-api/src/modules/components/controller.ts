@@ -3,7 +3,8 @@ import {
     ComponentSingleParamsSchemaType,
     CreateComponentSchemaType,
     ComponentParamsSchemaType,
-    UpdateComponentSchemaType
+    UpdateComponentSchemaType,
+    CreateComponentPositionSchemaType
 } from './schemas.js'
 
 export async function createComponent(
@@ -174,4 +175,46 @@ export async function getAllComponents(
         .execute()
 
     return allComponents
+}
+
+export async function setComponentPosition(
+    req: FastifyRequest<{
+        Params: ComponentParamsSchemaType
+        Body: CreateComponentPositionSchemaType
+    }>,
+    reply: FastifyReply
+) {
+    await req.server.lucia.getSession(req, reply)
+
+    if (!req.user) {
+        return reply.status(401).send({ message: 'Unauthorized' })
+    }
+
+    const { pageId, componentId } = req.params
+    const { grid_x, grid_y, grid_width, grid_height } = req.body
+
+    const component = await req.server.kysely.db
+        .selectFrom('components.component')
+        .selectAll()
+        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
+        .executeTakeFirst()
+
+    if (!component) {
+        return reply
+            .status(404)
+            .send({ message: 'Component not found for that page' })
+    }
+
+    await req.server.kysely.db
+        .insertInto('components.component_position')
+        .values({
+            component_id: componentId,
+            grid_x,
+            grid_y,
+            grid_width,
+            grid_height
+        })
+        .execute()
+
+    return reply.status(200).send({ message: 'Component position set' })
 }

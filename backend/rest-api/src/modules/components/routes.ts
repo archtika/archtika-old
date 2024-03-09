@@ -7,7 +7,9 @@ import {
     createComponentSchema,
     CreateComponentSchemaType,
     updateComponentSchema,
-    UpdateComponentSchemaType
+    UpdateComponentSchemaType,
+    createComponentPositionSchema,
+    CreateComponentPositionSchemaType
 } from './schemas.js'
 import {
     createComponent,
@@ -81,6 +83,21 @@ export default async function (fastify: FastifyInstance) {
             }
         },
         getAllComponents
+    )
+
+    fastify.post<{
+        Params: ComponentParamsSchemaType
+        Body: CreateComponentPositionSchemaType
+    }>(
+        '/:pageId/components/:componentId/position',
+        {
+            schema: {
+                tags: commonSchema.schema.tags,
+                params: componentParamsSchema,
+                body: createComponentPositionSchema
+            }
+        },
+        async () => {}
     )
 }
 

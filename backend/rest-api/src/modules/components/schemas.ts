@@ -320,3 +320,14 @@ export const updateComponentSchema = Type.Union(
 )
 
 export type UpdateComponentSchemaType = Static<typeof updateComponentSchema>
+
+export const createComponentPositionSchema = Type.Object({
+    grid_x: Type.Integer({ minimum: 0 }),
+    grid_y: Type.Integer({ minimum: 0 }),
+    grid_width: Type.Integer({ minimum: 1 }),
+    grid_height: Type.Integer({ minimum: 1 })
+})
+
+export type CreateComponentPositionSchemaType = Static<
+    typeof createComponentPositionSchema
+>
