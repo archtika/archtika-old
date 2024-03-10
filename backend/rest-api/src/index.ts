@@ -6,6 +6,7 @@ import {
 import fastifyAutoload from '@fastify/autoload'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import fastifyMultipart, { ajvFilePlugin } from '@fastify/multipart'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -30,12 +31,12 @@ const fastify = Fastify({
         plugins: [
             function (ajv: any) {
                 ajv.addKeyword({ keyword: 'x-examples' })
-            }
+            },
+            ajvFilePlugin
         ]
     }
-})
-    .withTypeProvider<TypeBoxTypeProvider>()
-    .setValidatorCompiler(TypeBoxValidatorCompiler)
+}).withTypeProvider<TypeBoxTypeProvider>()
+// .setValidatorCompiler(TypeBoxValidatorCompiler)
 
 fastify.register(fastifyAutoload, {
     dir: join(__dirname, 'plugins')

@@ -6,15 +6,9 @@ enum AssetType {
     AUDIO = 'audio'
 }
 
-export const createMediaSchema = Type.Object(
-    {
-        asset_type: Type.Enum(AssetType),
-        asset_name: Type.String(),
-        asset_url: Type.String()
-    },
-    {
-        additionalProperties: false
-    }
-)
-
-export type CreateMediaSchemaType = Static<typeof createMediaSchema>
+export const multipartFile = Type.Object({
+    encoding: Type.String(),
+    filename: Type.String(),
+    limit: Type.Boolean(),
+    mimetype: Type.String()
+})

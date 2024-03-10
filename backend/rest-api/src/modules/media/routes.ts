@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
-import { createMediaSchema, CreateMediaSchemaType } from './schemas.js'
 import { createMedia } from './controller.js'
+import { Type } from '@sinclair/typebox'
 
 const commonSchema = {
     schema: {
@@ -9,14 +9,19 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.post<{
-        Body: CreateMediaSchemaType
-    }>(
+    fastify.post(
         '/',
         {
             schema: {
+                consumes: ['multipart/form-data'],
                 tags: commonSchema.schema.tags,
-                body: createMediaSchema
+                body: {
+                    type: 'object',
+                    required: ['file'],
+                    properties: {
+                        file: { isFile: true }
+                    }
+                }
             }
         },
         createMedia
