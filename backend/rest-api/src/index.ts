@@ -6,7 +6,7 @@ import {
 import fastifyAutoload from '@fastify/autoload'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
-import fastifyMultipart, { ajvFilePlugin } from '@fastify/multipart'
+import { ajvFilePlugin } from '@fastify/multipart'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

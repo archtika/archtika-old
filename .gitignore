@@ -3,3 +3,4 @@ node_modules
 result
 js-output
 .env
+backend/rest-api/uploads
