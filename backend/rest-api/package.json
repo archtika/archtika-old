@@ -18,7 +18,7 @@
         "@fastify/type-provider-typebox": "^4.0.0",
         "@lucia-auth/adapter-postgresql": "^3.1.1",
         "@sinclair/typebox": "^0.32.15",
-        "@types/pg": "^8.11.0",
+        "@types/pg": "^8.11.2",
         "arctic": "^1.2.1",
         "fastify": "^4.26.1",
         "fastify-cli": "^6.1.1",
