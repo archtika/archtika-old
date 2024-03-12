@@ -7,8 +7,15 @@ enum AssetType {
 }
 
 export const multipartFile = Type.Object({
-    encoding: Type.String(),
     filename: Type.String(),
-    limit: Type.Boolean(),
-    mimetype: Type.String()
+    mimetype: Type.String(),
+    toBuffer: Type.Function([], Type.Promise(Type.Uint8Array()))
 })
+
+export type multipartFileType = Static<typeof multipartFile>
+
+export const deleteMediaParamsSchema = Type.Object({
+    id: Type.String()
+})
+
+export type DeleteMediaParamsSchemaType = Static<typeof deleteMediaParamsSchema>

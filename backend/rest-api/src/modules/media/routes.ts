@@ -1,6 +1,10 @@
 import { FastifyInstance } from 'fastify'
-import { createMedia } from './controller.js'
+import { createMedia, deleteMedia } from './controller.js'
 import { Type } from '@sinclair/typebox'
+import {
+    deleteMediaParamsSchema,
+    DeleteMediaParamsSchemaType
+} from './schemas.js'
 
 const commonSchema = {
     schema: {
@@ -25,6 +29,17 @@ export default async function (fastify: FastifyInstance) {
             }
         },
         createMedia
+    )
+
+    fastify.delete<{ Params: DeleteMediaParamsSchemaType }>(
+        '/:id',
+        {
+            schema: {
+                tags: commonSchema.schema.tags,
+                params: deleteMediaParamsSchema
+            }
+        },
+        deleteMedia
     )
 }
 

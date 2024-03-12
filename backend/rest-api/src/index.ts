@@ -36,7 +36,6 @@ const fastify = Fastify({
         ]
     }
 }).withTypeProvider<TypeBoxTypeProvider>()
-// .setValidatorCompiler(TypeBoxValidatorCompiler)
 
 fastify.register(fastifyAutoload, {
     dir: join(__dirname, 'plugins')

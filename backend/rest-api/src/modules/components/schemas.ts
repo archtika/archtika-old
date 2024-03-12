@@ -56,7 +56,7 @@ const createComponentImageSchema = Type.Object(
         content: Type.Object({
             altText: Type.Optional(Type.String({ minLength: 1 }))
         }),
-        assetId: Type.Integer({ minimum: 1 })
+        assetId: Type.String()
     },
     {
         additionalProperties: false
@@ -69,7 +69,7 @@ const updateComponentImageSchema = Type.Object(
         content: Type.Object({
             altText: Type.Optional(Type.String({ minLength: 1 }))
         }),
-        assetId: Type.Optional(Type.Integer({ minimum: 1 }))
+        assetId: Type.Optional(Type.String())
     },
     {
         additionalProperties: false
@@ -83,7 +83,7 @@ const createComponentVideoSchema = Type.Object(
             altText: Type.Optional(Type.String({ minLength: 1 })),
             isLooped: Type.Optional(Type.Boolean())
         }),
-        assetId: Type.Integer({ minimum: 1 })
+        assetId: Type.String()
     },
     {
         additionalProperties: false
@@ -97,7 +97,7 @@ const updateComponentVideoSchema = Type.Object(
             altText: Type.Optional(Type.String({ minLength: 1 })),
             isLooped: Type.Optional(Type.Boolean())
         }),
-        assetId: Type.Optional(Type.Integer({ minimum: 1 }))
+        assetId: Type.Optional(Type.String())
     },
     {
         additionalProperties: false
@@ -111,7 +111,7 @@ const createComponentAudioSchema = Type.Object(
             altText: Type.Optional(Type.String({ minLength: 1 })),
             isLooped: Type.Optional(Type.Boolean())
         }),
-        assetId: Type.Integer({ minimum: 1 })
+        assetId: Type.String()
     },
     {
         additionalProperties: false
@@ -125,7 +125,7 @@ const updateComponentAudioSchema = Type.Object(
             altText: Type.Optional(Type.String({ minLength: 1 })),
             isLooped: Type.Optional(Type.Boolean())
         }),
-        assetId: Type.Optional(Type.Integer({ minimum: 1 }))
+        assetId: Type.Optional(Type.String())
     },
     {
         additionalProperties: false
@@ -209,7 +209,7 @@ export const createComponentSchema = Type.Union(
                     content: {
                         altText: 'An image of a cat'
                     },
-                    assetId: 1
+                    assetId: '00000000-0000-0000-0000-000000000000'
                 }
             },
             Video: {
@@ -219,7 +219,7 @@ export const createComponentSchema = Type.Union(
                         altText: 'A video of a cat',
                         isLooped: true
                     },
-                    assetId: 1
+                    assetId: '00000000-0000-0000-0000-000000000000'
                 }
             },
             Audio: {
@@ -229,7 +229,7 @@ export const createComponentSchema = Type.Union(
                         altText: 'An audio of a cat',
                         isLooped: true
                     },
-                    assetId: 1
+                    assetId: '00000000-0000-0000-0000-000000000000'
                 }
             },
             Accordion: {
@@ -282,7 +282,7 @@ export const updateComponentSchema = Type.Union(
                     content: {
                         altText: 'An image of a cat'
                     },
-                    assetId: 1
+                    assetId: '00000000-0000-0000-0000-000000000000'
                 }
             },
             Video: {
@@ -292,7 +292,7 @@ export const updateComponentSchema = Type.Union(
                         altText: 'A video of a cat',
                         isLooped: true
                     },
-                    assetId: 1
+                    assetId: '00000000-0000-0000-0000-000000000000'
                 }
             },
             Audio: {
@@ -302,7 +302,7 @@ export const updateComponentSchema = Type.Union(
                         altText: 'An audio of a cat',
                         isLooped: true
                     },
-                    assetId: 1
+                    assetId: '00000000-0000-0000-0000-000000000000'
                 }
             },
             Accordion: {

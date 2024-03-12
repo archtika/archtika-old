@@ -17,7 +17,7 @@ export async function up(db: Kysely<any>): Promise<void> {
             col.notNull().references('structure.page.id')
         )
         .addColumn('content', 'jsonb', (col) => col.notNull())
-        .addColumn('asset_id', 'integer', (col) =>
+        .addColumn('asset_id', 'uuid', (col) =>
             col.references('media.media_asset.id')
         )
         .addColumn('created_at', 'timestamptz', (col) =>
