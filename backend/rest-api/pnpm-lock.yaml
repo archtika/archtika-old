@@ -80,8 +80,8 @@ devDependencies:
     specifier: ^20.11.25
     version: 20.11.25
   kysely-codegen:
-    specifier: ^0.11.0
-    version: 0.11.0(kysely@0.27.3)(pg@8.11.3)
+    specifier: ^0.13.1
+    version: 0.13.1(kysely-bun-worker@0.5.7)(kysely@0.27.3)(pg@8.11.3)
   pino-pretty:
     specifier: ^10.3.1
     version: 10.3.1
@@ -891,6 +891,13 @@ packages:
     engines: {node: '>=12'}
     dev: false
 
+  /dotenv-expand@11.0.6:
+    resolution: {integrity: sha512-8NHi73otpWsZGBSZwwknTXS5pqMOrk9+Ssrna8xCaxkzEpU9OTf9R5ArQGVw03//Zmk9MOwLPng9WwndvpAJ5g==}
+    engines: {node: '>=12'}
+    dependencies:
+      dotenv: 16.4.5
+    dev: true
+
   /dotenv@16.4.5:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
@@ -1299,17 +1306,31 @@ packages:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
     dev: false
 
-  /kysely-codegen@0.11.0(kysely@0.27.3)(pg@8.11.3):
-    resolution: {integrity: sha512-8aklzXygjANshk5BoGSQ0BWukKIoPL4/k1iFWyteGUQ/VtB1GlyrELBZv1GglydjLGECSSVDpsOgEXyWQmuksg==}
+  /kysely-bun-worker@0.5.7(kysely@0.27.3):
+    resolution: {integrity: sha512-P4W5moWU6A1xJ2GvGbdrPDiasSKTjuBfItU1vj+wZlA+A6AXv8Nxk0nScuBu8F12UnalrIDDu+oLCF5wC3Z4EA==}
+    peerDependencies:
+      kysely: '>=0.26'
+    dependencies:
+      kysely: 0.27.3
+    dev: true
+
+  /kysely-codegen@0.13.1(kysely-bun-worker@0.5.7)(kysely@0.27.3)(pg@8.11.3):
+    resolution: {integrity: sha512-xgwITXKq+czukmFSbeQFQ3UIWLsNfqHvx7VAYkoiOh/y8tDRqsVwugTZSRL4qNBLj5AlT8iyuRPHcAkPVp9VIA==}
     hasBin: true
     peerDependencies:
       '@libsql/kysely-libsql': ^0.3.0
+      '@tediousjs/connection-string': ^0.5.0
       better-sqlite3: '>=7.6.2'
-      kysely: '>=0.19.12'
+      kysely: ^0.27.0
+      kysely-bun-worker: ^0.5.3
       mysql2: ^2.3.3 || ^3.0.0
       pg: ^8.8.0
+      tarn: ^3.0.0
+      tedious: ^16.6.0
     peerDependenciesMeta:
       '@libsql/kysely-libsql':
+        optional: true
+      '@tediousjs/connection-string':
         optional: true
       better-sqlite3:
         optional: true
@@ -1317,11 +1338,17 @@ packages:
         optional: true
       pg:
         optional: true
+      tarn:
+        optional: true
+      tedious:
+        optional: true
     dependencies:
       chalk: 4.1.2
       dotenv: 16.4.5
+      dotenv-expand: 11.0.6
       git-diff: 2.0.6
       kysely: 0.27.3
+      kysely-bun-worker: 0.5.7(kysely@0.27.3)
       micromatch: 4.0.5
       minimist: 1.2.8
       pg: 8.11.3
