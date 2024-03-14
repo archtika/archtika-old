@@ -6,10 +6,8 @@ export async function viewAccountInformation(
     req: FastifyRequest,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
     if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
+        return reply.unauthorized('User not authenticated')
     }
 
     const user = await req.server.kysely.db
@@ -293,24 +291,21 @@ export async function loginWithGoogleCallback(
 }
 
 export async function logout(req: FastifyRequest, reply: FastifyReply) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user || !req.session) {
+    if (!req.session) {
         return reply.status(401).send({ message: 'Unauthorized' })
     }
 
     await req.server.lucia.luciaInstance.invalidateSession(req.session.id)
 
-    const cookie = req.server.lucia.luciaInstance.createBlankSessionCookie()
-    reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+    reply.clearCookie(req.server.lucia.luciaInstance.sessionCookieName)
+    reply.clearCookie('github_oauth_state')
+    reply.clearCookie('google_oauth_state')
 
     return reply.status(200).send({ message: 'Successfully logged out' })
 }
 
 export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user || !req.session) {
+    if (!req.user) {
         return reply.status(401).send({ message: 'Unauthorized' })
     }
 

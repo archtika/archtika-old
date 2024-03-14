@@ -13,12 +13,6 @@ export async function createPage(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { websiteId } = req.params
     const { route, title = '', metaDescription } = req.body
 
@@ -39,12 +33,6 @@ export async function getPageById(
     req: FastifyRequest<{ Params: PageParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { pageId, websiteId } = req.params
 
     const page = await req.server.kysely.db
@@ -69,12 +57,6 @@ export async function updatePageById(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { pageId, websiteId } = req.params
     const { route, title, metaDescription } = req.body
 
@@ -103,12 +85,6 @@ export async function deletePage(
     req: FastifyRequest<{ Params: PageParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { pageId, websiteId } = req.params
 
     const page = await req.server.kysely.db
@@ -135,12 +111,6 @@ export async function getAllPages(
     req: FastifyRequest<{ Params: SinglePageParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { websiteId } = req.params
 
     const website = await req.server.kysely.db

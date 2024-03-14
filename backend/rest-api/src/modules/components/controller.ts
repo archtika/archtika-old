@@ -14,12 +14,6 @@ export async function createComponent(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { type, content } = req.body
     const { id } = req.params
 
@@ -46,12 +40,6 @@ export async function findComponentById(
     req: FastifyRequest<{ Params: ComponentParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { pageId, componentId } = req.params
 
     const component = await req.server.kysely.db
@@ -76,12 +64,6 @@ export async function updateComponentById(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { pageId, componentId } = req.params
     const { content, type } = req.body
 
@@ -118,12 +100,6 @@ export async function deleteComponent(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { pageId, componentId } = req.params
 
     const component = await req.server.kysely.db
@@ -150,12 +126,6 @@ export async function getAllComponents(
     req: FastifyRequest<{ Params: ComponentSingleParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { id } = req.params
 
     const page = await req.server.kysely.db
@@ -184,12 +154,6 @@ export async function setComponentPosition(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { pageId, componentId } = req.params
     const { grid_x, grid_y, grid_width, grid_height } = req.body
 

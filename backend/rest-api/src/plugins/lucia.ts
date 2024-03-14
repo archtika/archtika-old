@@ -45,58 +45,15 @@ async function luciaAuth(fastify: FastifyInstance) {
         'http://localhost:3000/api/v1/account/login/google/callback'
     )
 
-    async function getSession(req: FastifyRequest, reply: FastifyReply) {
-        const cookie = req.cookies['auth_session']
-        if (!cookie) {
-            return reply.unauthorized()
-        }
-        const session = await lucia.validateSession(cookie)
-        if (!session) {
-            return reply.unauthorized()
-        }
-        return session as unknown as Session
-    }
-
     fastify.decorate('lucia', {
         luciaInstance: lucia,
         oAuth: {
             github,
             google
-        },
-        getSession
+        }
     })
 
-    fastify.addHook('preHandler', async (req, reply) => {
-        const sessionId =
-            req.cookies[fastify.lucia.luciaInstance.sessionCookieName]
-
-        if (!sessionId) {
-            req.user = null
-            req.session = null
-            return
-        }
-
-        const { session, user } =
-            await fastify.lucia.luciaInstance.validateSession(sessionId)
-        if (session && session.fresh) {
-            const cookie = fastify.lucia.luciaInstance.createSessionCookie(
-                session.id
-            )
-            reply.setCookie(cookie.name, cookie.value, cookie.attributes)
-        }
-
-        if (!session) {
-            const cookie =
-                fastify.lucia.luciaInstance.createBlankSessionCookie()
-            reply.setCookie(cookie.name, cookie.value, cookie.attributes)
-        }
-
-        req.user = user
-        req.session = session
-        return
-    })
-
-    /* fastify.addHook('preHandler', (req, res, done) => {
+    fastify.addHook('preHandler', (req, res, done) => {
         if (req.method === 'GET') {
             return done()
         }
@@ -111,7 +68,42 @@ async function luciaAuth(fastify: FastifyInstance) {
             console.error('Invalid origin', { originHeader, hostHeader })
             return res.status(403).send('Invalid origin')
         }
-    }) */
+    })
+
+    fastify.addHook('preHandler', async (req, reply) => {
+        if (
+            req.url.startsWith('/api/v1/account/login') ||
+            req.url.startsWith('/docs')
+        ) {
+            return
+        }
+
+        const sessionId =
+            req.cookies[fastify.lucia.luciaInstance.sessionCookieName]
+
+        if (!sessionId) {
+            req.user = null
+            req.session = null
+            return
+        }
+
+        const { session, user } =
+            await fastify.lucia.luciaInstance.validateSession(sessionId)
+
+        if (session && session.fresh) {
+            const cookie =
+                fastify.lucia.luciaInstance.createSessionCookie(sessionId)
+            reply.setCookie(cookie.name, cookie.value, cookie.attributes)
+        }
+
+        if (!session) {
+            reply.clearCookie(fastify.lucia.luciaInstance.sessionCookieName)
+        }
+
+        req.user = user
+        req.session = session
+        return
+    })
 }
 
 declare module 'lucia' {
@@ -139,10 +131,6 @@ declare module 'fastify' {
                 github: GitHub
                 google: Google
             }
-            getSession: (
-                req: FastifyRequest,
-                reply: FastifyReply
-            ) => Promise<Session>
         }
         kysely: {
             db: Kysely<DB>

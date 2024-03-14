@@ -14,10 +14,8 @@ export async function createMedia(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
     if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
+        return reply.unauthorized()
     }
 
     const data = req.body.file
@@ -67,10 +65,8 @@ export async function deleteMedia(
     req: FastifyRequest<{ Params: DeleteMediaParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
     if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
+        return reply.unauthorized()
     }
 
     await req.server.kysely.db

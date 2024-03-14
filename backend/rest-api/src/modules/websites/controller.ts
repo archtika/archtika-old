@@ -9,10 +9,8 @@ export async function createWebsite(
     req: FastifyRequest<{ Body: CreateWebsiteSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
     if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
+        return reply.unauthorized()
     }
 
     const { title, metaDescription } = req.body
@@ -33,12 +31,6 @@ export async function getWebsiteById(
     req: FastifyRequest<{ Params: WebsiteParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { id } = req.params
 
     const website = await req.server.kysely.db
@@ -61,12 +53,6 @@ export async function updateWebsiteById(
     }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { id } = req.params
     const { title, metaDescription } = req.body
 
@@ -93,12 +79,6 @@ export async function deleteWebsite(
     req: FastifyRequest<{ Params: WebsiteParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    await req.server.lucia.getSession(req, reply)
-
-    if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
-    }
-
     const { id } = req.params
 
     const website = await req.server.kysely.db
@@ -120,10 +100,8 @@ export async function deleteWebsite(
 }
 
 export async function getAllWebsites(req: FastifyRequest, reply: FastifyReply) {
-    await req.server.lucia.getSession(req, reply)
-
     if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
+        return reply.unauthorized()
     }
 
     const allWebsites = await req.server.kysely.db
