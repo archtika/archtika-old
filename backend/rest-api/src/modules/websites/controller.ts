@@ -24,7 +24,7 @@ export async function createWebsite(
         })
         .execute()
 
-    return reply.status(201).send({ message: 'Website created' })
+    return reply.status(201)
 }
 
 export async function getWebsiteById(
@@ -40,7 +40,7 @@ export async function getWebsiteById(
         .executeTakeFirst()
 
     if (!website) {
-        return reply.status(404).send({ message: 'Website not found' })
+        return reply.notFound()
     }
 
     return website
@@ -63,7 +63,7 @@ export async function updateWebsiteById(
         .executeTakeFirst()
 
     if (!website) {
-        return reply.status(404).send({ message: 'Website not found' })
+        return reply.notFound()
     }
 
     await req.server.kysely.db
@@ -72,7 +72,7 @@ export async function updateWebsiteById(
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .execute()
 
-    return reply.status(200).send({ message: 'Website updated' })
+    return reply.status(200)
 }
 
 export async function deleteWebsite(
@@ -88,7 +88,7 @@ export async function deleteWebsite(
         .executeTakeFirst()
 
     if (!website) {
-        return reply.status(404).send({ message: 'Website not found' })
+        return reply.notFound()
     }
 
     await req.server.kysely.db
@@ -96,7 +96,7 @@ export async function deleteWebsite(
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .execute()
 
-    return reply.status(200).send({ message: 'Website deleted' })
+    return reply.status(204)
 }
 
 export async function getAllWebsites(req: FastifyRequest, reply: FastifyReply) {

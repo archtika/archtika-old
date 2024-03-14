@@ -7,7 +7,7 @@ export async function viewAccountInformation(
     reply: FastifyReply
 ) {
     if (!req.user) {
-        return reply.unauthorized('User not authenticated')
+        return reply.unauthorized()
     }
 
     const user = await req.server.kysely.db
@@ -16,7 +16,7 @@ export async function viewAccountInformation(
         .where('id', '=', req.user.id)
         .execute()
 
-    return reply.send({ user })
+    return reply.status(200).send({ user })
 }
 
 export async function loginWithGithub(
@@ -292,7 +292,7 @@ export async function loginWithGoogleCallback(
 
 export async function logout(req: FastifyRequest, reply: FastifyReply) {
     if (!req.session) {
-        return reply.status(401).send({ message: 'Unauthorized' })
+        return reply.unauthorized()
     }
 
     await req.server.lucia.luciaInstance.invalidateSession(req.session.id)
@@ -301,12 +301,12 @@ export async function logout(req: FastifyRequest, reply: FastifyReply) {
     reply.clearCookie('github_oauth_state')
     reply.clearCookie('google_oauth_state')
 
-    return reply.status(200).send({ message: 'Successfully logged out' })
+    return reply.status(200)
 }
 
 export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {
     if (!req.user) {
-        return reply.status(401).send({ message: 'Unauthorized' })
+        return reply.unauthorized()
     }
 
     await req.server.kysely.db
@@ -314,5 +314,5 @@ export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {
         .where('id', '=', req.user.id)
         .execute()
 
-    return reply.status(200).send({ message: 'User deleted' })
+    return reply.status(204)
 }

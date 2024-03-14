@@ -26,7 +26,7 @@ export async function createPage(
         })
         .execute()
 
-    return reply.status(201).send({ message: 'Page created' })
+    return reply.status(201)
 }
 
 export async function getPageById(
@@ -42,9 +42,7 @@ export async function getPageById(
         .executeTakeFirst()
 
     if (!page) {
-        return reply
-            .status(404)
-            .send({ message: 'Page not found for that website' })
+        return reply.notFound()
     }
 
     return page
@@ -67,9 +65,7 @@ export async function updatePageById(
         .executeTakeFirst()
 
     if (!page) {
-        return reply
-            .status(404)
-            .send({ message: 'Page not found for that website' })
+        return reply.notFound()
     }
 
     await req.server.kysely.db
@@ -78,7 +74,7 @@ export async function updatePageById(
         .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
         .execute()
 
-    return reply.status(200).send({ message: 'Page updated' })
+    return reply.status(200)
 }
 
 export async function deletePage(
@@ -94,9 +90,7 @@ export async function deletePage(
         .executeTakeFirst()
 
     if (!page) {
-        return reply
-            .status(404)
-            .send({ message: 'Page not found for that website' })
+        return reply.notFound()
     }
 
     await req.server.kysely.db
@@ -104,7 +98,7 @@ export async function deletePage(
         .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
         .execute()
 
-    return reply.status(200).send({ message: 'Page deleted' })
+    return reply.status(204)
 }
 
 export async function getAllPages(
@@ -120,7 +114,7 @@ export async function getAllPages(
         .executeTakeFirst()
 
     if (!website) {
-        return reply.status(404).send({ message: 'Website not found' })
+        return reply.notFound()
     }
 
     const allPages = await req.server.kysely.db

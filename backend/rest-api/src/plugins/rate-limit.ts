@@ -16,7 +16,7 @@ async function rateLimit(fastify: FastifyInstance) {
             preHandler: fastify.rateLimit()
         },
         (request, reply) => {
-            reply.code(404).send(null)
+            reply.notFound()
         }
     )
 }

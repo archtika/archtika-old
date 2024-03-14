@@ -33,7 +33,7 @@ export async function createComponent(
         })
         .execute()
 
-    return reply.send('Component created successfully')
+    return reply.status(201)
 }
 
 export async function findComponentById(
@@ -49,9 +49,7 @@ export async function findComponentById(
         .executeTakeFirst()
 
     if (!component) {
-        return reply
-            .status(404)
-            .send({ message: 'Component not found for that page' })
+        return reply.notFound()
     }
 
     return component
@@ -80,9 +78,7 @@ export async function updateComponentById(
         .executeTakeFirst()
 
     if (!component) {
-        return reply
-            .status(404)
-            .send({ message: 'Component not found for that page' })
+        return reply.notFound()
     }
 
     await req.server.kysely.db
@@ -91,7 +87,7 @@ export async function updateComponentById(
         .where((eb) => eb.and({ page_id: pageId, id: componentId }))
         .execute()
 
-    return reply.status(200).send({ message: 'Component updated' })
+    return reply.status(200)
 }
 
 export async function deleteComponent(
@@ -109,9 +105,7 @@ export async function deleteComponent(
         .executeTakeFirst()
 
     if (!component) {
-        return reply
-            .status(404)
-            .send({ message: 'Component not found for that page' })
+        return reply.notFound()
     }
 
     await req.server.kysely.db
@@ -119,7 +113,7 @@ export async function deleteComponent(
         .where((eb) => eb.and({ id: componentId, page_id: pageId }))
         .execute()
 
-    return reply.status(200).send({ message: 'Component deleted' })
+    return reply.status(204)
 }
 
 export async function getAllComponents(
@@ -135,7 +129,7 @@ export async function getAllComponents(
         .executeTakeFirst()
 
     if (!page) {
-        return reply.status(404).send({ message: 'Page not found' })
+        return reply.notFound()
     }
 
     const allComponents = await req.server.kysely.db
@@ -164,9 +158,7 @@ export async function setComponentPosition(
         .executeTakeFirst()
 
     if (!component) {
-        return reply
-            .status(404)
-            .send({ message: 'Component not found for that page' })
+        return reply.notFound()
     }
 
     await req.server.kysely.db
@@ -180,5 +172,5 @@ export async function setComponentPosition(
         })
         .execute()
 
-    return reply.status(200).send({ message: 'Component position set' })
+    return reply.status(200)
 }

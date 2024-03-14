@@ -32,7 +32,7 @@ export async function createMedia(
         .executeTakeFirst()
 
     if (existingMedia) {
-        return reply.conflict('Media already exists')
+        return reply.conflict()
     }
 
     const uploadsDir = path.join(__dirname, 'uploads')
@@ -58,7 +58,7 @@ export async function createMedia(
         })
         .execute()
 
-    return reply.status(201).send({ message: 'Media created' })
+    return reply.status(201)
 }
 
 export async function deleteMedia(
@@ -83,5 +83,5 @@ export async function deleteMedia(
 
     fs.unlinkSync(`${uploadsDir}/${req.user.id}/${file}`)
 
-    return reply.status(204).send({ message: 'Media deleted' })
+    return reply.status(204)
 }

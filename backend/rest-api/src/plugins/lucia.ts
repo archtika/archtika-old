@@ -53,7 +53,7 @@ async function luciaAuth(fastify: FastifyInstance) {
         }
     })
 
-    fastify.addHook('preHandler', (req, res, done) => {
+    fastify.addHook('preHandler', (req, reply, done) => {
         if (req.method === 'GET') {
             return done()
         }
@@ -66,7 +66,7 @@ async function luciaAuth(fastify: FastifyInstance) {
             !verifyRequestOrigin(originHeader, [hostHeader])
         ) {
             console.error('Invalid origin', { originHeader, hostHeader })
-            return res.status(403).send('Invalid origin')
+            return reply.notAcceptable('Invalid origin')
         }
     })
 
