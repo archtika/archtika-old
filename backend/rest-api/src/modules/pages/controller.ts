@@ -16,17 +16,26 @@ export async function createPage(
     const { websiteId } = req.params
     const { route, title = '', metaDescription } = req.body
 
-    await req.server.kysely.db
-        .insertInto('structure.page')
-        .values({
-            website_id: websiteId,
-            route: `/${route}`,
-            title,
-            meta_description: metaDescription
-        })
-        .execute()
+    try {
+        const page = await req.server.kysely.db
+            .insertInto('structure.page')
+            .values(({ selectFrom }) => ({
+                website_id: selectFrom('structure.website')
+                    .select('id')
+                    .where((eb) =>
+                        eb.and({ id: websiteId, user_id: req.user?.id })
+                    ),
+                route: `/${route}`,
+                title,
+                meta_description: metaDescription
+            }))
+            .returningAll()
+            .executeTakeFirstOrThrow()
 
-    return reply.status(201)
+        return reply.status(201).send(page)
+    } catch (error) {
+        return reply.notFound('Website not found or not allowed')
+    }
 }
 
 export async function getPageById(
@@ -35,17 +44,28 @@ export async function getPageById(
 ) {
     const { pageId, websiteId } = req.params
 
-    const page = await req.server.kysely.db
-        .selectFrom('structure.page')
-        .selectAll()
-        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
-        .executeTakeFirst()
+    try {
+        const page = await req.server.kysely.db
+            .selectFrom('structure.website')
+            .innerJoin(
+                'structure.page',
+                'structure.website.id',
+                'structure.page.website_id'
+            )
+            .selectAll(['structure.page'])
+            .where((eb) =>
+                eb.and({
+                    'structure.website.id': websiteId,
+                    'structure.website.user_id': req.user?.id,
+                    'structure.page.id': pageId
+                })
+            )
+            .executeTakeFirstOrThrow()
 
-    if (!page) {
-        return reply.notFound()
+        return reply.status(200).send(page)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
     }
-
-    return page
 }
 
 export async function updatePageById(
@@ -58,23 +78,29 @@ export async function updatePageById(
     const { pageId, websiteId } = req.params
     const { route, title, metaDescription } = req.body
 
-    const page = await req.server.kysely.db
-        .selectFrom('structure.page')
-        .selectAll()
-        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
-        .executeTakeFirst()
+    try {
+        const page = await req.server.kysely.db
+            .updateTable('structure.page')
+            .set({
+                route: `/${route}`,
+                title,
+                meta_description: metaDescription
+            })
+            .where((eb) =>
+                eb.exists(
+                    eb
+                        .selectFrom('structure.website')
+                        .where(eb.and({ id: websiteId, user_id: req.user?.id }))
+                )
+            )
+            .where('id', '=', pageId)
+            .returningAll()
+            .executeTakeFirstOrThrow()
 
-    if (!page) {
-        return reply.notFound()
+        return reply.status(200).send(page)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
     }
-
-    await req.server.kysely.db
-        .updateTable('structure.page')
-        .set({ route: `/${route}`, title, meta_description: metaDescription })
-        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
-        .execute()
-
-    return reply.status(200)
 }
 
 export async function deletePage(
@@ -83,22 +109,24 @@ export async function deletePage(
 ) {
     const { pageId, websiteId } = req.params
 
-    const page = await req.server.kysely.db
-        .selectFrom('structure.page')
-        .selectAll()
-        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
-        .executeTakeFirst()
+    try {
+        const page = await req.server.kysely.db
+            .deleteFrom('structure.page')
+            .where((eb) =>
+                eb.exists(
+                    eb
+                        .selectFrom('structure.website')
+                        .where(eb.and({ id: websiteId, user_id: req.user?.id }))
+                )
+            )
+            .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
+            .returningAll()
+            .executeTakeFirstOrThrow()
 
-    if (!page) {
-        return reply.notFound()
+        return reply.status(200).send(page)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
     }
-
-    await req.server.kysely.db
-        .deleteFrom('structure.page')
-        .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
-        .execute()
-
-    return reply.status(204)
 }
 
 export async function getAllPages(
@@ -107,21 +135,33 @@ export async function getAllPages(
 ) {
     const { websiteId } = req.params
 
-    const website = await req.server.kysely.db
-        .selectFrom('structure.website')
-        .selectAll()
-        .where((eb) => eb.and({ id: websiteId, user_id: req.user?.id }))
-        .executeTakeFirst()
-
-    if (!website) {
-        return reply.notFound()
-    }
-
     const allPages = await req.server.kysely.db
-        .selectFrom('structure.page')
-        .selectAll()
-        .where((eb) => eb.and({ website_id: websiteId }))
+        .selectFrom('structure.website')
+        .innerJoin(
+            'structure.page',
+            'structure.website.id',
+            'structure.page.website_id'
+        )
+        .selectAll(['structure.page'])
+        .where((eb) =>
+            eb.and({
+                'structure.website.id': websiteId,
+                'structure.website.user_id': req.user?.id
+            })
+        )
         .execute()
 
-    return allPages
+    if (!allPages.length) {
+        try {
+            await req.server.kysely.db
+                .selectFrom('structure.website')
+                .select('id')
+                .where((eb) => eb.and({ id: websiteId, user_id: req.user?.id }))
+                .executeTakeFirstOrThrow()
+        } catch (error) {
+            return reply.notFound('Website not found or not allowed')
+        }
+    }
+
+    return reply.status(200).send(allPages)
 }

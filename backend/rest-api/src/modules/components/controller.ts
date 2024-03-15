@@ -4,7 +4,7 @@ import {
     CreateComponentSchemaType,
     ComponentParamsSchemaType,
     UpdateComponentSchemaType,
-    CreateComponentPositionSchemaType
+    ComponentPositionSchemaType
 } from './schemas.js'
 
 export async function createComponent(
@@ -17,42 +17,75 @@ export async function createComponent(
     const { type, content } = req.body
     const { id } = req.params
 
-    let assetId
+    let assetId: string
 
     if (type === 'image' || type === 'video' || type === 'audio') {
         assetId = req.body.assetId
     }
 
-    await req.server.kysely.db
-        .insertInto('components.component')
-        .values({
-            type,
-            page_id: id,
-            content: JSON.stringify(content),
-            asset_id: assetId
-        })
-        .execute()
+    try {
+        const component = await req.server.kysely.db
+            .insertInto('components.component')
+            .values(({ selectFrom }) => ({
+                page_id: selectFrom('structure.page')
+                    .innerJoin(
+                        'structure.website',
+                        'structure.website.id',
+                        'structure.page.website_id'
+                    )
+                    .select('structure.page.id')
+                    .where((eb) =>
+                        eb.and({
+                            'structure.page.id': id,
+                            'structure.website.user_id': req.user?.id
+                        })
+                    ),
+                type,
+                content: JSON.stringify(content),
+                asset_id: assetId
+            }))
+            .returningAll()
+            .executeTakeFirstOrThrow()
 
-    return reply.status(201)
+        return reply.status(201).send(component)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
+    }
 }
 
-export async function findComponentById(
+export async function getComponentById(
     req: FastifyRequest<{ Params: ComponentParamsSchemaType }>,
     reply: FastifyReply
 ) {
     const { pageId, componentId } = req.params
 
-    const component = await req.server.kysely.db
-        .selectFrom('components.component')
-        .selectAll()
-        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
-        .executeTakeFirst()
+    try {
+        const component = await req.server.kysely.db
+            .selectFrom('components.component')
+            .innerJoin(
+                'structure.page',
+                'structure.page.id',
+                'components.component.page_id'
+            )
+            .innerJoin(
+                'structure.website',
+                'structure.website.id',
+                'structure.page.website_id'
+            )
+            .selectAll(['components.component'])
+            .where((eb) =>
+                eb.and({
+                    'structure.page.id': pageId,
+                    'structure.website.user_id': req.user?.id,
+                    'components.component.id': componentId
+                })
+            )
+            .executeTakeFirstOrThrow()
 
-    if (!component) {
-        return reply.notFound()
+        return reply.status(200).send(component)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
     }
-
-    return component
 }
 
 export async function updateComponentById(
@@ -71,23 +104,31 @@ export async function updateComponentById(
         assetId = req.body.assetId
     }
 
-    const component = await req.server.kysely.db
-        .selectFrom('components.component')
-        .selectAll()
-        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
-        .executeTakeFirst()
+    try {
+        const page = await req.server.kysely.db
+            .updateTable('components.component')
+            .set({ content: JSON.stringify(content), asset_id: assetId })
+            .where((eb) =>
+                eb.exists(
+                    eb.selectFrom('structure.website').where(
+                        eb.and({
+                            id: eb
+                                .selectFrom('structure.page')
+                                .select('website_id')
+                                .where('id', '=', pageId),
+                            user_id: req.user?.id
+                        })
+                    )
+                )
+            )
+            .where('id', '=', componentId)
+            .returningAll()
+            .executeTakeFirstOrThrow()
 
-    if (!component) {
-        return reply.notFound()
+        return reply.status(200).send(page)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
     }
-
-    await req.server.kysely.db
-        .updateTable('components.component')
-        .set({ content: JSON.stringify(content), asset_id: assetId })
-        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
-        .execute()
-
-    return reply.status(200)
 }
 
 export async function deleteComponent(
@@ -98,22 +139,30 @@ export async function deleteComponent(
 ) {
     const { pageId, componentId } = req.params
 
-    const component = await req.server.kysely.db
-        .selectFrom('components.component')
-        .selectAll()
-        .where((eb) => eb.and({ id: componentId, page_id: pageId }))
-        .executeTakeFirst()
+    try {
+        const page = await req.server.kysely.db
+            .deleteFrom('components.component')
+            .where((eb) =>
+                eb.exists(
+                    eb.selectFrom('structure.website').where(
+                        eb.and({
+                            id: eb
+                                .selectFrom('structure.page')
+                                .select('website_id')
+                                .where('id', '=', pageId),
+                            user_id: req.user?.id
+                        })
+                    )
+                )
+            )
+            .where((eb) => eb.and({ id: componentId, page_id: pageId }))
+            .returningAll()
+            .executeTakeFirstOrThrow()
 
-    if (!component) {
-        return reply.notFound()
+        return reply.status(200).send(page)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
     }
-
-    await req.server.kysely.db
-        .deleteFrom('components.component')
-        .where((eb) => eb.and({ id: componentId, page_id: pageId }))
-        .execute()
-
-    return reply.status(204)
 }
 
 export async function getAllComponents(
@@ -122,55 +171,142 @@ export async function getAllComponents(
 ) {
     const { id } = req.params
 
-    const page = await req.server.kysely.db
-        .selectFrom('structure.page')
-        .selectAll()
-        .where((eb) => eb.and({ id }))
-        .executeTakeFirst()
-
-    if (!page) {
-        return reply.notFound()
-    }
-
     const allComponents = await req.server.kysely.db
         .selectFrom('components.component')
-        .selectAll()
-        .where((eb) => eb.and({ page_id: id }))
+        .innerJoin(
+            'structure.page',
+            'structure.page.id',
+            'components.component.page_id'
+        )
+        .innerJoin(
+            'structure.website',
+            'structure.website.id',
+            'structure.page.website_id'
+        )
+        .selectAll(['components.component'])
+        .where((eb) =>
+            eb.and({
+                'structure.page.id': id,
+                'structure.website.user_id': req.user?.id
+            })
+        )
         .execute()
 
-    return allComponents
+    if (!allComponents.length) {
+        try {
+            await req.server.kysely.db
+                .selectFrom('structure.page')
+                .innerJoin(
+                    'structure.website',
+                    'structure.website.id',
+                    'structure.page.website_id'
+                )
+                .select('structure.page.id')
+                .where((eb) =>
+                    eb.and({
+                        'structure.page.id': id,
+                        'structure.website.user_id': req.user?.id
+                    })
+                )
+                .executeTakeFirstOrThrow()
+        } catch (error) {
+            return reply.notFound('Page not found or not allowed')
+        }
+    }
+
+    return reply.status(200).send(allComponents)
 }
 
 export async function setComponentPosition(
     req: FastifyRequest<{
         Params: ComponentParamsSchemaType
-        Body: CreateComponentPositionSchemaType
+        Body: ComponentPositionSchemaType
     }>,
     reply: FastifyReply
 ) {
     const { pageId, componentId } = req.params
     const { grid_x, grid_y, grid_width, grid_height } = req.body
 
-    const component = await req.server.kysely.db
-        .selectFrom('components.component')
-        .selectAll()
-        .where((eb) => eb.and({ page_id: pageId, id: componentId }))
-        .executeTakeFirst()
+    try {
+        const componentPositon = await req.server.kysely.db
+            .insertInto('components.component_position')
+            .values(({ selectFrom }) => ({
+                component_id: selectFrom('components.component')
+                    .innerJoin(
+                        'structure.page',
+                        'structure.page.id',
+                        'components.component.page_id'
+                    )
+                    .innerJoin(
+                        'structure.website',
+                        'structure.website.id',
+                        'structure.page.website_id'
+                    )
+                    .select('components.component.id')
+                    .where((eb) =>
+                        eb.and({
+                            'structure.page.id': pageId,
+                            'structure.website.user_id': req.user?.id,
+                            'components.component.id': componentId
+                        })
+                    ),
+                grid_x,
+                grid_y,
+                grid_width,
+                grid_height
+            }))
+            .returningAll()
+            .executeTakeFirstOrThrow()
 
-    if (!component) {
-        return reply.notFound()
+        return reply.status(201).send(componentPositon)
+    } catch (error) {
+        return reply.notFound('Component not found or not allowed')
     }
+}
 
-    await req.server.kysely.db
-        .insertInto('components.component_position')
-        .values({
-            component_id: componentId,
-            grid_x,
-            grid_y,
-            grid_width,
-            grid_height
-        })
-        .execute()
+export async function updateComponentPosition(
+    req: FastifyRequest<{
+        Params: ComponentParamsSchemaType
+        Body: ComponentPositionSchemaType
+    }>,
+    reply: FastifyReply
+) {
+    const { pageId, componentId } = req.params
+    const { grid_x, grid_y, grid_width, grid_height } = req.body
 
-    return reply.status(200)
+    try {
+        const componentPositon = await req.server.kysely.db
+            .updateTable('components.component_position')
+            .set(({ selectFrom }) => ({
+                component_id: selectFrom('components.component')
+                    .innerJoin(
+                        'structure.page',
+                        'structure.page.id',
+                        'components.component.page_id'
+                    )
+                    .innerJoin(
+                        'structure.website',
+                        'structure.website.id',
+                        'structure.page.website_id'
+                    )
+                    .select('components.component.id')
+                    .where((eb) =>
+                        eb.and({
+                            'structure.page.id': pageId,
+                            'structure.website.user_id': req.user?.id,
+                            'components.component.id': componentId
+                        })
+                    ),
+                grid_x,
+                grid_y,
+                grid_width,
+                grid_height
+            }))
+            .returningAll()
+            .executeTakeFirstOrThrow()
+
+        return reply.status(201).send(componentPositon)
+    } catch (error) {
+        return reply.notFound('Component not found or not allowed')
+    }
 }

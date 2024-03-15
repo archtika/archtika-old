@@ -14,74 +14,67 @@ export async function createMedia(
     }>,
     reply: FastifyReply
 ) {
-    if (!req.user) {
-        return reply.unauthorized()
-    }
-
     const data = req.body.file
     const bufferData = await data.toBuffer()
 
-    const existingMedia = await req.server.kysely.db
-        .selectFrom('media.media_asset')
-        .where((eb) =>
-            eb.and({
-                user_id: req.user?.id,
+    const randomId = randomUUID()
+
+    let media
+
+    try {
+        media = await req.server.kysely.db
+            .insertInto('media.media_asset')
+            .values({
+                id: randomId,
+                user_id: req.user?.id ?? '',
+                name: path.parse(data.filename).name,
+                mimetype: data.mimetype,
                 file_hash: createHash('sha256').update(bufferData).digest('hex')
             })
-        )
-        .executeTakeFirst()
-
-    if (existingMedia) {
-        return reply.conflict()
+            .onConflict((oc) => oc.column('file_hash').doNothing())
+            .returningAll()
+            .executeTakeFirstOrThrow()
+    } catch (error) {
+        return reply.conflict('File already exists')
     }
 
     const uploadsDir = path.join(__dirname, 'uploads')
 
-    const userDir = path.join(uploadsDir, req.user.id)
+    const userDir = path.join(uploadsDir, req.user?.id ?? '')
     fs.mkdirSync(userDir, { recursive: true })
-
-    const randomId = randomUUID()
 
     const uniqueFilename = `${randomId}${path.extname(data.filename)}`
     const filePath = path.join(userDir, uniqueFilename)
 
     fs.writeFileSync(filePath, bufferData)
 
-    await req.server.kysely.db
-        .insertInto('media.media_asset')
-        .values({
-            id: randomId,
-            user_id: req.user.id,
-            name: path.parse(data.filename).name,
-            mimetype: data.mimetype,
-            file_hash: createHash('sha256').update(bufferData).digest('hex')
-        })
-        .execute()
-
-    return reply.status(201)
+    return reply.status(201).send(media)
 }
 
 export async function deleteMedia(
     req: FastifyRequest<{ Params: DeleteMediaParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    if (!req.user) {
-        return reply.unauthorized()
+    let media
+
+    try {
+        media = await req.server.kysely.db
+            .deleteFrom('media.media_asset')
+            .where((eb) => eb.and({ id: req.params.id, user_id: req.user?.id }))
+            .returningAll()
+            .executeTakeFirstOrThrow()
+    } catch (error) {
+        return reply.notFound('Media not found or not allowed')
     }
 
-    await req.server.kysely.db
-        .deleteFrom('media.media_asset')
-        .where((eb) => eb.and({ id: req.params.id, user_id: req.user?.id }))
-        .execute()
-
     const uploadsDir = path.join(__dirname, 'uploads')
-    const userDir = path.join(uploadsDir, req.user.id)
+    const userDir = path.join(uploadsDir, req.user?.id ?? '')
 
     const file = fs
         .readdirSync(userDir)
         .find((f) => f.startsWith(req.params.id))
 
-    fs.unlinkSync(`${uploadsDir}/${req.user.id}/${file}`)
+    fs.unlinkSync(`${uploadsDir}/${req.user?.id}/${file}`)
 
-    return reply.status(204)
+    return reply.status(200).send(media)
 }

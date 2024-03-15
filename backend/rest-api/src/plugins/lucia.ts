@@ -52,58 +52,6 @@ async function luciaAuth(fastify: FastifyInstance) {
             google
         }
     })
-
-    fastify.addHook('preHandler', (req, reply, done) => {
-        if (req.method === 'GET') {
-            return done()
-        }
-
-        const originHeader = req.headers.origin ?? null
-        const hostHeader = req.headers.host ?? null
-        if (
-            !originHeader ||
-            !hostHeader ||
-            !verifyRequestOrigin(originHeader, [hostHeader])
-        ) {
-            console.error('Invalid origin', { originHeader, hostHeader })
-            return reply.notAcceptable('Invalid origin')
-        }
-    })
-
-    fastify.addHook('preHandler', async (req, reply) => {
-        if (
-            req.url.startsWith('/api/v1/account/login') ||
-            req.url.startsWith('/docs')
-        ) {
-            return
-        }
-
-        const sessionId =
-            req.cookies[fastify.lucia.luciaInstance.sessionCookieName]
-
-        if (!sessionId) {
-            req.user = null
-            req.session = null
-            return
-        }
-
-        const { session, user } =
-            await fastify.lucia.luciaInstance.validateSession(sessionId)
-
-        if (session && session.fresh) {
-            const cookie =
-                fastify.lucia.luciaInstance.createSessionCookie(sessionId)
-            reply.setCookie(cookie.name, cookie.value, cookie.attributes)
-        }
-
-        if (!session) {
-            reply.clearCookie(fastify.lucia.luciaInstance.sessionCookieName)
-        }
-
-        req.user = user
-        req.session = session
-        return
-    })
 }
 
 declare module 'lucia' {

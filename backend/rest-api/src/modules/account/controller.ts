@@ -6,17 +6,13 @@ export async function viewAccountInformation(
     req: FastifyRequest,
     reply: FastifyReply
 ) {
-    if (!req.user) {
-        return reply.unauthorized()
-    }
-
     const user = await req.server.kysely.db
         .selectFrom('auth.auth_user')
         .selectAll()
-        .where('id', '=', req.user.id)
-        .execute()
+        .where('id', '=', req.user?.id ?? '')
+        .executeTakeFirstOrThrow()
 
-    return reply.status(200).send({ user })
+    return reply.status(200).send(user)
 }
 
 export async function loginWithGithub(
@@ -130,6 +126,7 @@ export async function loginWithGithubCallback(
             email: primaryEmail.email
         })
         .execute()
+
     await req.server.kysely.db
         .insertInto('auth.oauth_account')
         .values({
@@ -231,7 +228,7 @@ export async function loginWithGoogleCallback(
             .selectAll()
             .where('provider_id', '=', 'google')
             .where('provider_user_id', '=', googleUser.sub)
-            .execute()
+            .executeTakeFirst()
 
         if (!existingOauthAccount) {
             await req.server.kysely.db
@@ -291,28 +288,23 @@ export async function loginWithGoogleCallback(
 }
 
 export async function logout(req: FastifyRequest, reply: FastifyReply) {
-    if (!req.session) {
-        return reply.unauthorized()
-    }
-
-    await req.server.lucia.luciaInstance.invalidateSession(req.session.id)
+    await req.server.lucia.luciaInstance.invalidateSession(
+        req.session?.id ?? ''
+    )
 
     reply.clearCookie(req.server.lucia.luciaInstance.sessionCookieName)
     reply.clearCookie('github_oauth_state')
     reply.clearCookie('google_oauth_state')
+    reply.clearCookie('google_oauth_code_verifier')
 
-    return reply.status(200)
+    return reply.status(200).send()
 }
 
 export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {
-    if (!req.user) {
-        return reply.unauthorized()
-    }
-
     await req.server.kysely.db
         .deleteFrom('auth.auth_user')
-        .where('id', '=', req.user.id)
+        .where('id', '=', req.user?.id ?? '')
         .execute()
 
-    return reply.status(204)
+    return reply.status(204).send()
 }
