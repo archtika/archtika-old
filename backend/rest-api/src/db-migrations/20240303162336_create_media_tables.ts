@@ -7,7 +7,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .createTable('media.media_asset')
         .addColumn('id', 'uuid', (col) => col.primaryKey().notNull())
         .addColumn('user_id', 'varchar(20)', (col) =>
-            col.notNull().references('auth.auth_user.id')
+            col.notNull().references('auth.auth_user.id').onDelete('cascade')
         )
         .addColumn('name', 'varchar', (col) => col.notNull())
         .addColumn('mimetype', 'varchar', (col) => col.notNull())
@@ -15,5 +15,6 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('created_at', 'timestamptz', (col) =>
             col.notNull().defaultTo(sql`now()`)
         )
+        .addUniqueConstraint('uniqueFileHash', ['file_hash', 'user_id'])
         .execute()
 }

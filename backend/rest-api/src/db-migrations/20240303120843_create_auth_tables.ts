@@ -15,7 +15,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('provider_id', 'varchar', (col) => col.notNull())
         .addColumn('provider_user_id', 'varchar', (col) => col.notNull())
         .addColumn('user_id', 'varchar(20)', (col) =>
-            col.notNull().references('auth.auth_user.id')
+            col.notNull().references('auth.auth_user.id').onDelete('cascade')
         )
         .addPrimaryKeyConstraint('oAuthAccountPrimaryKey', [
             'provider_id',
@@ -28,7 +28,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('id', 'varchar(40)', (col) => col.primaryKey().notNull())
         .addColumn('expires_at', 'timestamptz', (col) => col.notNull())
         .addColumn('user_id', 'varchar(20)', (col) =>
-            col.notNull().references('auth.auth_user.id')
+            col.notNull().references('auth.auth_user.id').onDelete('cascade')
         )
         .execute()
 }

@@ -14,7 +14,7 @@ export async function up(db: Kysely<any>): Promise<void> {
             col.notNull()
         )
         .addColumn('page_id', 'integer', (col) =>
-            col.notNull().references('structure.page.id')
+            col.notNull().references('structure.page.id').onDelete('cascade')
         )
         .addColumn('content', 'jsonb', (col) => col.notNull())
         .addColumn('asset_id', 'uuid', (col) =>
@@ -29,7 +29,11 @@ export async function up(db: Kysely<any>): Promise<void> {
     await db.schema
         .createTable('components.component_position')
         .addColumn('component_id', 'integer', (col) =>
-            col.notNull().primaryKey().references('components.component.id')
+            col
+                .notNull()
+                .primaryKey()
+                .references('components.component.id')
+                .onDelete('cascade')
         )
         .addColumn('grid_x', 'integer', (col) => col.notNull())
         .addColumn('grid_y', 'integer', (col) => col.notNull())
