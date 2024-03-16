@@ -1,164 +1,104 @@
 import { Type, Static } from '@sinclair/typebox'
 
-const createComponentTextSchema = Type.Object(
-    {
-        type: Type.Literal('text'),
-        content: Type.Object({
-            textContent: Type.String({ minLength: 1 })
-        })
-    },
-    {
-        additionalProperties: false
-    }
-)
+const createComponentTextSchema = Type.Object({
+    type: Type.Literal('text'),
+    content: Type.Object({
+        textContent: Type.String({ minLength: 1 })
+    })
+})
 
-const updateComponentTextSchema = Type.Object(
-    {
-        type: Type.Literal('text'),
-        content: Type.Object({
-            textContent: Type.Optional(Type.String({ minLength: 1 }))
-        })
-    },
-    {
-        additionalProperties: false
-    }
-)
+const updateComponentTextSchema = Type.Object({
+    type: Type.Literal('text'),
+    content: Type.Object({
+        textContent: Type.Optional(Type.String({ minLength: 1 }))
+    })
+})
 
-const createComponentButtonSchema = Type.Object(
-    {
-        type: Type.Literal('button'),
-        content: Type.Object({
-            label: Type.String({ minLength: 1 }),
-            hyperlink: Type.String()
-        })
-    },
-    {
-        additionalProperties: false
-    }
-)
+const createComponentButtonSchema = Type.Object({
+    type: Type.Literal('button'),
+    content: Type.Object({
+        label: Type.String({ minLength: 1 }),
+        hyperlink: Type.String()
+    })
+})
 
-const updateComponentButtonSchema = Type.Object(
-    {
-        type: Type.Literal('button'),
-        content: Type.Object({
-            label: Type.Optional(Type.String({ minLength: 1 })),
-            hyperlink: Type.Optional(Type.String())
-        })
-    },
-    {
-        additionalProperties: false
-    }
-)
+const updateComponentButtonSchema = Type.Object({
+    type: Type.Literal('button'),
+    content: Type.Object({
+        label: Type.Optional(Type.String({ minLength: 1 })),
+        hyperlink: Type.Optional(Type.String())
+    })
+})
 
-const createComponentImageSchema = Type.Object(
-    {
-        type: Type.Literal('image'),
-        content: Type.Object({
-            altText: Type.Optional(Type.String({ minLength: 1 }))
-        }),
-        assetId: Type.String()
-    },
-    {
-        additionalProperties: false
-    }
-)
+const createComponentImageSchema = Type.Object({
+    type: Type.Literal('image'),
+    content: Type.Object({
+        altText: Type.Optional(Type.String({ minLength: 1 }))
+    }),
+    assetId: Type.String()
+})
 
-const updateComponentImageSchema = Type.Object(
-    {
-        type: Type.Literal('image'),
-        content: Type.Object({
-            altText: Type.Optional(Type.String({ minLength: 1 }))
-        }),
-        assetId: Type.Optional(Type.String())
-    },
-    {
-        additionalProperties: false
-    }
-)
+const updateComponentImageSchema = Type.Object({
+    type: Type.Literal('image'),
+    content: Type.Object({
+        altText: Type.Optional(Type.String({ minLength: 1 }))
+    }),
+    assetId: Type.Optional(Type.String())
+})
 
-const createComponentVideoSchema = Type.Object(
-    {
-        type: Type.Literal('video'),
-        content: Type.Object({
-            altText: Type.Optional(Type.String({ minLength: 1 })),
-            isLooped: Type.Optional(Type.Boolean())
-        }),
-        assetId: Type.String()
-    },
-    {
-        additionalProperties: false
-    }
-)
+const createComponentVideoSchema = Type.Object({
+    type: Type.Literal('video'),
+    content: Type.Object({
+        altText: Type.Optional(Type.String({ minLength: 1 })),
+        isLooped: Type.Optional(Type.Boolean())
+    }),
+    assetId: Type.String()
+})
 
-const updateComponentVideoSchema = Type.Object(
-    {
-        type: Type.Literal('video'),
-        content: Type.Object({
-            altText: Type.Optional(Type.String({ minLength: 1 })),
-            isLooped: Type.Optional(Type.Boolean())
-        }),
-        assetId: Type.Optional(Type.String())
-    },
-    {
-        additionalProperties: false
-    }
-)
+const updateComponentVideoSchema = Type.Object({
+    type: Type.Literal('video'),
+    content: Type.Object({
+        altText: Type.Optional(Type.String({ minLength: 1 })),
+        isLooped: Type.Optional(Type.Boolean())
+    }),
+    assetId: Type.Optional(Type.String())
+})
 
-const createComponentAudioSchema = Type.Object(
-    {
-        type: Type.Literal('audio'),
-        content: Type.Object({
-            altText: Type.Optional(Type.String({ minLength: 1 })),
-            isLooped: Type.Optional(Type.Boolean())
-        }),
-        assetId: Type.String()
-    },
-    {
-        additionalProperties: false
-    }
-)
+const createComponentAudioSchema = Type.Object({
+    type: Type.Literal('audio'),
+    content: Type.Object({
+        altText: Type.Optional(Type.String({ minLength: 1 })),
+        isLooped: Type.Optional(Type.Boolean())
+    }),
+    assetId: Type.String()
+})
 
-const updateComponentAudioSchema = Type.Object(
-    {
-        type: Type.Literal('audio'),
-        content: Type.Object({
-            altText: Type.Optional(Type.String({ minLength: 1 })),
-            isLooped: Type.Optional(Type.Boolean())
-        }),
-        assetId: Type.Optional(Type.String())
-    },
-    {
-        additionalProperties: false
-    }
-)
+const updateComponentAudioSchema = Type.Object({
+    type: Type.Literal('audio'),
+    content: Type.Object({
+        altText: Type.Optional(Type.String({ minLength: 1 })),
+        isLooped: Type.Optional(Type.Boolean())
+    }),
+    assetId: Type.Optional(Type.String())
+})
 
-const createComponentAccordionSchema = Type.Object(
-    {
-        type: Type.Literal('accordion'),
-        content: Type.Object({
-            title: Type.String({ minLength: 1 }),
-            accordionContent: Type.String({ minLength: 1 }),
-            isOpen: Type.Optional(Type.Boolean())
-        })
-    },
-    {
-        additionalProperties: false
-    }
-)
+const createComponentAccordionSchema = Type.Object({
+    type: Type.Literal('accordion'),
+    content: Type.Object({
+        title: Type.String({ minLength: 1 }),
+        accordionContent: Type.String({ minLength: 1 }),
+        isOpen: Type.Optional(Type.Boolean())
+    })
+})
 
-const updateComponentAccordionSchema = Type.Object(
-    {
-        type: Type.Literal('accordion'),
-        content: Type.Object({
-            title: Type.Optional(Type.String({ minLength: 1 })),
-            accordionContent: Type.Optional(Type.String({ minLength: 1 })),
-            isOpen: Type.Optional(Type.Boolean())
-        })
-    },
-    {
-        additionalProperties: false
-    }
-)
+const updateComponentAccordionSchema = Type.Object({
+    type: Type.Literal('accordion'),
+    content: Type.Object({
+        title: Type.Optional(Type.String({ minLength: 1 })),
+        accordionContent: Type.Optional(Type.String({ minLength: 1 })),
+        isOpen: Type.Optional(Type.Boolean())
+    })
+})
 
 export const componentSingleParamsSchema = Type.Object({
     id: Type.Integer({ minimum: 1 })

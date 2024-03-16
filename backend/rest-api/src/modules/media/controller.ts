@@ -31,7 +31,7 @@ export async function createMedia(
                 mimetype: data.mimetype,
                 file_hash: createHash('sha256').update(bufferData).digest('hex')
             })
-            .onConflict((oc) => oc.column('file_hash').doNothing())
+            .onConflict((oc) => oc.constraint('uniqueFileHash').doNothing())
             .returningAll()
             .executeTakeFirstOrThrow()
     } catch (error) {

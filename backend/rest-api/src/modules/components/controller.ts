@@ -6,6 +6,7 @@ import {
     UpdateComponentSchemaType,
     ComponentPositionSchemaType
 } from './schemas.js'
+import { sql } from 'kysely'
 
 export async function createComponent(
     req: FastifyRequest<{
@@ -49,7 +50,7 @@ export async function createComponent(
 
         return reply.status(201).send(component)
     } catch (error) {
-        return reply.notFound('Page not found or not allowed')
+        return reply.notFound('Page not found or not allowed or invalid asset')
     }
 }
 
@@ -107,7 +108,11 @@ export async function updateComponentById(
     try {
         const page = await req.server.kysely.db
             .updateTable('components.component')
-            .set({ content: JSON.stringify(content), asset_id: assetId })
+            .set({
+                content: JSON.stringify(content),
+                asset_id: assetId,
+                updated_at: sql`now()`
+            })
             .where((eb) =>
                 eb.exists(
                     eb.selectFrom('structure.website').where(
@@ -121,13 +126,20 @@ export async function updateComponentById(
                     )
                 )
             )
-            .where('id', '=', componentId)
+            .where((eb) =>
+                eb.and({
+                    id: componentId,
+                    type
+                })
+            )
             .returningAll()
             .executeTakeFirstOrThrow()
 
         return reply.status(200).send(page)
     } catch (error) {
-        return reply.notFound('Page not found or not allowed')
+        return reply.notFound(
+            'Page not found or not allowed or invalid component type'
+        )
     }
 }
 

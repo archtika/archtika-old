@@ -1,3 +1,4 @@
+import { sql } from 'kysely'
 import {
     CreatePageSchemaType,
     UpdatePageSchemaType,
@@ -34,7 +35,9 @@ export async function createPage(
 
         return reply.status(201).send(page)
     } catch (error) {
-        return reply.notFound('Website not found or not allowed')
+        return reply.notFound(
+            'Website not found or not allowed or duplicate route value'
+        )
     }
 }
 
@@ -82,9 +85,10 @@ export async function updatePageById(
         const page = await req.server.kysely.db
             .updateTable('structure.page')
             .set({
-                route: `/${route}`,
+                ...(route ? { route: `/${route}` } : {}),
                 title,
-                meta_description: metaDescription
+                meta_description: metaDescription,
+                updated_at: sql`now()`
             })
             .where((eb) =>
                 eb.exists(
