@@ -2,7 +2,8 @@
     "scripts": {
         "build": "tsc -p tsconfig.json -w",
         "start": "node --watch ./js-output/index.js",
-        "format": "prettier . --write"
+        "format": "prettier . --write",
+        "test": "node --test ./js-output/modules/**/tests.js"
     },
     "dependencies": {
         "@fastify/autoload": "^5.8.0",

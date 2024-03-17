@@ -45,9 +45,13 @@ fastify.register(fastifyAutoload, {
     dir: join(__dirname, 'modules'),
     options: Object.assign({ prefix: '/api/v1' }),
     ignoreFilter: (path) =>
-        path.includes('schemas') || path.includes('controller'),
+        path.includes('schemas') ||
+        path.includes('controller') ||
+        path.includes('tests'),
     autoHooks: true,
     cascadeHooks: true
 })
 
 fastify.listen({ port: 3000 })
+
+export default fastify

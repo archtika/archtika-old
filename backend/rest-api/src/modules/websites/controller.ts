@@ -86,5 +86,5 @@ export async function getAllWebsites(req: FastifyRequest, reply: FastifyReply) {
         .where('user_id', '=', req.user?.id ?? '')
         .execute()
 
-    return allWebsites
+    return reply.status(200).send(allWebsites)
 }
