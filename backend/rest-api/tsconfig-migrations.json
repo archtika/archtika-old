@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "outDir": "./js-output"
+    },
+    "include": ["./src/db-migrations", "./src/utils/migrate.ts"],
+    "extends": "@tsconfig/node20/tsconfig.json"
+}
