@@ -1,7 +1,10 @@
 {
     "scripts": {
         "build": "tsc -p tsconfig.json -w",
-        "start": "pm2 start ./js-output/index.js -i 'max' --watch --ignore-watch='node_modules' --update-env",
+        "start": "pm2 start ./js-output/index.js -i 'max' --watch --ignore-watch='node_modules'",
+        "stop": "pm2 stop all",
+        "restart": "pm2 restart all",
+        "delete": "pm2 delete all",
         "format": "prettier . --write",
         "test": "node --test ./js-output/modules/**/tests.js"
     },

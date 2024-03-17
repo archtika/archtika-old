@@ -18,7 +18,11 @@ export async function up(db: Kysely<any>): Promise<void> {
         )
         .addColumn('content', 'jsonb', (col) => col.notNull())
         .addColumn('asset_id', 'uuid', (col) =>
-            col.references('media.media_asset.id')
+            col
+                .references('media.media_asset.id')
+                .check(
+                    sql`type NOT IN ('image', 'video', 'audio') OR asset_id IS NOT NULL`
+                )
         )
         .addColumn('created_at', 'timestamptz', (col) =>
             col.notNull().defaultTo(sql`now()`)
