@@ -21,12 +21,12 @@ const envToLogger = {
             }
         }
     },
-    production: true,
+    production: false,
     test: false
 }
 
 const fastify = Fastify({
-    logger: envToLogger['development'] ?? true,
+    logger: envToLogger[process.env.NODE_ENV as keyof typeof envToLogger],
     ajv: {
         plugins: [
             function (ajv: any) {

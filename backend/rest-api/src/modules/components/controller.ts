@@ -24,11 +24,18 @@ export async function createComponent(
         assetId = req.body.assetId
     }
 
+    const mimeTypes = {
+        image: ['image/jpeg', 'image/png', 'image/svg+xml'],
+        audio: ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg'],
+        video: ['video/mp4', 'video/webm', 'video/ogg']
+    }
+
     try {
-        const component = await req.server.kysely.db
+        const component = req.server.kysely.db
             .insertInto('components.component')
-            .values(({ selectFrom }) => ({
-                page_id: selectFrom('structure.page')
+            .values((eb) => ({
+                page_id: eb
+                    .selectFrom('structure.page')
                     .innerJoin(
                         'structure.website',
                         'structure.website.id',
@@ -43,12 +50,26 @@ export async function createComponent(
                     ),
                 type,
                 content: JSON.stringify(content),
-                asset_id: assetId
+                asset_id: eb
+                    .selectFrom('media.media_asset')
+                    .select('media.media_asset.id')
+                    .where('media.media_asset.id', '=', assetId)
+                    .$if(
+                        type === 'image' ||
+                            type === 'video' ||
+                            type === 'audio',
+                        (qb) =>
+                            qb.where(
+                                'media.media_asset.mimetype',
+                                'in',
+                                mimeTypes[type as keyof typeof mimeTypes]
+                            )
+                    )
             }))
             .returningAll()
             .executeTakeFirstOrThrow()
 
-        return reply.status(201).send(component)
+        return reply.status(201).send('hello')
     } catch (error) {
         return reply.notFound('Page not found or not allowed or invalid asset')
     }
