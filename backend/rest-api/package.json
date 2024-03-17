@@ -1,10 +1,9 @@
 {
     "scripts": {
         "build": "tsc -p tsconfig.json -w",
-        "start": "pm2 start ./js-output/index.js -i 'max' --watch --ignore-watch='node_modules'",
-        "stop": "pm2 stop all",
-        "restart": "pm2 restart all",
-        "delete": "pm2 delete all",
+        "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --ignore-watch='node_modules' --name rest-api",
+        "start": "pm2 start rest-api",
+        "stop": "pm2 stop rest-api",
         "format": "prettier . --write",
         "test": "node --test ./js-output/modules/**/tests.js"
     },
