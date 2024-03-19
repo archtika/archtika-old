@@ -17,7 +17,8 @@ export async function createWebsite(
         .values({
             user_id: req.user?.id ?? '',
             title,
-            meta_description: metaDescription
+            meta_description: metaDescription,
+            last_modified_by: req.user?.id ?? ''
         })
         .returningAll()
         .executeTakeFirstOrThrow()

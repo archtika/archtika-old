@@ -15,6 +15,9 @@ export async function up(db: Kysely<any>): Promise<void> {
             col.notNull().defaultTo(sql`now()`)
         )
         .addColumn('updated_at', 'timestamptz')
+        .addColumn('last_modified_by', 'varchar(20)', (col) =>
+            col.notNull().references('auth.auth_user.id').onDelete('cascade')
+        )
         .execute()
 
     await db.schema

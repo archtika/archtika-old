@@ -17,6 +17,9 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('website_id', 'integer', (col) =>
             col.references('structure.website.id').notNull()
         )
+        .addColumn('user_id', 'varchar(20)', (col) =>
+            col.notNull().references('auth.auth_user.id')
+        )
         .addColumn('entity_type', sql`tracking.entity_type`, (col) =>
             col.notNull()
         )
