@@ -36,3 +36,9 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addUniqueConstraint('uniqueRoute', ['website_id', 'route'])
         .execute()
 }
+
+export async function down(db: Kysely<any>): Promise<void> {
+    await db.schema.dropTable('structure.page').execute()
+    await db.schema.dropTable('structure.website').execute()
+    await db.schema.dropSchema('structure').execute()
+}

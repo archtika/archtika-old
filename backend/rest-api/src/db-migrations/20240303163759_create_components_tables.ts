@@ -45,3 +45,10 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addColumn('grid_height', 'integer', (col) => col.notNull())
         .execute()
 }
+
+export async function down(db: Kysely<any>): Promise<void> {
+    await db.schema.dropTable('components.component_position').execute()
+    await db.schema.dropTable('components.component').execute()
+    await db.schema.dropType('components.component_type').execute()
+    await db.schema.dropSchema('components').execute()
+}

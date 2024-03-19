@@ -18,3 +18,8 @@ export async function up(db: Kysely<any>): Promise<void> {
         .addUniqueConstraint('uniqueFileHash', ['file_hash', 'user_id'])
         .execute()
 }
+
+export async function down(db: Kysely<any>): Promise<void> {
+    await db.schema.dropTable('media.media_asset').execute()
+    await db.schema.dropSchema('media').execute()
+}

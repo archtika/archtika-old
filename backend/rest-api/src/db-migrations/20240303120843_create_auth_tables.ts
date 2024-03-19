@@ -32,3 +32,10 @@ export async function up(db: Kysely<any>): Promise<void> {
         )
         .execute()
 }
+
+export async function down(db: Kysely<any>): Promise<void> {
+    await db.schema.dropTable('auth.user_session').execute()
+    await db.schema.dropTable('auth.oauth_account').execute()
+    await db.schema.dropTable('auth.auth_user').execute()
+    await db.schema.dropSchema('auth').execute()
+}

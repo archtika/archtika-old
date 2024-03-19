@@ -13,6 +13,29 @@ async function swagger(fastify: FastifyInstance) {
             externalDocs: {
                 url: 'https://github.com/archtika/archtika'
             },
+            tags: [
+                {
+                    name: 'account'
+                },
+                {
+                    name: 'websites'
+                },
+                {
+                    name: 'pages'
+                },
+                {
+                    name: 'components'
+                },
+                {
+                    name: 'media'
+                },
+                {
+                    name: 'collaborators'
+                },
+                {
+                    name: 'change-log'
+                }
+            ],
             components: {
                 securitySchemes: {
                     oAuthGoogle: {
