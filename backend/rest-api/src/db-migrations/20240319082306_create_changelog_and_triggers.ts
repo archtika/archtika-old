@@ -1,0 +1,100 @@
+import { Kysely, sql } from 'kysely'
+
+export async function up(db: Kysely<any>): Promise<void> {
+    await db.schema.createSchema('tracking').execute()
+    await db.schema
+        .createType('tracking.entity_type')
+        .asEnum(['website', 'page', 'component'])
+        .execute()
+    await db.schema
+        .createType('tracking.entity_action_type')
+        .asEnum(['create', 'update', 'delete'])
+        .execute()
+
+    await db.schema
+        .createTable('tracking.change_log')
+        .addColumn('id', 'integer', (col) => col.primaryKey().notNull())
+        .addColumn('website_id', 'integer', (col) =>
+            col.references('structure.website.id').notNull()
+        )
+        .addColumn('entity_type', sql`tracking.entity_type`, (col) =>
+            col.notNull()
+        )
+        .addColumn('action_type', sql`tracking.entity_action_type`, (col) =>
+            col.notNull()
+        )
+        .addColumn('previous_value', 'jsonb')
+        .addColumn('new_value', 'jsonb')
+        .addColumn('change_summary', 'varchar', (col) => col.notNull())
+        .addColumn('created_at', 'timestamptz', (col) =>
+            col.notNull().defaultTo(sql`now()`)
+        )
+        .execute()
+
+    await sql`
+      CREATE FUNCTION tracking.log_change()
+      RETURNS TRIGGER
+      LANGUAGE plpgsql
+      AS $$
+      DECLARE
+        entity_type_val tracking.entity_type;
+        action_type_val tracking.entity_action_type;
+        previous_value_val JSONB;
+        new_value_val JSONB;
+        change_summary_text VARCHAR;
+        website_id_val INT;
+      BEGIN
+        IF TG_TABLE_NAME = 'website' THEN
+          entity_type_val := 'website';
+          website_id_val := COALESCE(NEW.id, OLD.id);
+        ELSIF TG_TABLE_NAME = 'page' THEN
+          entity_type_val := 'page';
+          website_id_val := COALESCE(NEW.website_id, OLD.website_id);
+        ELSIF TG_TABLE_NAME = 'component' THEN
+          entity_type_val := 'component';
+          SELECT page.website_id INTO website_id_val
+          FROM structure.page
+          WHERE page.id = COALESCE(NEW.page_id, OLD.page_id);
+        END IF;
+
+        IF TG_OP = 'INSERT' THEN
+          action_type_val := 'create';
+          previous_value_val := row_to_json(OLD);
+          new_value_val := row_to_json(NEW);
+        ELSIF TG_OP = 'UPDATE' THEN
+          action_type_val := 'update';
+          previous_value_val := row_to_json(OLD);
+          new_value_val := row_to_json(NEW);
+        ELSIF TG_OP = 'DELETE' THEN
+          action_type_val := 'delete';
+          previous_value_val := row_to_json(OLD);
+          new_value_val := NULL;
+        END IF; 
+
+        change_summary_text := action_type_val || ' ' || TG_TABLE_NAME;
+
+        INSERT INTO tracking.change_log (website_id, entity_type, action_type, previous_value, new_value, change_summary)
+        VALUES (website_id_val, entity_type_val, action_type_val, previous_value_val, new_value_val, change_summary_text);
+      EXCEPTION
+        WHEN others THEN
+          RAISE WARNING 'Logging failed: %', SQLERRM;
+          RETURN NEW;
+      END;
+      $$;
+
+      CREATE TRIGGER log_website_changes
+      AFTER UPDATE ON structure.website
+      FOR EACH ROW
+      EXECUTE FUNCTION tracking.log_change();
+
+      CREATE TRIGGER log_page_changes
+      AFTER INSERT OR UPDATE OR DELETE ON structure.page
+      FOR EACH ROW
+      EXECUTE FUNCTION tracking.log_change();
+
+      CREATE TRIGGER log_component_changes
+      AFTER INSERT OR UPDATE OR DELETE ON components.component
+      FOR EACH ROW
+      EXECUTE FUNCTION tracking.log_change();
+    `.execute(db)
+}
