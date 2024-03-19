@@ -13,7 +13,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await db.schema
         .createTable('tracking.change_log')
-        .addColumn('id', 'integer', (col) => col.primaryKey().notNull())
+        .addColumn('id', 'serial', (col) => col.primaryKey().notNull())
         .addColumn('website_id', 'integer', (col) =>
             col.references('structure.website.id').notNull()
         )
@@ -75,6 +75,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 
         INSERT INTO tracking.change_log (website_id, entity_type, action_type, previous_value, new_value, change_summary)
         VALUES (website_id_val, entity_type_val, action_type_val, previous_value_val, new_value_val, change_summary_text);
+
+        RETURN NEW;
       EXCEPTION
         WHEN others THEN
           RAISE WARNING 'Logging failed: %', SQLERRM;
@@ -97,4 +99,17 @@ export async function up(db: Kysely<any>): Promise<void> {
       FOR EACH ROW
       EXECUTE FUNCTION tracking.log_change();
     `.execute(db)
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+    await db.schema.dropTable('tracking.change_log').execute()
+    await sql`DROP TRIGGER log_website_changes ON structure.website`.execute(db)
+    await sql`DROP TRIGGER log_page_changes ON structure.page`.execute(db)
+    await sql`DROP TRIGGER log_component_changes ON components.component`.execute(
+        db
+    )
+    await sql`DROP FUNCTION tracking.log_change()`.execute(db)
+    await db.schema.dropType('tracking.entity_type').execute()
+    await db.schema.dropType('tracking.entity_action_type').execute()
+    await db.schema.dropSchema('tracking').execute()
 }

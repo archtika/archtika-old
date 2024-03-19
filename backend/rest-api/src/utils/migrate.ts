@@ -18,16 +18,16 @@ const kyselyDB = new Kysely<DB>({
     })
 })
 
-async function migrateToLatest() {
-    const migrator = new Migrator({
-        db: kyselyDB,
-        provider: new FileMigrationProvider({
-            fs,
-            path,
-            migrationFolder: path.join(__dirname, 'db-migrations')
-        })
+const migrator = new Migrator({
+    db: kyselyDB,
+    provider: new FileMigrationProvider({
+        fs,
+        path,
+        migrationFolder: path.join(__dirname, 'db-migrations')
     })
+})
 
+export async function migrateToLatest() {
     const { error, results } = await migrator.migrateToLatest()
 
     results?.forEach((it) => {
@@ -49,4 +49,46 @@ async function migrateToLatest() {
     await kyselyDB.destroy()
 }
 
-migrateToLatest()
+export async function migrateToNext() {
+    const { error, results } = await migrator.migrateUp()
+
+    const result = results?.[0]
+
+    if (result?.status === 'Success') {
+        console.log(
+            `Migration "${result.migrationName}" was executed successfully`
+        )
+    } else if (result?.status === 'Error') {
+        console.error(`Failed to execute migration "${result.migrationName}"`)
+    }
+
+    if (error) {
+        console.error('failed to migrate')
+        console.error(error)
+        process.exit(1)
+    }
+
+    await kyselyDB.destroy()
+}
+
+export async function migrateToPrevious() {
+    const { error, results } = await migrator.migrateDown()
+
+    const result = results?.[0]
+
+    if (result?.status === 'Success') {
+        console.log(
+            `Migration "${result.migrationName}" was executed successfully`
+        )
+    } else if (result?.status === 'Error') {
+        console.error(`Failed to execute migration "${result.migrationName}"`)
+    }
+
+    if (error) {
+        console.error('failed to migrate')
+        console.error(error)
+        process.exit(1)
+    }
+
+    await kyselyDB.destroy()
+}
