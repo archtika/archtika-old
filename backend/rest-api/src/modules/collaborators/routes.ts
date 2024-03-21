@@ -1,4 +1,18 @@
 import { FastifyInstance } from 'fastify'
+import {
+    addCollaborator,
+    removeCollaborator,
+    updateCollaborator,
+    viewCollaborators
+} from './controller.js'
+import {
+    paramsSchema,
+    ParamsSchemaType,
+    singleParamsSchema,
+    SingleParamsSchemaType,
+    modifyCollaboratorSchema,
+    ModifyCollaboratorSchemaType
+} from './schemas.js'
 
 const commonSchema = {
     schema: {
@@ -7,44 +21,56 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.get(
-        '/collaborators/:id',
+    fastify.get<{ Params: SingleParamsSchemaType }>(
+        '/:id/collaborators',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: singleParamsSchema
             }
         },
-        async () => {}
+        viewCollaborators
     )
 
-    fastify.post(
-        '/collaborators/:id',
+    fastify.post<{
+        Params: ParamsSchemaType
+        Body: ModifyCollaboratorSchemaType
+    }>(
+        '/:websiteId/collaborators/:userId',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: paramsSchema,
+                body: modifyCollaboratorSchema
             }
         },
-        async () => {}
+        addCollaborator
     )
 
-    fastify.patch(
-        '/collaborators/:id',
+    fastify.patch<{
+        Params: ParamsSchemaType
+        Body: ModifyCollaboratorSchemaType
+    }>(
+        '/:websiteId/collaborators/:userId',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: paramsSchema,
+                body: modifyCollaboratorSchema
             }
         },
-        async () => {}
+        updateCollaborator
     )
 
-    fastify.delete(
-        '/collaborators/:id',
+    fastify.delete<{ Params: ParamsSchemaType }>(
+        '/:websiteId/collaborators/:userId',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: paramsSchema
             }
         },
-        async () => {}
+        removeCollaborator
     )
 }
 

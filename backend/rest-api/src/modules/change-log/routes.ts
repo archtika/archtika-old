@@ -1,4 +1,6 @@
 import { FastifyInstance } from 'fastify'
+import { paramsSchema, ParamsSchemaType } from './schemas.js'
+import { viewChangeLog } from './controller.js'
 
 const commonSchema = {
     schema: {
@@ -7,14 +9,15 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.get(
+    fastify.get<{ Params: ParamsSchemaType }>(
         '/:id/change-log',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                params: paramsSchema
             }
         },
-        async () => {}
+        viewChangeLog
     )
 }
 

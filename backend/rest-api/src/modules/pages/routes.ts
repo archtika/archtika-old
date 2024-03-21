@@ -28,7 +28,7 @@ export default async function (fastify: FastifyInstance) {
         Params: SinglePageParamsSchemaType
         Body: CreatePageSchemaType
     }>(
-        '/:websiteId/pages',
+        '/:id/pages',
         {
             schema: {
                 tags: commonSchema.schema.tags,
@@ -71,7 +71,7 @@ export default async function (fastify: FastifyInstance) {
     )
 
     fastify.get<{ Params: SinglePageParamsSchemaType }>(
-        '/:websiteId/pages',
+        '/:id/pages',
         {
             schema: {
                 tags: commonSchema.schema.tags,

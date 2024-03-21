@@ -4,7 +4,7 @@ import {
     UpdateWebsiteSchemaType,
     WebsiteParamsSchemaType
 } from './schemas.js'
-import { DeleteResult, sql } from 'kysely'
+import { sql } from 'kysely'
 
 export async function createWebsite(
     req: FastifyRequest<{ Body: CreateWebsiteSchemaType }>,
@@ -56,7 +56,8 @@ export async function updateWebsiteById(
         .set({
             title,
             meta_description: metaDescription,
-            updated_at: sql`now()`
+            updated_at: sql`now()`,
+            last_modified_by: req.user?.id
         })
         .where((eb) => eb.and({ id, user_id: req.user?.id }))
         .returningAll()

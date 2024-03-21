@@ -14,7 +14,7 @@ export async function createPage(
     }>,
     reply: FastifyReply
 ) {
-    const { websiteId } = req.params
+    const { id } = req.params
     const { route, title = '', metaDescription } = req.body
 
     try {
@@ -23,9 +23,7 @@ export async function createPage(
             .values(({ selectFrom }) => ({
                 website_id: selectFrom('structure.website')
                     .select('id')
-                    .where((eb) =>
-                        eb.and({ id: websiteId, user_id: req.user?.id })
-                    ),
+                    .where((eb) => eb.and({ id, user_id: req.user?.id })),
                 route: `/${route}`,
                 title,
                 meta_description: metaDescription
@@ -137,7 +135,7 @@ export async function getAllPages(
     req: FastifyRequest<{ Params: SinglePageParamsSchemaType }>,
     reply: FastifyReply
 ) {
-    const { websiteId } = req.params
+    const { id } = req.params
 
     const allPages = await req.server.kysely.db
         .selectFrom('structure.website')
@@ -149,7 +147,7 @@ export async function getAllPages(
         .selectAll(['structure.page'])
         .where((eb) =>
             eb.and({
-                'structure.website.id': websiteId,
+                'structure.website.id': id,
                 'structure.website.user_id': req.user?.id
             })
         )
@@ -160,7 +158,7 @@ export async function getAllPages(
             await req.server.kysely.db
                 .selectFrom('structure.website')
                 .select('id')
-                .where((eb) => eb.and({ id: websiteId, user_id: req.user?.id }))
+                .where((eb) => eb.and({ id, user_id: req.user?.id }))
                 .executeTakeFirstOrThrow()
         } catch (error) {
             return reply.notFound('Website not found or not allowed')

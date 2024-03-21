@@ -24,7 +24,7 @@ export const pageParamsSchema = Type.Object({
 export type PageParamsSchemaType = Static<typeof pageParamsSchema>
 
 export const singlePageParamsSchema = Type.Object({
-    websiteId: Type.Integer({ minimum: 1 })
+    id: Type.Integer({ minimum: 1 })
 })
 
 export type SinglePageParamsSchemaType = Static<typeof singlePageParamsSchema>
