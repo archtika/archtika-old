@@ -19,27 +19,109 @@ export async function createPage(
 
     try {
         const page = await req.server.kysely.db
-            .insertInto('structure.page')
-            .values(({ selectFrom }) => ({
-                website_id: selectFrom('structure.website')
-                    .select('id')
-                    .where((eb) => eb.and({ id, user_id: req.user?.id })),
-                route: `/${route}`,
-                title,
-                meta_description: metaDescription
-            }))
-            .returningAll()
-            .executeTakeFirstOrThrow()
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({ last_modified_by: req.user?.id ?? '' })
+                    .where('id', '=', id)
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .insertInto('structure.page')
+                    .values(({ selectFrom, and, or, exists }) => ({
+                        website_id: selectFrom('structure.website')
+                            .select('id')
+                            .where(
+                                or([
+                                    and({ id, user_id: req.user?.id }),
+                                    exists(
+                                        selectFrom('collaboration.collaborator')
+                                            .where(
+                                                and({
+                                                    user_id: req.user?.id,
+                                                    website_id: id
+                                                })
+                                            )
+                                            .where('permission_level', '>=', 20)
+                                    )
+                                ])
+                            ),
+                        route: `/${route}`,
+                        title,
+                        meta_description: metaDescription
+                    }))
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(201).send(page)
     } catch (error) {
-        return reply.notFound(
-            'Website not found or not allowed or duplicate route value'
-        )
+        return reply.notFound('Website not found or not allowed')
     }
 }
 
-export async function getPageById(
+export async function getAllPages(
+    req: FastifyRequest<{ Params: SinglePageParamsSchemaType }>,
+    reply: FastifyReply
+) {
+    const { id } = req.params
+
+    const allPages = await req.server.kysely.db
+        .selectFrom('structure.page')
+        .selectAll()
+        .where(({ or, and, exists, selectFrom }) =>
+            or([
+                exists(
+                    selectFrom('structure.website').where(
+                        and({ id, user_id: req.user?.id })
+                    )
+                ),
+                exists(
+                    selectFrom('collaboration.collaborator')
+                        .where(
+                            and({
+                                user_id: req.user?.id,
+                                website_id: id
+                            })
+                        )
+                        .where('permission_level', '>=', 10)
+                )
+            ])
+        )
+        .where('website_id', '=', id)
+        .execute()
+
+    if (!allPages.length) {
+        try {
+            await req.server.kysely.db
+                .selectFrom('structure.website')
+                .select('id')
+                .where(({ and, or, selectFrom, exists }) =>
+                    or([
+                        and({ id, user_id: req.user?.id }),
+                        exists(
+                            selectFrom('collaboration.collaborator')
+                                .where(
+                                    and({
+                                        user_id: req.user?.id,
+                                        website_id: id
+                                    })
+                                )
+                                .where('permission_level', '>=', 10)
+                        )
+                    ])
+                )
+                .executeTakeFirstOrThrow()
+        } catch (error) {
+            return reply.notFound('Website not found or not allowed')
+        }
+    }
+
+    return reply.status(200).send(allPages)
+}
+
+export async function getPage(
     req: FastifyRequest<{ Params: PageParamsSchemaType }>,
     reply: FastifyReply
 ) {
@@ -47,20 +129,28 @@ export async function getPageById(
 
     try {
         const page = await req.server.kysely.db
-            .selectFrom('structure.website')
-            .innerJoin(
-                'structure.page',
-                'structure.website.id',
-                'structure.page.website_id'
+            .selectFrom('structure.page')
+            .selectAll()
+            .where(({ or, and, exists, selectFrom }) =>
+                or([
+                    exists(
+                        selectFrom('structure.website').where(
+                            and({ id: websiteId, user_id: req.user?.id })
+                        )
+                    ),
+                    exists(
+                        selectFrom('collaboration.collaborator')
+                            .where(
+                                and({
+                                    user_id: req.user?.id,
+                                    website_id: websiteId
+                                })
+                            )
+                            .where('permission_level', '>=', 10)
+                    )
+                ])
             )
-            .selectAll(['structure.page'])
-            .where((eb) =>
-                eb.and({
-                    'structure.website.id': websiteId,
-                    'structure.website.user_id': req.user?.id,
-                    'structure.page.id': pageId
-                })
-            )
+            .where('id', '=', pageId)
             .executeTakeFirstOrThrow()
 
         return reply.status(200).send(page)
@@ -69,7 +159,7 @@ export async function getPageById(
     }
 }
 
-export async function updatePageById(
+export async function updatePage(
     req: FastifyRequest<{
         Params: PageParamsSchemaType
         Body: UpdatePageSchemaType
@@ -81,23 +171,48 @@ export async function updatePageById(
 
     try {
         const page = await req.server.kysely.db
-            .updateTable('structure.page')
-            .set({
-                ...(route ? { route: `/${route}` } : {}),
-                title,
-                meta_description: metaDescription,
-                updated_at: sql`now()`
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({ last_modified_by: req.user?.id ?? '' })
+                    .where('id', '=', websiteId)
+                    .executeTakeFirstOrThrow()
+
+                return await req.server.kysely.db
+                    .updateTable('structure.page')
+                    .set({
+                        ...(route ? { route: `/${route}` } : {}),
+                        title,
+                        meta_description: metaDescription,
+                        updated_at: sql`now()`
+                    })
+                    .where(({ exists, and, selectFrom, or }) =>
+                        or([
+                            exists(
+                                selectFrom('structure.website').where(
+                                    and({
+                                        id: websiteId,
+                                        user_id: req.user?.id
+                                    })
+                                )
+                            ),
+                            exists(
+                                selectFrom('collaboration.collaborator')
+                                    .where(
+                                        and({
+                                            user_id: req.user?.id,
+                                            website_id: websiteId
+                                        })
+                                    )
+                                    .where('permission_level', '>=', 20)
+                            )
+                        ])
+                    )
+                    .where('id', '=', pageId)
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
             })
-            .where((eb) =>
-                eb.exists(
-                    eb
-                        .selectFrom('structure.website')
-                        .where(eb.and({ id: websiteId, user_id: req.user?.id }))
-                )
-            )
-            .where('id', '=', pageId)
-            .returningAll()
-            .executeTakeFirstOrThrow()
 
         return reply.status(200).send(page)
     } catch (error) {
@@ -113,57 +228,47 @@ export async function deletePage(
 
     try {
         const page = await req.server.kysely.db
-            .deleteFrom('structure.page')
-            .where((eb) =>
-                eb.exists(
-                    eb
-                        .selectFrom('structure.website')
-                        .where(eb.and({ id: websiteId, user_id: req.user?.id }))
-                )
-            )
-            .where((eb) => eb.and({ id: pageId, website_id: websiteId }))
-            .returningAll()
-            .executeTakeFirstOrThrow()
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({ last_modified_by: req.user?.id ?? '' })
+                    .where('id', '=', websiteId)
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .deleteFrom('structure.page')
+                    .where(({ exists, and, selectFrom, or }) =>
+                        or([
+                            exists(
+                                selectFrom('structure.website').where(
+                                    and({
+                                        id: websiteId,
+                                        user_id: req.user?.id
+                                    })
+                                )
+                            ),
+                            exists(
+                                selectFrom('collaboration.collaborator')
+                                    .where(
+                                        and({
+                                            user_id: req.user?.id,
+                                            website_id: websiteId
+                                        })
+                                    )
+                                    .where('permission_level', '>=', 20)
+                            )
+                        ])
+                    )
+                    .where(({ and }) =>
+                        and({ id: pageId, website_id: websiteId })
+                    )
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(200).send(page)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }
-}
-
-export async function getAllPages(
-    req: FastifyRequest<{ Params: SinglePageParamsSchemaType }>,
-    reply: FastifyReply
-) {
-    const { id } = req.params
-
-    const allPages = await req.server.kysely.db
-        .selectFrom('structure.website')
-        .innerJoin(
-            'structure.page',
-            'structure.website.id',
-            'structure.page.website_id'
-        )
-        .selectAll(['structure.page'])
-        .where((eb) =>
-            eb.and({
-                'structure.website.id': id,
-                'structure.website.user_id': req.user?.id
-            })
-        )
-        .execute()
-
-    if (!allPages.length) {
-        try {
-            await req.server.kysely.db
-                .selectFrom('structure.website')
-                .select('id')
-                .where((eb) => eb.and({ id, user_id: req.user?.id }))
-                .executeTakeFirstOrThrow()
-        } catch (error) {
-            return reply.notFound('Website not found or not allowed')
-        }
-    }
-
-    return reply.status(200).send(allPages)
 }

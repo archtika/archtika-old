@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify'
 import {
     createWebsite,
-    getWebsiteById,
-    updateWebsiteById,
+    getWebsite,
+    updateWebsite,
     deleteWebsite,
     getAllWebsites
 } from './controller.js'
@@ -33,7 +33,9 @@ export default async function (fastify: FastifyInstance) {
         createWebsite
     )
 
-    fastify.get('/:id', commonSchema, getWebsiteById)
+    fastify.get('/', commonSchema, getAllWebsites)
+
+    fastify.get('/:id', commonSchema, getWebsite)
 
     fastify.patch<{
         Params: WebsiteParamsSchemaType
@@ -47,7 +49,7 @@ export default async function (fastify: FastifyInstance) {
                 tags: commonSchema.schema.tags
             }
         },
-        updateWebsiteById
+        updateWebsite
     )
 
     fastify.delete<{ Params: WebsiteParamsSchemaType }>(
@@ -60,8 +62,6 @@ export default async function (fastify: FastifyInstance) {
         },
         deleteWebsite
     )
-
-    fastify.get('/', commonSchema, getAllWebsites)
 }
 
 export const autoPrefix = '/websites'

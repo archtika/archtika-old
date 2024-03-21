@@ -1,5 +1,18 @@
 import { Static, Type } from '@sinclair/typebox'
 
+export const singlePageParamsSchema = Type.Object({
+    id: Type.Integer({ minimum: 1 })
+})
+
+export type SinglePageParamsSchemaType = Static<typeof singlePageParamsSchema>
+
+export const pageParamsSchema = Type.Object({
+    pageId: Type.Integer({ minimum: 1 }),
+    websiteId: Type.Integer({ minimum: 1 })
+})
+
+export type PageParamsSchemaType = Static<typeof pageParamsSchema>
+
 export const createPageSchema = Type.Object({
     route: Type.String({ minLength: 5 }),
     title: Type.Optional(Type.String({ minLength: 5, maxLength: 50 })),
@@ -15,16 +28,3 @@ export const updatePageSchema = Type.Object({
 })
 
 export type UpdatePageSchemaType = Static<typeof updatePageSchema>
-
-export const pageParamsSchema = Type.Object({
-    pageId: Type.Integer({ minimum: 1 }),
-    websiteId: Type.Integer({ minimum: 1 })
-})
-
-export type PageParamsSchemaType = Static<typeof pageParamsSchema>
-
-export const singlePageParamsSchema = Type.Object({
-    id: Type.Integer({ minimum: 1 })
-})
-
-export type SinglePageParamsSchemaType = Static<typeof singlePageParamsSchema>

@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify'
 import {
     createPage,
-    getPageById,
-    updatePageById,
+    getPage,
+    updatePage,
     deletePage,
     getAllPages
 } from './controller.js'
@@ -39,6 +39,17 @@ export default async function (fastify: FastifyInstance) {
         createPage
     )
 
+    fastify.get<{ Params: SinglePageParamsSchemaType }>(
+        '/:id/pages',
+        {
+            schema: {
+                tags: commonSchema.schema.tags,
+                params: singlePageParamsSchema
+            }
+        },
+        getAllPages
+    )
+
     fastify.get<{ Params: PageParamsSchemaType }>(
         '/:websiteId/pages/:pageId',
         {
@@ -47,7 +58,7 @@ export default async function (fastify: FastifyInstance) {
                 params: pageParamsSchema
             }
         },
-        getPageById
+        getPage
     )
 
     fastify.patch<{ Params: PageParamsSchemaType; Body: UpdatePageSchemaType }>(
@@ -59,7 +70,7 @@ export default async function (fastify: FastifyInstance) {
                 body: updatePageSchema
             }
         },
-        updatePageById
+        updatePage
     )
 
     fastify.delete<{ Params: PageParamsSchemaType }>(
@@ -68,17 +79,6 @@ export default async function (fastify: FastifyInstance) {
             schema: { tags: commonSchema.schema.tags, params: pageParamsSchema }
         },
         deletePage
-    )
-
-    fastify.get<{ Params: SinglePageParamsSchemaType }>(
-        '/:id/pages',
-        {
-            schema: {
-                tags: commonSchema.schema.tags,
-                params: singlePageParamsSchema
-            }
-        },
-        getAllPages
     )
 }
 

@@ -40,9 +40,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         )
         .execute()
 
-    await sql
-        .raw(
-            `
+    await sql`
       CREATE FUNCTION tracking.log_change()
       RETURNS TRIGGER
       LANGUAGE plpgsql
@@ -138,32 +136,36 @@ export async function up(db: Kysely<any>): Promise<void> {
       $$;
 
       CREATE TRIGGER log_website_changes
-      AFTER UPDATE ON structure.website
+      AFTER UPDATE OF title, meta_description, updated_at
+      ON structure.website
       FOR EACH ROW
+      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
-      CREATE TRIGGER log_page_changes
+      CREATE CONSTRAINT TRIGGER log_page_changes
       AFTER INSERT OR UPDATE OR DELETE ON structure.page
       FOR EACH ROW
+      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE TRIGGER log_component_changes
       AFTER INSERT OR UPDATE OR DELETE ON components.component
       FOR EACH ROW
+      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE TRIGGER log_component_position_changes
       AFTER INSERT OR UPDATE ON components.component_position
       FOR EACH ROW
+      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE TRIGGER log_collaborator_changes
       AFTER INSERT OR UPDATE OR DELETE ON collaboration.collaborator
       FOR EACH ROW
+      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
-    `
-        )
-        .execute(db)
+    `.execute(db)
 }
 
 export async function down(db: Kysely<any>): Promise<void> {

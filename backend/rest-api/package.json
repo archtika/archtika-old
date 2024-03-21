@@ -5,9 +5,10 @@
         "migrate:previous": "node ./js-output/utils/migrate-previous.js",
         "migrate:next": "node ./js-output/utils/migrate-next.js",
         "build": "tsc -p tsconfig.json -w",
-        "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --ignore-watch='node_modules' --name rest-api",
+        "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --name rest-api",
         "start": "pm2 start rest-api",
         "stop": "pm2 stop rest-api",
+        "gentypes": "kysely-codegen --verify --dialect postgres",
         "format": "prettier . --write",
         "test": "node --test ./js-output/modules/**/tests.js"
     },

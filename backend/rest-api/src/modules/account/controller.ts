@@ -2,19 +2,6 @@ import { FastifyRequest, FastifyReply } from 'fastify'
 import { generateId } from 'lucia'
 import { generateCodeVerifier, generateState } from 'arctic'
 
-export async function viewAccountInformation(
-    req: FastifyRequest,
-    reply: FastifyReply
-) {
-    const user = await req.server.kysely.db
-        .selectFrom('auth.auth_user')
-        .selectAll()
-        .where('id', '=', req.user?.id ?? '')
-        .executeTakeFirstOrThrow()
-
-    return reply.status(200).send(user)
-}
-
 export async function loginWithGithub(
     req: FastifyRequest,
     reply: FastifyReply
@@ -88,8 +75,9 @@ export async function loginWithGithubCallback(
         const existingOauthAccount = await req.server.kysely.db
             .selectFrom('auth.oauth_account')
             .selectAll()
-            .where('provider_id', '=', 'github')
-            .where('provider_user_id', '=', githubUser.id)
+            .where(({ and }) =>
+                and({ provider_id: 'github', provider_user_id: githubUser.id })
+            )
             .executeTakeFirst()
 
         if (!existingOauthAccount) {
@@ -226,8 +214,9 @@ export async function loginWithGoogleCallback(
         const existingOauthAccount = await req.server.kysely.db
             .selectFrom('auth.oauth_account')
             .selectAll()
-            .where('provider_id', '=', 'google')
-            .where('provider_user_id', '=', googleUser.sub)
+            .where(({ and }) =>
+                and({ provider_id: 'google', provider_user_id: googleUser.sub })
+            )
             .executeTakeFirst()
 
         if (!existingOauthAccount) {
@@ -285,6 +274,16 @@ export async function loginWithGoogleCallback(
     reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
     return reply.redirect('/docs')
+}
+
+export async function getAccount(req: FastifyRequest, reply: FastifyReply) {
+    const user = await req.server.kysely.db
+        .selectFrom('auth.auth_user')
+        .selectAll()
+        .where('id', '=', req.user?.id ?? '')
+        .executeTakeFirstOrThrow()
+
+    return reply.status(200).send(user)
 }
 
 export async function logout(req: FastifyRequest, reply: FastifyReply) {
