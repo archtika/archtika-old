@@ -4,7 +4,7 @@ import {
     UpdatePageSchemaType,
     PageParamsSchemaType,
     SinglePageParamsSchemaType
-} from './schemas.js'
+} from './pages-schemas.js'
 import { FastifyRequest, FastifyReply } from 'fastify'
 
 export async function createPage(

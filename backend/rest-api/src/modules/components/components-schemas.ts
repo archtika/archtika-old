@@ -101,7 +101,7 @@ const updateComponentAccordionSchema = Type.Object({
 })
 
 export const componentSingleParamsSchema = Type.Object({
-    id: Type.Integer({ minimum: 1 })
+    id: Type.String({ minLength: 36, maxLength: 36 })
 })
 
 export type ComponentSingleParamsSchemaType = Static<
@@ -109,8 +109,8 @@ export type ComponentSingleParamsSchemaType = Static<
 >
 
 export const componentParamsSchema = Type.Object({
-    pageId: Type.Integer({ minimum: 1 }),
-    componentId: Type.Integer({ minimum: 1 })
+    pageId: Type.String({ minLength: 36, maxLength: 36 }),
+    componentId: Type.String({ minLength: 36, maxLength: 36 })
 })
 
 export type ComponentParamsSchemaType = Static<typeof componentParamsSchema>

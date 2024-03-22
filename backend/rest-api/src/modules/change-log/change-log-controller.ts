@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { ParamsSchemaType } from './schemas.js'
+import { ParamsSchemaType } from './change-log-schemas.js'
 
 export async function viewChangeLog(
     req: FastifyRequest<{ Params: ParamsSchemaType }>,

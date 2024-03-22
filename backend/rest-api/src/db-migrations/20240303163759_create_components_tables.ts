@@ -9,11 +9,16 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await db.schema
         .createTable('components.component')
-        .addColumn('id', 'serial', (col) => col.primaryKey().notNull())
+        .addColumn('id', 'uuid', (col) =>
+            col
+                .primaryKey()
+                .notNull()
+                .defaultTo(sql`gen_random_uuid()`)
+        )
         .addColumn('type', sql`components.component_type`, (col) =>
             col.notNull()
         )
-        .addColumn('page_id', 'integer', (col) =>
+        .addColumn('page_id', 'uuid', (col) =>
             col.notNull().references('structure.page.id').onDelete('cascade')
         )
         .addColumn('content', 'jsonb', (col) => col.notNull())
@@ -32,7 +37,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await db.schema
         .createTable('components.component_position')
-        .addColumn('component_id', 'integer', (col) =>
+        .addColumn('component_id', 'uuid', (col) =>
             col
                 .notNull()
                 .primaryKey()

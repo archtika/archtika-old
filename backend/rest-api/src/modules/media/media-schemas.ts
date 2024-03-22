@@ -15,7 +15,7 @@ export const multipartFile = Type.Object({
 export type multipartFileType = Static<typeof multipartFile>
 
 export const deleteMediaParamsSchema = Type.Object({
-    id: Type.String()
+    id: Type.String({ minLength: 36, maxLength: 36 })
 })
 
 export type DeleteMediaParamsSchemaType = Static<typeof deleteMediaParamsSchema>

@@ -5,7 +5,7 @@ import {
     ComponentParamsSchemaType,
     UpdateComponentSchemaType,
     ComponentPositionSchemaType
-} from './schemas.js'
+} from './components-schemas.js'
 import { sql } from 'kysely'
 
 export async function createComponent(

@@ -5,7 +5,7 @@ import {
     updatePage,
     deletePage,
     getAllPages
-} from './controller.js'
+} from './pages-controller.js'
 import {
     CreatePageSchemaType,
     createPageSchema,
@@ -15,7 +15,7 @@ import {
     PageParamsSchemaType,
     singlePageParamsSchema,
     SinglePageParamsSchemaType
-} from './schemas.js'
+} from './pages-schemas.js'
 
 const commonSchema = {
     schema: {

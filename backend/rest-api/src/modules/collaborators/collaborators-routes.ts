@@ -4,7 +4,7 @@ import {
     removeCollaborator,
     updateCollaborator,
     viewCollaborators
-} from './controller.js'
+} from './collaborators-controller.js'
 import {
     paramsSchema,
     ParamsSchemaType,
@@ -12,7 +12,7 @@ import {
     SingleParamsSchemaType,
     modifyCollaboratorSchema,
     ModifyCollaboratorSchemaType
-} from './schemas.js'
+} from './collaborators-schemas.js'
 
 const commonSchema = {
     schema: {

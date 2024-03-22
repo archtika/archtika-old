@@ -19,8 +19,13 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await db.schema
         .createTable('tracking.change_log')
-        .addColumn('id', 'serial', (col) => col.primaryKey().notNull())
-        .addColumn('website_id', 'integer', (col) =>
+        .addColumn('id', 'uuid', (col) =>
+            col
+                .primaryKey()
+                .notNull()
+                .defaultTo(sql`gen_random_uuid()`)
+        )
+        .addColumn('website_id', 'uuid', (col) =>
             col.references('structure.website.id').notNull()
         )
         .addColumn('user_id', 'varchar(20)', (col) =>
@@ -51,7 +56,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         previous_value_val JSONB;
         new_value_val JSONB;
         change_summary_text VARCHAR;
-        website_id_val INT;
+        website_id_val UUID;
         last_modified_by_val VARCHAR;
       BEGIN
         IF TG_TABLE_NAME = 'website' THEN
@@ -139,31 +144,26 @@ export async function up(db: Kysely<any>): Promise<void> {
       AFTER UPDATE OF title, meta_description, updated_at
       ON structure.website
       FOR EACH ROW
-      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE CONSTRAINT TRIGGER log_page_changes
       AFTER INSERT OR UPDATE OR DELETE ON structure.page
       FOR EACH ROW
-      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE TRIGGER log_component_changes
       AFTER INSERT OR UPDATE OR DELETE ON components.component
       FOR EACH ROW
-      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE TRIGGER log_component_position_changes
       AFTER INSERT OR UPDATE ON components.component_position
       FOR EACH ROW
-      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE TRIGGER log_collaborator_changes
       AFTER INSERT OR UPDATE OR DELETE ON collaboration.collaborator
       FOR EACH ROW
-      WHEN (OLD.* IS DISTINCT FROM NEW.*)
       EXECUTE FUNCTION tracking.log_change();
     `.execute(db)
 }

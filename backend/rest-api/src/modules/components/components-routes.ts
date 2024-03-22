@@ -10,7 +10,7 @@ import {
     UpdateComponentSchemaType,
     componentPositionSchema,
     ComponentPositionSchemaType
-} from './schemas.js'
+} from './components-schemas.js'
 import {
     createComponent,
     deleteComponent,
@@ -19,7 +19,7 @@ import {
     updateComponentById,
     setComponentPosition,
     updateComponentPosition
-} from './controller.js'
+} from './components-controller.js'
 
 const commonSchema = {
     schema: {

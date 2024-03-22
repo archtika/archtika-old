@@ -10,7 +10,7 @@
         "stop": "pm2 stop rest-api",
         "gentypes": "kysely-codegen --verify --dialect postgres",
         "format": "prettier . --write",
-        "test": "node --test ./js-output/modules/**/tests.js"
+        "test": "NODE_ENV='test' node --test ./js-output/modules/**/*-tests.js"
     },
     "dependencies": {
         "@fastify/autoload": "^5.8.0",

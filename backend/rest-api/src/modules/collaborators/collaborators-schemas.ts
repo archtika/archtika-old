@@ -1,13 +1,13 @@
 import { Type, Static } from '@sinclair/typebox'
 
 export const singleParamsSchema = Type.Object({
-    id: Type.Integer({ minimum: 1 })
+    id: Type.String({ minLength: 36, maxLength: 36 })
 })
 
 export type SingleParamsSchemaType = Static<typeof singleParamsSchema>
 
 export const paramsSchema = Type.Object({
-    websiteId: Type.Integer({ minimum: 1 }),
+    websiteId: Type.String({ minLength: 36, maxLength: 36 }),
     userId: Type.String({ minLength: 20, maxLength: 20 })
 })
 

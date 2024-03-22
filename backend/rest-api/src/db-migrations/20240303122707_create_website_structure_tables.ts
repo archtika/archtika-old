@@ -5,7 +5,12 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await db.schema
         .createTable('structure.website')
-        .addColumn('id', 'serial', (col) => col.primaryKey().notNull())
+        .addColumn('id', 'uuid', (col) =>
+            col
+                .primaryKey()
+                .notNull()
+                .defaultTo(sql`gen_random_uuid()`)
+        )
         .addColumn('user_id', 'varchar(20)', (col) =>
             col.notNull().references('auth.auth_user.id').onDelete('cascade')
         )
@@ -22,8 +27,13 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await db.schema
         .createTable('structure.page')
-        .addColumn('id', 'serial', (col) => col.primaryKey().notNull())
-        .addColumn('website_id', 'integer', (col) =>
+        .addColumn('id', 'uuid', (col) =>
+            col
+                .primaryKey()
+                .notNull()
+                .defaultTo(sql`gen_random_uuid()`)
+        )
+        .addColumn('website_id', 'uuid', (col) =>
             col.notNull().references('structure.website.id').onDelete('cascade')
         )
         .addColumn('route', 'varchar', (col) => col.notNull())

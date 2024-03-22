@@ -3,7 +3,7 @@ import {
     ParamsSchemaType,
     SingleParamsSchemaType,
     ModifyCollaboratorSchemaType
-} from './schemas.js'
+} from './collaborators-schemas.js'
 
 export async function viewCollaborators(
     req: FastifyRequest<{ Params: SingleParamsSchemaType }>,

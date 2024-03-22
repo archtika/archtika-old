@@ -3,7 +3,10 @@ import fs from 'fs'
 import path, { dirname } from 'path'
 import { randomUUID, createHash } from 'crypto'
 import { fileURLToPath } from 'url'
-import { DeleteMediaParamsSchemaType, multipartFileType } from './schemas.js'
+import {
+    DeleteMediaParamsSchemaType,
+    multipartFileType
+} from './media-schemas.js'
 
 const __filename = fileURLToPath(import.meta.resolve('../../'))
 const __dirname = dirname(__filename)

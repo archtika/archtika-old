@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { verifyRequestOrigin } from 'lucia'
+import { type User, verifyRequestOrigin } from 'lucia'
 
 export default async function (fastify: FastifyInstance) {
     fastify.addHook('preHandler', (req, reply, done) => {

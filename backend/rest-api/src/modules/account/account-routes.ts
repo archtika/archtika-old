@@ -7,7 +7,7 @@ import {
     loginWithGoogleCallback,
     logout,
     deleteAccount
-} from './controller.js'
+} from './account-controller.js'
 
 const commonSchema = {
     schema: {

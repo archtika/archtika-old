@@ -1,14 +1,14 @@
 import { Static, Type } from '@sinclair/typebox'
 
 export const singlePageParamsSchema = Type.Object({
-    id: Type.Integer({ minimum: 1 })
+    id: Type.String({ minLength: 36, maxLength: 36 })
 })
 
 export type SinglePageParamsSchemaType = Static<typeof singlePageParamsSchema>
 
 export const pageParamsSchema = Type.Object({
-    pageId: Type.Integer({ minimum: 1 }),
-    websiteId: Type.Integer({ minimum: 1 })
+    pageId: Type.String({ minLength: 36, maxLength: 36 }),
+    websiteId: Type.String({ minLength: 36, maxLength: 36 })
 })
 
 export type PageParamsSchemaType = Static<typeof pageParamsSchema>

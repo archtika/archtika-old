@@ -5,7 +5,7 @@ import {
     updateWebsite,
     deleteWebsite,
     getAllWebsites
-} from './controller.js'
+} from './websites-controller.js'
 import {
     CreateWebsiteSchemaType,
     createWebsiteSchema,
@@ -13,7 +13,7 @@ import {
     UpdateWebsiteSchemaType,
     websiteParamsSchema,
     WebsiteParamsSchemaType
-} from './schemas.js'
+} from './websites-schemas.js'
 
 const commonSchema = {
     schema: {

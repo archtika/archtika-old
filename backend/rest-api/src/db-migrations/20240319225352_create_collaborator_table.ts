@@ -5,7 +5,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     db.schema
         .createTable('collaboration.collaborator')
-        .addColumn('website_id', 'integer', (col) =>
+        .addColumn('website_id', 'uuid', (col) =>
             col.references('structure.website.id').notNull()
         )
         .addColumn('user_id', 'varchar(20)', (col) =>

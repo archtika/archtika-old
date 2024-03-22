@@ -3,7 +3,7 @@ import {
     CreateWebsiteSchemaType,
     UpdateWebsiteSchemaType,
     WebsiteParamsSchemaType
-} from './schemas.js'
+} from './websites-schemas.js'
 import { sql } from 'kysely'
 
 export async function createWebsite(
