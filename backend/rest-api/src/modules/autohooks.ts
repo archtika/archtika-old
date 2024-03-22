@@ -2,9 +2,9 @@ import { FastifyInstance } from 'fastify'
 import { verifyRequestOrigin } from 'lucia'
 
 export default async function (fastify: FastifyInstance) {
-    fastify.addHook('preHandler', (req, reply, done) => {
+    fastify.addHook('preHandler', async (req, reply) => {
         if (req.method === 'GET') {
-            return done()
+            return reply.send()
         }
 
         const originHeader = req.headers.origin ?? null
@@ -19,7 +19,7 @@ export default async function (fastify: FastifyInstance) {
             return reply.notAcceptable('Invalid origin')
         }
 
-        return done()
+        return reply.send()
     })
 
     fastify.addHook('preHandler', async (req, reply) => {
@@ -29,7 +29,7 @@ export default async function (fastify: FastifyInstance) {
         if (!sessionId) {
             req.user = null
             req.session = null
-            return
+            return reply.send()
         }
 
         const { session, user } =
@@ -48,12 +48,12 @@ export default async function (fastify: FastifyInstance) {
 
         req.user = user
         req.session = session
-        return
+        return reply.send()
     })
 
-    fastify.addHook('preHandler', (req, reply, done) => {
+    fastify.addHook('preHandler', (req, reply) => {
         if (process.env.NODE_ENV === 'test') {
-            return done()
+            return reply.send()
         }
 
         if (!req.user && !req.session && !req.url.includes('/account/login')) {
