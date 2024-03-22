@@ -25,33 +25,39 @@ const envToLogger = {
     test: false
 }
 
-const fastify = Fastify({
-    logger: envToLogger[process.env.NODE_ENV as keyof typeof envToLogger],
-    ajv: {
-        plugins: [
-            function (ajv: any) {
-                ajv.addKeyword({ keyword: 'x-examples' })
-            },
-            ajvFilePlugin
-        ]
-    }
-}).withTypeProvider<TypeBoxTypeProvider>()
+function app() {
+    const fastify = Fastify({
+        logger: envToLogger[process.env.NODE_ENV as keyof typeof envToLogger],
+        ajv: {
+            plugins: [
+                function (ajv: any) {
+                    ajv.addKeyword({ keyword: 'x-examples' })
+                },
+                ajvFilePlugin
+            ]
+        }
+    }).withTypeProvider<TypeBoxTypeProvider>()
 
-fastify.register(fastifyAutoload, {
-    dir: join(__dirname, 'plugins')
-})
+    fastify.register(fastifyAutoload, {
+        dir: join(__dirname, 'plugins')
+    })
 
-fastify.register(fastifyAutoload, {
-    dir: join(__dirname, 'modules'),
-    options: Object.assign({ prefix: '/api/v1' }),
-    ignoreFilter: (path) =>
-        path.includes('schemas') ||
-        path.includes('controller') ||
-        path.includes('tests'),
-    autoHooks: true,
-    cascadeHooks: true
-})
+    fastify.register(fastifyAutoload, {
+        dir: join(__dirname, 'modules'),
+        options: Object.assign({ prefix: '/api/v1' }),
+        ignoreFilter: (path) =>
+            path.includes('schemas') ||
+            path.includes('controller') ||
+            path.includes('tests'),
+        autoHooks: true,
+        cascadeHooks: true
+    })
+
+    return fastify
+}
+
+const fastify = app()
 
 fastify.listen({ port: 3000 })
 
-export default fastify
+export default app

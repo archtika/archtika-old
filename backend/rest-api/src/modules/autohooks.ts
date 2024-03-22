@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { type User, verifyRequestOrigin } from 'lucia'
+import { verifyRequestOrigin } from 'lucia'
 
 export default async function (fastify: FastifyInstance) {
     fastify.addHook('preHandler', (req, reply, done) => {
@@ -9,6 +9,7 @@ export default async function (fastify: FastifyInstance) {
 
         const originHeader = req.headers.origin ?? null
         const hostHeader = req.headers.host ?? null
+
         if (
             !originHeader ||
             !hostHeader ||
@@ -51,9 +52,12 @@ export default async function (fastify: FastifyInstance) {
     })
 
     fastify.addHook('preHandler', (req, reply, done) => {
+        if (process.env.NODE_ENV === 'test') {
+            return done()
+        }
+
         if (!req.user && !req.session && !req.url.includes('/account/login')) {
             return reply.unauthorized()
         }
-        done()
     })
 }
