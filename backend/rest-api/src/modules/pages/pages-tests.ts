@@ -34,6 +34,19 @@ describe('pages', async () => {
             .executeTakeFirstOrThrow()
 
         websiteId = website.id
+
+        const page = await app.kysely.db
+            .insertInto('structure.page')
+            .values({
+                website_id: websiteId,
+                route: `/initial`,
+                title: 'Some page title',
+                meta_description: 'Some page description'
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+
+        pageId = page.id
     })
 
     after(() => {
@@ -57,8 +70,71 @@ describe('pages', async () => {
             })
 
             assert.deepStrictEqual(res.statusCode, 201)
-            const responsePayload = JSON.parse(res.payload)
-            pageId = responsePayload.pageId
+        })
+    })
+
+    describe('GET /api/v1/websites/{id}/pages', () => {
+        it('should return 200 when an empty array or an array of pages is returned', async () => {
+            const res = await app.inject({
+                method: 'GET',
+                url: `/api/v1/websites/${websiteId}/pages`,
+                headers: {
+                    origin: 'http://localhost:3000',
+                    host: 'localhost:3000'
+                }
+            })
+
+            assert.deepStrictEqual(res.statusCode, 200)
+        })
+    })
+
+    describe('GET /api/v1/websites/{websiteId}/pages/{pageId}', () => {
+        it('should return 200 when a page object is returned', async () => {
+            const res = await app.inject({
+                method: 'GET',
+                url: `/api/v1/websites/${websiteId}/pages/${pageId}`,
+                headers: {
+                    origin: 'http://localhost:3000',
+                    host: 'localhost:3000'
+                }
+            })
+
+            assert.deepStrictEqual(res.statusCode, 200)
+        })
+    })
+
+    describe('PATCH /api/v1/websites/{websiteId}/pages/{pageId}', () => {
+        it('should return 200 when a page object is returned', async () => {
+            const res = await app.inject({
+                method: 'PATCH',
+                url: `/api/v1/websites/${websiteId}/pages/${pageId}`,
+                headers: {
+                    origin: 'http://localhost:3000',
+                    host: 'localhost:3000'
+                },
+                payload: {
+                    route: 'newroute',
+                    title: 'Updated page',
+                    metaDescription: 'This is the updated description'
+                }
+            })
+
+            assert.deepStrictEqual(res.statusCode, 200)
+        })
+    })
+
+    describe('DELETE /api/v1/websites/{websiteId}/pages/{pageId}', () => {
+        it('should return 200 when a page object is returned', async () => {
+            const res = await app.inject({
+                method: 'DELETE',
+                url: `/api/v1/websites/${websiteId}/pages/${pageId}`,
+                headers: {
+                    origin: 'http://localhost:3000',
+                    host: 'localhost:3000'
+                }
+            })
+
+            assert.deepStrictEqual(res.statusCode, 200)
         })
     })
 })

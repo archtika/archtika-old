@@ -74,7 +74,7 @@ describe('websites', async () => {
         })
     })
 
-    describe('GET /api/v1/websites/{id} returns status 200', () => {
+    describe('GET /api/v1/websites/{id}', () => {
         it('should return 200 when a website object is returned', async () => {
             const res = await app.inject({
                 method: 'GET',

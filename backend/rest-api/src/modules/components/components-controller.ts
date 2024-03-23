@@ -336,7 +336,7 @@ export async function updateComponentPosition(
             .returningAll()
             .executeTakeFirstOrThrow()
 
-        return reply.status(201).send(componentPositon)
+        return reply.status(200).send(componentPositon)
     } catch (error) {
         return reply.notFound('Component not found or not allowed')
     }

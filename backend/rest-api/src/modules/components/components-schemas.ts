@@ -115,6 +115,65 @@ export const componentParamsSchema = Type.Object({
 
 export type ComponentParamsSchemaType = Static<typeof componentParamsSchema>
 
+export const exampleComponentValues = {
+    Text: {
+        value: {
+            type: 'text',
+            content: {
+                textContent: 'Hello, world!'
+            }
+        }
+    },
+    Button: {
+        value: {
+            type: 'button',
+            content: {
+                label: 'Click me!',
+                hyperlink: 'https://example.com'
+            }
+        }
+    },
+    Image: {
+        value: {
+            type: 'image',
+            content: {
+                altText: 'An image of a cat'
+            },
+            assetId: '00000000-0000-0000-0000-000000000000'
+        }
+    },
+    Video: {
+        value: {
+            type: 'video',
+            content: {
+                altText: 'A video of a cat',
+                isLooped: true
+            },
+            assetId: '00000000-0000-0000-0000-000000000000'
+        }
+    },
+    Audio: {
+        value: {
+            type: 'audio',
+            content: {
+                altText: 'An audio of a cat',
+                isLooped: true
+            },
+            assetId: '00000000-0000-0000-0000-000000000000'
+        }
+    },
+    Accordion: {
+        value: {
+            type: 'accordion',
+            content: {
+                title: 'Accordion title',
+                accordionContent: 'Accordion content',
+                isOpen: true
+            }
+        }
+    }
+}
+
 export const createComponentSchema = Type.Union(
     [
         createComponentTextSchema,
@@ -125,64 +184,7 @@ export const createComponentSchema = Type.Union(
         createComponentAccordionSchema
     ],
     {
-        'x-examples': {
-            Text: {
-                value: {
-                    type: 'text',
-                    content: {
-                        textContent: 'Hello, world!'
-                    }
-                }
-            },
-            Button: {
-                value: {
-                    type: 'button',
-                    content: {
-                        label: 'Click me!',
-                        hyperlink: 'https://example.com'
-                    }
-                }
-            },
-            Image: {
-                value: {
-                    type: 'image',
-                    content: {
-                        altText: 'An image of a cat'
-                    },
-                    assetId: '00000000-0000-0000-0000-000000000000'
-                }
-            },
-            Video: {
-                value: {
-                    type: 'video',
-                    content: {
-                        altText: 'A video of a cat',
-                        isLooped: true
-                    },
-                    assetId: '00000000-0000-0000-0000-000000000000'
-                }
-            },
-            Audio: {
-                value: {
-                    type: 'audio',
-                    content: {
-                        altText: 'An audio of a cat',
-                        isLooped: true
-                    },
-                    assetId: '00000000-0000-0000-0000-000000000000'
-                }
-            },
-            Accordion: {
-                value: {
-                    type: 'accordion',
-                    content: {
-                        title: 'Accordion title',
-                        accordionContent: 'Accordion content',
-                        isOpen: true
-                    }
-                }
-            }
-        }
+        'x-examples': exampleComponentValues
     }
 )
 
@@ -198,64 +200,7 @@ export const updateComponentSchema = Type.Union(
         updateComponentAccordionSchema
     ],
     {
-        'x-examples': {
-            Text: {
-                value: {
-                    type: 'text',
-                    content: {
-                        textContent: 'Hello, world!'
-                    }
-                }
-            },
-            Button: {
-                value: {
-                    type: 'button',
-                    content: {
-                        label: 'Click me!',
-                        hyperlink: 'https://example.com'
-                    }
-                }
-            },
-            Image: {
-                value: {
-                    type: 'image',
-                    content: {
-                        altText: 'An image of a cat'
-                    },
-                    assetId: '00000000-0000-0000-0000-000000000000'
-                }
-            },
-            Video: {
-                value: {
-                    type: 'video',
-                    content: {
-                        altText: 'A video of a cat',
-                        isLooped: true
-                    },
-                    assetId: '00000000-0000-0000-0000-000000000000'
-                }
-            },
-            Audio: {
-                value: {
-                    type: 'audio',
-                    content: {
-                        altText: 'An audio of a cat',
-                        isLooped: true
-                    },
-                    assetId: '00000000-0000-0000-0000-000000000000'
-                }
-            },
-            Accordion: {
-                value: {
-                    type: 'accordion',
-                    content: {
-                        title: 'Accordion title',
-                        accordionContent: 'Accordion content',
-                        isOpen: true
-                    }
-                }
-            }
-        }
+        'x-examples': exampleComponentValues
     }
 )
 
