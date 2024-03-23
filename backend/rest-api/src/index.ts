@@ -25,7 +25,7 @@ const envToLogger = {
     test: false
 }
 
-function app() {
+export function app() {
     const fastify = Fastify({
         logger: envToLogger[process.env.NODE_ENV as keyof typeof envToLogger],
         ajv: {
@@ -56,8 +56,7 @@ function app() {
     return fastify
 }
 
-const fastify = app()
-
-fastify.listen({ port: 3000 })
-
-export default app
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+    const fastify = app()
+    fastify.listen({ port: 3000 })
+}

@@ -1,6 +1,6 @@
 import { describe, it, after, before } from 'node:test'
 import assert from 'node:assert'
-import buildApp from '../../index.js'
+import { app as buildApp } from '../../index.js'
 import { FastifyInstance } from 'fastify'
 
 describe('websites', async () => {
@@ -20,6 +20,19 @@ describe('websites', async () => {
             })
             .onConflict((oc) => oc.column('id').doNothing())
             .execute()
+
+        const website = await app.kysely.db
+            .insertInto('structure.website')
+            .values({
+                user_id: 'qkj7ld6pgsqvurgfxaao',
+                title: 'Some title',
+                meta_description: 'Some description',
+                last_modified_by: 'qkj7ld6pgsqvurgfxaao'
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow()
+
+        id = website.id
     })
 
     after(() => {
@@ -43,8 +56,6 @@ describe('websites', async () => {
             })
 
             assert.deepStrictEqual(res.statusCode, 201)
-            const responsePayload = JSON.parse(res.payload)
-            id = responsePayload.id
         })
     })
 
