@@ -7,7 +7,7 @@
         "build": "tsc -p tsconfig.json",
         "build:watch": "tsc -p tsconfig.json -w",
         "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --name rest-api",
-        "start": "pm2 start rest-api",
+        "start": "NODE_ENV='development' pm2 start rest-api",
         "stop": "pm2 stop rest-api",
         "gentypes": "kysely-codegen --verify --dialect postgres",
         "format": "prettier . --write",

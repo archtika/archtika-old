@@ -26,7 +26,7 @@ export async function up(db: Kysely<any>): Promise<void> {
                 .defaultTo(sql`gen_random_uuid()`)
         )
         .addColumn('website_id', 'uuid', (col) =>
-            col.references('structure.website.id').notNull()
+            col.references('structure.website.id').notNull().onDelete('cascade')
         )
         .addColumn('user_id', 'varchar(20)', (col) =>
             col.notNull().references('auth.auth_user.id')

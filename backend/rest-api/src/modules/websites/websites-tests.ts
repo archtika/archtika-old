@@ -5,18 +5,28 @@ import { FastifyInstance } from 'fastify'
 
 describe('websites', async () => {
     let app: FastifyInstance
+    let id: string
 
-    before(() => {
+    before(async () => {
         app = buildApp()
+        await app.ready()
+
+        await app.kysely.db
+            .insertInto('auth.auth_user')
+            .values({
+                id: 'qkj7ld6pgsqvurgfxaao',
+                username: 'testuser',
+                email: 'testuser@example.com'
+            })
+            .onConflict((oc) => oc.column('id').doNothing())
+            .execute()
     })
 
     after(() => {
         app.close()
     })
 
-    const id = 1
-
-    describe('POST /api/v1/websites', async () => {
+    describe('POST /api/v1/websites', () => {
         it('should return 201 when the payload is valid', async () => {
             const res = await app.inject({
                 method: 'POST',
@@ -27,16 +37,18 @@ describe('websites', async () => {
                 },
                 payload: {
                     title: 'Some title',
-                    meta_description:
+                    metaDescription:
                         'This is the description field for the website'
                 }
             })
 
             assert.deepStrictEqual(res.statusCode, 201)
+            const responsePayload = JSON.parse(res.payload)
+            id = responsePayload.id
         })
     })
 
-    describe('GET /api/v1/websites', async () => {
+    describe('GET /api/v1/websites', () => {
         it('should return 200 when an empty array or an array of websites is returned', async () => {
             const res = await app.inject({
                 method: 'GET',
@@ -51,7 +63,7 @@ describe('websites', async () => {
         })
     })
 
-    describe('GET /api/v1/websites/{id} returns status 200', async () => {
+    describe('GET /api/v1/websites/{id} returns status 200', () => {
         it('should return 200 when a website object is returned', async () => {
             const res = await app.inject({
                 method: 'GET',
@@ -66,7 +78,7 @@ describe('websites', async () => {
         })
     })
 
-    describe('PATCH /api/v1/websites/{id}', async () => {
+    describe('PATCH /api/v1/websites/{id}', () => {
         it('should return 200 when a website object is returned', async () => {
             const res = await app.inject({
                 method: 'PATCH',
@@ -74,6 +86,10 @@ describe('websites', async () => {
                 headers: {
                     origin: 'http://localhost:3000',
                     host: 'localhost:3000'
+                },
+                payload: {
+                    title: 'New title',
+                    metaDescription: 'Updated meta description'
                 }
             })
 
@@ -81,7 +97,7 @@ describe('websites', async () => {
         })
     })
 
-    describe('DELETE /api/v1/websites/{id}', async () => {
+    describe('DELETE /api/v1/websites/{id}', () => {
         it('should return 200 when a website object is returned', async () => {
             const res = await app.inject({
                 method: 'DELETE',
