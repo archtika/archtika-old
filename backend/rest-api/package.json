@@ -1,9 +1,9 @@
 {
     "scripts": {
         "build:migrations": "tsc -p tsconfig-migrations.json",
-        "migrate:latest": "node ./js-output/utils/migrate-latest.js",
-        "migrate:previous": "node ./js-output/utils/migrate-previous.js",
-        "migrate:next": "node ./js-output/utils/migrate-next.js",
+        "migrate:latest": "node ./js-output/utils/migrate/migrate-latest.js",
+        "migrate:previous": "node ./js-output/utils/migrate/migrate-previous.js",
+        "migrate:next": "node ./js-output/utils/migrate/migrate-next.js",
         "build": "tsc -p tsconfig.json",
         "build:watch": "tsc -p tsconfig.json -w",
         "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --name rest-api",

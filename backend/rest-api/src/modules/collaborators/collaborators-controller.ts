@@ -95,7 +95,7 @@ export async function updateCollaborator(
             .returningAll()
             .executeTakeFirstOrThrow()
 
-        return reply.status(201).send(collaborator)
+        return reply.status(200).send(collaborator)
     } catch (error) {
         return reply.notFound('Website not found or not allowed')
     }

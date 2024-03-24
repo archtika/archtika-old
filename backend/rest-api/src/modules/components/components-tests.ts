@@ -143,6 +143,8 @@ describe('components', async () => {
                 }
             })
 
+            console.log(res.body)
+
             assert.deepStrictEqual(res.statusCode, 200)
         })
     })
@@ -199,6 +201,8 @@ describe('components', async () => {
                     grid_height: 2
                 }
             })
+
+            console.log(res.body)
 
             assert.deepStrictEqual(res.statusCode, 200)
         })

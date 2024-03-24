@@ -7,7 +7,7 @@ import pg from 'pg'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 const { Pool } = pg
-const __filename = fileURLToPath(import.meta.resolve('../db-migrations'))
+const __filename = fileURLToPath(import.meta.resolve('../../db-migrations'))
 const __dirname = dirname(__filename)
 
 const kyselyDB = new Kysely<DB>({
