@@ -1,5 +1,18 @@
 import { Type, Static } from '@sinclair/typebox'
 
+export const singleParamsSchema = Type.Object({
+    id: Type.String({ minLength: 36, maxLength: 36 })
+})
+
+export type SingleParamsSchemaType = Static<typeof singleParamsSchema>
+
+export const paramsSchema = Type.Object({
+    pageId: Type.String({ minLength: 36, maxLength: 36 }),
+    componentId: Type.String({ minLength: 36, maxLength: 36 })
+})
+
+export type ParamsSchemaType = Static<typeof paramsSchema>
+
 const createComponentTextSchema = Type.Object({
     type: Type.Literal('text'),
     content: Type.Object({
@@ -99,21 +112,6 @@ const updateComponentAccordionSchema = Type.Object({
         isOpen: Type.Optional(Type.Boolean())
     })
 })
-
-export const componentSingleParamsSchema = Type.Object({
-    id: Type.String({ minLength: 36, maxLength: 36 })
-})
-
-export type ComponentSingleParamsSchemaType = Static<
-    typeof componentSingleParamsSchema
->
-
-export const componentParamsSchema = Type.Object({
-    pageId: Type.String({ minLength: 36, maxLength: 36 }),
-    componentId: Type.String({ minLength: 36, maxLength: 36 })
-})
-
-export type ComponentParamsSchemaType = Static<typeof componentParamsSchema>
 
 export const exampleComponentValues = {
     Text: {

@@ -143,8 +143,6 @@ describe('components', async () => {
                 }
             })
 
-            console.log(res.body)
-
             assert.deepStrictEqual(res.statusCode, 200)
         })
     })
@@ -164,11 +162,11 @@ describe('components', async () => {
         })
     })
 
-    describe('POST /api/v1/pages/{pageId}/components/{componentId}/position', () => {
+    describe('POST /api/v1/components/{id}/position', () => {
         it('should return 200 when a component position object is returned', async () => {
             const res = await app.inject({
                 method: 'POST',
-                url: `/api/v1/pages/${pageId}/components/${componentIdPosition}/position`,
+                url: `/api/v1/components/${componentIdPosition}/position`,
                 headers: {
                     origin: 'http://localhost:3000',
                     host: 'localhost:3000'
@@ -185,11 +183,11 @@ describe('components', async () => {
         })
     })
 
-    describe('PATCH /api/v1/pages/{pageId}/components/{componentId}/position', () => {
+    describe('PATCH /api/v1/components/{id}/position', () => {
         it('should return 200 when a component position object is returned', async () => {
             const res = await app.inject({
                 method: 'PATCH',
-                url: `/api/v1/pages/${pageId}/components/${componentIdPosition}/position`,
+                url: `/api/v1/components/${componentIdPosition}/position`,
                 headers: {
                     origin: 'http://localhost:3000',
                     host: 'localhost:3000'
@@ -201,8 +199,6 @@ describe('components', async () => {
                     grid_height: 2
                 }
             })
-
-            console.log(res.body)
 
             assert.deepStrictEqual(res.statusCode, 200)
         })

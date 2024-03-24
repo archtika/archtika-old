@@ -43,8 +43,6 @@ describe('media', async () => {
                 payload: form
             })
 
-            console.log(res.body)
-
             assert.deepStrictEqual(res.statusCode, 201)
         })
     })

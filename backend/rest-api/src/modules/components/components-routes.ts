@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify'
 import {
-    componentParamsSchema,
-    ComponentParamsSchemaType,
-    componentSingleParamsSchema,
-    ComponentSingleParamsSchemaType,
+    paramsSchema,
+    ParamsSchemaType,
+    singleParamsSchema,
+    SingleParamsSchemaType,
     createComponentSchema,
     CreateComponentSchemaType,
     updateComponentSchema,
@@ -14,9 +14,9 @@ import {
 import {
     createComponent,
     deleteComponent,
-    getComponentById,
+    getComponent,
     getAllComponents,
-    updateComponentById,
+    updateComponent,
     setComponentPosition,
     updateComponentPosition
 } from './components-controller.js'
@@ -29,48 +29,48 @@ const commonSchema = {
 
 export default async function (fastify: FastifyInstance) {
     fastify.post<{
-        Params: ComponentSingleParamsSchemaType
+        Params: SingleParamsSchemaType
         Body: CreateComponentSchemaType
     }>(
-        '/:id/components',
+        '/pages/:id/components',
         {
             schema: {
                 tags: commonSchema.schema.tags,
-                params: componentSingleParamsSchema,
+                params: singleParamsSchema,
                 body: createComponentSchema
             }
         },
         createComponent
     )
 
-    fastify.get<{ Params: ComponentParamsSchemaType }>(
-        '/:pageId/components/:componentId',
+    fastify.get<{ Params: ParamsSchemaType }>(
+        '/pages/:pageId/components/:componentId',
         {
             schema: {
                 tags: commonSchema.schema.tags,
-                params: componentParamsSchema
+                params: paramsSchema
             }
         },
-        getComponentById
+        getComponent
     )
 
     fastify.patch<{
-        Params: ComponentParamsSchemaType
+        Params: ParamsSchemaType
         Body: UpdateComponentSchemaType
     }>(
-        '/:pageId/components/:componentId',
+        '/pages/:pageId/components/:componentId',
         {
             schema: {
                 tags: commonSchema.schema.tags,
-                params: componentParamsSchema,
+                params: paramsSchema,
                 body: updateComponentSchema
             }
         },
-        updateComponentById
+        updateComponent
     )
 
     fastify.delete(
-        '/:pageId/components/:componentId',
+        '/pages/:pageId/components/:componentId',
         {
             schema: { tags: commonSchema.schema.tags }
         },
@@ -78,7 +78,7 @@ export default async function (fastify: FastifyInstance) {
     )
 
     fastify.get(
-        '/:id/components',
+        '/pages/:id/components',
         {
             schema: {
                 tags: commonSchema.schema.tags
@@ -88,14 +88,14 @@ export default async function (fastify: FastifyInstance) {
     )
 
     fastify.post<{
-        Params: ComponentParamsSchemaType
+        Params: SingleParamsSchemaType
         Body: ComponentPositionSchemaType
     }>(
-        '/:pageId/components/:componentId/position',
+        '/components/:id/position',
         {
             schema: {
                 tags: commonSchema.schema.tags,
-                params: componentParamsSchema,
+                params: singleParamsSchema,
                 body: componentPositionSchema
             }
         },
@@ -103,14 +103,14 @@ export default async function (fastify: FastifyInstance) {
     )
 
     fastify.patch<{
-        Params: ComponentParamsSchemaType
+        Params: SingleParamsSchemaType
         Body: ComponentPositionSchemaType
     }>(
-        '/:pageId/components/:componentId/position',
+        '/components/:id/position',
         {
             schema: {
                 tags: commonSchema.schema.tags,
-                params: componentParamsSchema,
+                params: singleParamsSchema,
                 body: componentPositionSchema
             }
         },
@@ -118,4 +118,4 @@ export default async function (fastify: FastifyInstance) {
     )
 }
 
-export const autoPrefix = '/pages'
+export const autoPrefix = '/'
