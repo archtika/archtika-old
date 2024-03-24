@@ -13,10 +13,8 @@ export const paramsSchema = Type.Object({
 
 export type ParamsSchemaType = Static<typeof paramsSchema>
 
-export const modifyCollaboratorSchema = Type.Object({
+export const collaboratorSchema = Type.Object({
     permissionLevel: Type.Integer({ default: 10 })
 })
 
-export type ModifyCollaboratorSchemaType = Static<
-    typeof modifyCollaboratorSchema
->
+export type CollaboratorSchemaType = Static<typeof collaboratorSchema>

@@ -2,10 +2,10 @@ import { FastifyReply, FastifyRequest } from 'fastify'
 import {
     ParamsSchemaType,
     SingleParamsSchemaType,
-    ModifyCollaboratorSchemaType
+    CollaboratorSchemaType
 } from './collaborators-schemas.js'
 
-export async function viewCollaborators(
+export async function getAllCollaborators(
     req: FastifyRequest<{ Params: SingleParamsSchemaType }>,
     reply: FastifyReply
 ) {
@@ -13,14 +13,17 @@ export async function viewCollaborators(
 
     const collaborators = await req.server.kysely.db
         .selectFrom('collaboration.collaborator')
-        .innerJoin(
-            'structure.website',
-            'structure.website.id',
-            'collaboration.collaborator.website_id'
+        .selectAll()
+        .where(({ eb, and, exists, selectFrom }) =>
+            and([
+                eb('website_id', '=', id),
+                exists(
+                    selectFrom('structure.website').where(
+                        and({ id, user_id: req.user?.id })
+                    )
+                )
+            ])
         )
-        .selectAll('collaboration.collaborator')
-        .where('website_id', '=', id)
-        .where('structure.website.user_id', '=', req?.user?.id ?? '')
         .execute()
 
     if (!collaborators.length) {
@@ -28,7 +31,7 @@ export async function viewCollaborators(
             await req.server.kysely.db
                 .selectFrom('structure.website')
                 .select('id')
-                .where((eb) => eb.and({ id, user_id: req.user?.id }))
+                .where(({ and }) => and({ id, user_id: req.user?.id }))
                 .executeTakeFirstOrThrow()
         } catch (error) {
             return reply.notFound('Website not found or not allowed')
@@ -41,7 +44,7 @@ export async function viewCollaborators(
 export async function addCollaborator(
     req: FastifyRequest<{
         Params: ParamsSchemaType
-        Body: ModifyCollaboratorSchemaType
+        Body: CollaboratorSchemaType
     }>,
     reply: FastifyReply
 ) {
@@ -51,12 +54,10 @@ export async function addCollaborator(
     try {
         const collaborator = await req.server.kysely.db
             .insertInto('collaboration.collaborator')
-            .values(({ selectFrom }) => ({
+            .values(({ selectFrom, and }) => ({
                 website_id: selectFrom('structure.website')
                     .select('id')
-                    .where((eb) =>
-                        eb.and({ id: websiteId, user_id: req.user?.id })
-                    )
+                    .where(and({ id: websiteId, user_id: req.user?.id }))
                     .where('user_id', '!=', userId),
                 user_id: userId,
                 permission_level: permissionLevel
@@ -73,7 +74,7 @@ export async function addCollaborator(
 export async function updateCollaborator(
     req: FastifyRequest<{
         Params: ParamsSchemaType
-        Body: ModifyCollaboratorSchemaType
+        Body: CollaboratorSchemaType
     }>,
     reply: FastifyReply
 ) {
@@ -83,15 +84,24 @@ export async function updateCollaborator(
     try {
         const collaborator = await req.server.kysely.db
             .updateTable('collaboration.collaborator')
-            .set(({ selectFrom }) => ({
-                website_id: selectFrom('structure.website')
-                    .select('id')
-                    .where((eb) =>
-                        eb.and({ id: websiteId, user_id: req.user?.id })
-                    ),
+            .set({
+                website_id: websiteId,
                 user_id: userId,
                 permission_level: permissionLevel
-            }))
+            })
+            .where(({ selectFrom, exists, and }) =>
+                and([
+                    and({ website_id: websiteId, user_id: userId }),
+                    exists(
+                        selectFrom('structure.website').where(
+                            and({
+                                id: websiteId,
+                                user_id: req.user?.id
+                            })
+                        )
+                    )
+                ])
+            )
             .returningAll()
             .executeTakeFirstOrThrow()
 
@@ -110,14 +120,16 @@ export async function removeCollaborator(
     try {
         const collaborator = await req.server.kysely.db
             .deleteFrom('collaboration.collaborator')
-            .where((eb) =>
-                eb.exists(
-                    eb
-                        .selectFrom('structure.website')
-                        .where(eb.and({ id: websiteId, user_id: req.user?.id }))
-                )
+            .where(({ exists, selectFrom, and }) =>
+                and([
+                    and({ website_id: websiteId, user_id: userId }),
+                    exists(
+                        selectFrom('structure.website').where(
+                            and({ id: websiteId, user_id: req.user?.id })
+                        )
+                    )
+                ])
             )
-            .where((eb) => eb.and({ website_id: websiteId, user_id: userId }))
             .returningAll()
             .executeTakeFirstOrThrow()
 

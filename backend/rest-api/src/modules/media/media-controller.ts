@@ -60,10 +60,12 @@ export async function deleteMedia(
 ) {
     let media
 
+    const { id } = req.params
+
     try {
         media = await req.server.kysely.db
             .deleteFrom('media.media_asset')
-            .where((eb) => eb.and({ id: req.params.id, user_id: req.user?.id }))
+            .where(({ and }) => and({ id, user_id: req.user?.id }))
             .returningAll()
             .executeTakeFirstOrThrow()
     } catch (error) {

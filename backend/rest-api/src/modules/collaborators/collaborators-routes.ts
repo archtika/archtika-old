@@ -3,15 +3,15 @@ import {
     addCollaborator,
     removeCollaborator,
     updateCollaborator,
-    viewCollaborators
+    getAllCollaborators
 } from './collaborators-controller.js'
 import {
     paramsSchema,
     ParamsSchemaType,
     singleParamsSchema,
     SingleParamsSchemaType,
-    modifyCollaboratorSchema,
-    ModifyCollaboratorSchemaType
+    collaboratorSchema,
+    CollaboratorSchemaType
 } from './collaborators-schemas.js'
 
 const commonSchema = {
@@ -29,19 +29,19 @@ export default async function (fastify: FastifyInstance) {
                 params: singleParamsSchema
             }
         },
-        viewCollaborators
+        getAllCollaborators
     )
 
     fastify.post<{
         Params: ParamsSchemaType
-        Body: ModifyCollaboratorSchemaType
+        Body: CollaboratorSchemaType
     }>(
         '/:websiteId/collaborators/:userId',
         {
             schema: {
                 tags: commonSchema.schema.tags,
                 params: paramsSchema,
-                body: modifyCollaboratorSchema
+                body: collaboratorSchema
             }
         },
         addCollaborator
@@ -49,14 +49,14 @@ export default async function (fastify: FastifyInstance) {
 
     fastify.patch<{
         Params: ParamsSchemaType
-        Body: ModifyCollaboratorSchemaType
+        Body: CollaboratorSchemaType
     }>(
         '/:websiteId/collaborators/:userId',
         {
             schema: {
                 tags: commonSchema.schema.tags,
                 params: paramsSchema,
-                body: modifyCollaboratorSchema
+                body: collaboratorSchema
             }
         },
         updateCollaborator

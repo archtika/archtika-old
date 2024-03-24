@@ -21,7 +21,7 @@ describe('media', async () => {
     })
 
     // Does not work yet, needs to be tested further
-    describe('POST /api/v1/media', { skip: true }, () => {
+    describe('POST /api/v1/media', { skip: true, todo: true }, () => {
         it('should return 201 when the payload is valid', async () => {
             const fileName = 'test-image.jpg'
             const filePath = resolve(

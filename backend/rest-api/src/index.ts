@@ -56,7 +56,10 @@ export function app() {
     return fastify
 }
 
-if (process.argv[1] === new URL(import.meta.url).pathname) {
+if (
+    process.argv[1] === new URL(import.meta.url).pathname ||
+    process.env.pm_id !== undefined
+) {
     const fastify = app()
     fastify.listen({ port: 3000 })
 }

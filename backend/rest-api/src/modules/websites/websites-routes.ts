@@ -35,7 +35,16 @@ export default async function (fastify: FastifyInstance) {
 
     fastify.get('/', commonSchema, getAllWebsites)
 
-    fastify.get('/:id', commonSchema, getWebsite)
+    fastify.get<{ Params: WebsiteParamsSchemaType }>(
+        '/:id',
+        {
+            schema: {
+                params: websiteParamsSchema,
+                tags: commonSchema.schema.tags
+            }
+        },
+        getWebsite
+    )
 
     fastify.patch<{
         Params: WebsiteParamsSchemaType
