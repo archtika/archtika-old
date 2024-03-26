@@ -1,10 +1,10 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { sql } from 'kysely'
 import {
     CreateWebsiteSchemaType,
     UpdateWebsiteSchemaType,
     WebsiteParamsSchemaType
 } from './websites-schemas.js'
-import { sql } from 'kysely'
 
 export async function createWebsite(
     req: FastifyRequest<{ Body: CreateWebsiteSchemaType }>,

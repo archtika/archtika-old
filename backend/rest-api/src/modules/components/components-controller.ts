@@ -1,12 +1,12 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { sql } from 'kysely'
 import {
-    SingleParamsSchemaType,
+    ComponentPositionSchemaType,
     CreateComponentSchemaType,
     ParamsSchemaType,
-    UpdateComponentSchemaType,
-    ComponentPositionSchemaType
+    SingleParamsSchemaType,
+    UpdateComponentSchemaType
 } from './components-schemas.js'
-import { sql } from 'kysely'
 
 export async function createComponent(
     req: FastifyRequest<{

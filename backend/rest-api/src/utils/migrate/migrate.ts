@@ -1,11 +1,15 @@
-import * as path from 'path'
 import { promises as fs } from 'fs'
-import { Migrator, FileMigrationProvider } from 'kysely'
-import { Kysely, PostgresDialect } from 'kysely'
+import {
+    FileMigrationProvider,
+    Kysely,
+    Migrator,
+    PostgresDialect
+} from 'kysely'
 import { DB } from 'kysely-codegen'
+import * as path from 'path'
+import { dirname } from 'path'
 import pg from 'pg'
 import { fileURLToPath } from 'url'
-import { dirname } from 'path'
 const { Pool } = pg
 const __filename = fileURLToPath(import.meta.resolve('../../db-migrations'))
 const __dirname = dirname(__filename)

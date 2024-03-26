@@ -1,17 +1,17 @@
 import { FastifyInstance } from 'fastify'
 import {
     addCollaborator,
+    getAllCollaborators,
     removeCollaborator,
-    updateCollaborator,
-    getAllCollaborators
+    updateCollaborator
 } from './collaborators-controller.js'
 import {
-    paramsSchema,
+    CollaboratorSchemaType,
     ParamsSchemaType,
-    singleParamsSchema,
     SingleParamsSchemaType,
     collaboratorSchema,
-    CollaboratorSchemaType
+    paramsSchema,
+    singleParamsSchema
 } from './collaborators-schemas.js'
 
 const commonSchema = {

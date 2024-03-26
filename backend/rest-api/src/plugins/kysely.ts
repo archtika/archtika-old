@@ -1,7 +1,7 @@
-import fastifyPlugin from 'fastify-plugin'
-import { DB } from 'kysely-codegen'
-import { Kysely, PostgresDialect } from 'kysely'
 import { FastifyInstance } from 'fastify'
+import fastifyPlugin from 'fastify-plugin'
+import { Kysely, PostgresDialect } from 'kysely'
+import { DB } from 'kysely-codegen'
 
 async function kyselyQueryBuilder(fastify: FastifyInstance) {
     const kyselyDB = new Kysely<DB>({

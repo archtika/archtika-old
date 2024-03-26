@@ -1,12 +1,12 @@
 import { FastifyInstance } from 'fastify'
 import {
+    deleteAccount,
     getAccount,
     loginWithGithub,
     loginWithGithubCallback,
     loginWithGoogle,
     loginWithGoogleCallback,
-    logout,
-    deleteAccount
+    logout
 } from './account-controller.js'
 
 const commonSchema = {

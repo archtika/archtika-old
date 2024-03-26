@@ -1,7 +1,7 @@
-import { describe, it, after, before } from 'node:test'
-import assert from 'node:assert'
-import { app as buildApp } from '../../index.js'
 import { FastifyInstance } from 'fastify'
+import assert from 'node:assert'
+import { after, before, describe, it } from 'node:test'
+import { app as buildApp } from '../../index.js'
 
 describe('websites', async () => {
     let app: FastifyInstance

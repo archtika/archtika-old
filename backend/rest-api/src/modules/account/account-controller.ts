@@ -1,6 +1,6 @@
-import { FastifyRequest, FastifyReply } from 'fastify'
-import { generateId } from 'lucia'
 import { generateCodeVerifier, generateState } from 'arctic'
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { generateId } from 'lucia'
 
 export async function loginWithGithub(
     req: FastifyRequest,

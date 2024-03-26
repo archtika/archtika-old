@@ -1,8 +1,8 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import {
+    CollaboratorSchemaType,
     ParamsSchemaType,
-    SingleParamsSchemaType,
-    CollaboratorSchemaType
+    SingleParamsSchemaType
 } from './collaborators-schemas.js'
 
 export async function getAllCollaborators(

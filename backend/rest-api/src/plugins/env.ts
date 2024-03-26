@@ -1,6 +1,6 @@
-import fastifyPlugin from 'fastify-plugin'
 import fastifyEnv from '@fastify/env'
 import { FastifyInstance } from 'fastify'
+import fastifyPlugin from 'fastify-plugin'
 
 async function env(fastify: FastifyInstance) {
     fastify.register(fastifyEnv, {

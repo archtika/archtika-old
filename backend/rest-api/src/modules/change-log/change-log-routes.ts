@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify'
-import { paramsSchema, ParamsSchemaType } from './change-log-schemas.js'
 import { viewChangeLog } from './change-log-controller.js'
+import { paramsSchema, ParamsSchemaType } from './change-log-schemas.js'
 
 const commonSchema = {
     schema: {

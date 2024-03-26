@@ -1,25 +1,25 @@
 import { FastifyInstance } from 'fastify'
 import {
-    paramsSchema,
-    ParamsSchemaType,
-    singleParamsSchema,
-    SingleParamsSchemaType,
-    createComponentSchema,
-    CreateComponentSchemaType,
-    updateComponentSchema,
-    UpdateComponentSchemaType,
-    componentPositionSchema,
-    ComponentPositionSchemaType
-} from './components-schemas.js'
-import {
     createComponent,
     deleteComponent,
-    getComponent,
     getAllComponents,
-    updateComponent,
+    getComponent,
     setComponentPosition,
+    updateComponent,
     updateComponentPosition
 } from './components-controller.js'
+import {
+    ComponentPositionSchemaType,
+    CreateComponentSchemaType,
+    ParamsSchemaType,
+    SingleParamsSchemaType,
+    UpdateComponentSchemaType,
+    componentPositionSchema,
+    createComponentSchema,
+    paramsSchema,
+    singleParamsSchema,
+    updateComponentSchema
+} from './components-schemas.js'
 
 const commonSchema = {
     schema: {
@@ -41,6 +41,16 @@ export default async function (fastify: FastifyInstance) {
             }
         },
         createComponent
+    )
+
+    fastify.get(
+        '/pages/:id/components',
+        {
+            schema: {
+                tags: commonSchema.schema.tags
+            }
+        },
+        getAllComponents
     )
 
     fastify.get<{ Params: ParamsSchemaType }>(
@@ -75,16 +85,6 @@ export default async function (fastify: FastifyInstance) {
             schema: { tags: commonSchema.schema.tags }
         },
         deleteComponent
-    )
-
-    fastify.get(
-        '/pages/:id/components',
-        {
-            schema: {
-                tags: commonSchema.schema.tags
-            }
-        },
-        getAllComponents
     )
 
     fastify.post<{

@@ -1,9 +1,8 @@
 import { FastifyInstance } from 'fastify'
 import { createMedia, deleteMedia } from './media-controller.js'
-import { Type } from '@sinclair/typebox'
 import {
-    deleteMediaParamsSchema,
-    DeleteMediaParamsSchemaType
+    DeleteMediaParamsSchemaType,
+    deleteMediaParamsSchema
 } from './media-schemas.js'
 
 const commonSchema = {

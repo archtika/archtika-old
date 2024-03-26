@@ -7,7 +7,7 @@
         "build": "tsc -p tsconfig.json",
         "build:watch": "tsc -p tsconfig.json -w",
         "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --name rest-api",
-        "start": "NODE_ENV='development' pm2 start rest-api",
+        "start": "pm2 start rest-api --watch",
         "stop": "pm2 stop rest-api",
         "gentypes": "kysely-codegen --verify --dialect postgres",
         "format": "prettier . --write",
@@ -28,7 +28,6 @@
         "@fastify/type-provider-typebox": "^4.0.0",
         "@lucia-auth/adapter-postgresql": "^3.1.1",
         "@sinclair/typebox": "^0.32.15",
-        "@types/pg": "^8.11.2",
         "arctic": "^1.2.1",
         "fastify": "^4.26.2",
         "fastify-cli": "^6.1.1",
@@ -43,6 +42,7 @@
     "devDependencies": {
         "@tsconfig/node20": "^20.1.2",
         "@types/node": "^20.11.25",
+        "@types/pg": "^8.11.4",
         "kysely-codegen": "^0.13.1",
         "pino-pretty": "^10.3.1",
         "typescript": "^5.4.2"

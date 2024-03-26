@@ -1,4 +1,4 @@
-import { Type, Static } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 
 export const singleParamsSchema = Type.Object({
     id: Type.String({ minLength: 36, maxLength: 36 })

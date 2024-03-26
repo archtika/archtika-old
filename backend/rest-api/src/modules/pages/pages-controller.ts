@@ -1,11 +1,11 @@
+import { FastifyReply, FastifyRequest } from 'fastify'
 import { sql } from 'kysely'
 import {
     CreatePageSchemaType,
-    UpdatePageSchemaType,
     PageParamsSchemaType,
-    SinglePageParamsSchemaType
+    SinglePageParamsSchemaType,
+    UpdatePageSchemaType
 } from './pages-schemas.js'
-import { FastifyRequest, FastifyReply } from 'fastify'
 
 export async function createPage(
     req: FastifyRequest<{

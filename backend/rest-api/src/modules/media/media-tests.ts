@@ -1,10 +1,11 @@
-import { describe, it, after, before } from 'node:test'
-import assert from 'node:assert'
-import { app as buildApp } from '../../index.js'
 import { FastifyInstance } from 'fastify'
 import { readFile } from 'fs/promises'
+import assert from 'node:assert'
+import { after, before, describe, it } from 'node:test'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
+import { app as buildApp } from '../../index.js'
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 

@@ -1,18 +1,18 @@
 import { FastifyInstance } from 'fastify'
 import {
     createWebsite,
-    getWebsite,
-    updateWebsite,
     deleteWebsite,
-    getAllWebsites
+    getAllWebsites,
+    getWebsite,
+    updateWebsite
 } from './websites-controller.js'
 import {
     CreateWebsiteSchemaType,
+    UpdateWebsiteSchemaType,
+    WebsiteParamsSchemaType,
     createWebsiteSchema,
     updateWebsiteSchema,
-    UpdateWebsiteSchemaType,
-    websiteParamsSchema,
-    WebsiteParamsSchemaType
+    websiteParamsSchema
 } from './websites-schemas.js'
 
 const commonSchema = {

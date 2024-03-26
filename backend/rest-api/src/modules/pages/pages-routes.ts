@@ -1,20 +1,20 @@
 import { FastifyInstance } from 'fastify'
 import {
     createPage,
-    getPage,
-    updatePage,
     deletePage,
-    getAllPages
+    getAllPages,
+    getPage,
+    updatePage
 } from './pages-controller.js'
 import {
     CreatePageSchemaType,
-    createPageSchema,
-    updatePageSchema,
-    UpdatePageSchemaType,
-    pageParamsSchema,
     PageParamsSchemaType,
+    SinglePageParamsSchemaType,
+    UpdatePageSchemaType,
+    createPageSchema,
+    pageParamsSchema,
     singlePageParamsSchema,
-    SinglePageParamsSchemaType
+    updatePageSchema
 } from './pages-schemas.js'
 
 const commonSchema = {

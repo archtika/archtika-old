@@ -1,12 +1,11 @@
-import { Lucia } from 'lucia'
 import { NodePostgresAdapter } from '@lucia-auth/adapter-postgresql'
-import pg from 'pg'
-import { type User, type Session } from 'lucia'
 import { GitHub, Google } from 'arctic'
 import { FastifyInstance } from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
 import { Kysely } from 'kysely'
 import { DB } from 'kysely-codegen'
+import { Lucia, type Session, type User } from 'lucia'
+import pg from 'pg'
 
 let lucia: Lucia
 

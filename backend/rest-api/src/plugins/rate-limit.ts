@@ -1,6 +1,6 @@
-import fastifyPlugin from 'fastify-plugin'
 import fastifyRateLimit from '@fastify/rate-limit'
 import { FastifyInstance } from 'fastify'
+import fastifyPlugin from 'fastify-plugin'
 
 async function rateLimit(fastify: FastifyInstance) {
     await fastify.register(fastifyRateLimit, {
