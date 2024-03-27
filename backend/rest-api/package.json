@@ -9,7 +9,7 @@
         "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --name rest-api",
         "start": "pm2 start rest-api --watch",
         "stop": "pm2 stop rest-api",
-        "gentypes": "kysely-codegen --verify --dialect postgres",
+        "gentypes": "kysely-codegen --dialect postgres",
         "format": "prettier . --write",
         "test": "NODE_ENV='test' node --test ./js-output/modules/**/*-tests.js"
     },
