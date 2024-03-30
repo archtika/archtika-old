@@ -7,9 +7,13 @@ import fastifyAutoload from '@fastify/autoload'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { ajvFilePlugin } from '@fastify/multipart'
+import os from 'os'
+import cluster from 'cluster'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+
+const cpuCount = os.cpus().length
 
 const envToLogger = {
     development: {
@@ -56,10 +60,19 @@ export function app() {
     return fastify
 }
 
-if (
-    process.argv[1] === new URL(import.meta.url).pathname ||
-    process.env.pm_id !== undefined
-) {
-    const fastify = app()
-    fastify.listen({ port: 3000 })
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+    if (cluster.isPrimary) {
+        for (let i = 0; i < cpuCount; i++) {
+            console.log(`Forking process number ${i}`)
+            cluster.fork()
+        }
+
+        cluster.on('exit', (worker, code, signal) => {
+            console.log(`Worker ${worker.process.pid} died`)
+            cluster.fork()
+        })
+    } else {
+        const fastify = app()
+        fastify.listen({ port: 3000 })
+    }
 }

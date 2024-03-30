@@ -7,6 +7,7 @@ import {
     SingleParamsSchemaType,
     UpdateComponentSchemaType
 } from './components-schemas.js'
+import WebSocket from 'ws'
 
 export async function createComponent(
     req: FastifyRequest<{
@@ -156,6 +157,39 @@ export async function getAllComponents(
     }
 
     return reply.status(200).send(allComponents)
+}
+
+export async function getAllComponentsWebsocket(
+    socket: WebSocket,
+    req: FastifyRequest<{ Params: SingleParamsSchemaType }>
+) {
+    const { id } = req.params
+
+    const channelName = `components_${id}`
+
+    socket.on('message', (message) => {
+        req.server.redis.pub.publish(channelName, message.toString())
+    })
+
+    req.server.redis.sub.subscribe(channelName, (err) => {
+        if (err) {
+            console.error(`Error subscribing to ${channelName}: ${err.message}`)
+        }
+    })
+
+    req.server.redis.sub.on('message', (channel, message) => {
+        if (channel === channelName) {
+            req.server.websocketServer.clients.forEach((client) =>
+                client.send(message)
+            )
+        }
+    })
+
+    socket.on('close', () => {
+        req.server.redis.sub.unsubscribe()
+        req.server.redis.sub.quit()
+        req.server.redis.pub.quit()
+    })
 }
 
 export async function getComponent(

@@ -3,6 +3,7 @@ import {
     createComponent,
     deleteComponent,
     getAllComponents,
+    getAllComponentsWebsocket,
     getComponent,
     setComponentPosition,
     updateComponent,
@@ -43,15 +44,15 @@ export default async function (fastify: FastifyInstance) {
         createComponent
     )
 
-    fastify.get(
-        '/pages/:id/components',
-        {
-            schema: {
-                tags: commonSchema.schema.tags
-            }
+    fastify.route({
+        method: 'GET',
+        url: '/pages/:id/components',
+        schema: {
+            tags: commonSchema.schema.tags
         },
-        getAllComponents
-    )
+        handler: getAllComponents,
+        wsHandler: getAllComponentsWebsocket
+    })
 
     fastify.get<{ Params: ParamsSchemaType }>(
         '/pages/:pageId/components/:componentId',
