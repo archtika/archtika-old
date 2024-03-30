@@ -6,9 +6,9 @@
         "migrate:next": "node ./js-output/utils/migrate/migrate-next.js",
         "build": "tsc -p tsconfig.json",
         "build:watch": "tsc -p tsconfig.json -w",
-        "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --name rest-api",
-        "start": "pm2 start rest-api --watch",
-        "stop": "pm2 stop rest-api",
+        "start:init": "unset name && pm2 start ./js-output/index.js -i 'max' --watch --name api",
+        "start": "pm2 start api --watch",
+        "stop": "pm2 stop api",
         "gentypes": "kysely-codegen --dialect postgres",
         "format": "prettier . --write",
         "test": "NODE_ENV='test' node --test ./js-output/modules/**/*-tests.js"

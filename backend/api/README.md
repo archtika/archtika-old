@@ -1,3 +1,3 @@
-# rest-api
+# api
 
 RESTful API, built with fastify.
