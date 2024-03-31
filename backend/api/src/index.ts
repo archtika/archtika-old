@@ -1,14 +1,16 @@
-import Fastify from 'fastify'
-import {
-    TypeBoxTypeProvider,
-    TypeBoxValidatorCompiler
-} from '@fastify/type-provider-typebox'
 import fastifyAutoload from '@fastify/autoload'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
 import { ajvFilePlugin } from '@fastify/multipart'
-import os from 'os'
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
+import { GitHub, Google } from 'arctic'
 import cluster from 'cluster'
+import Fastify from 'fastify'
+import { Kysely } from 'kysely'
+import { DB } from 'kysely-codegen'
+import { Lucia, Session, User } from 'lucia'
+import { Client } from 'minio'
+import os from 'os'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -74,5 +76,34 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     } else {
         const fastify = app()
         fastify.listen({ port: 3000 })
+    }
+}
+
+declare module 'fastify' {
+    interface FastifyInstance {
+        config: {
+            DEV_GITHUB_CLIENT_ID: string
+            DEV_GITHUB_CLIENT_SECRET: string
+            DEV_GOOGLE_CLIENT_ID: string
+            DEV_GOOGLE_CLIENT_SECRET: string
+            DATABASE_URL: string
+        }
+        lucia: {
+            luciaInstance: Lucia
+            oAuth: {
+                github: GitHub
+                google: Google
+            }
+        }
+        kysely: {
+            db: Kysely<DB>
+        }
+        minio: {
+            client: Client
+        }
+    }
+    interface FastifyRequest {
+        user: User | null
+        session: Session | null
     }
 }

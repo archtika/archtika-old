@@ -2,10 +2,7 @@ import { NodePostgresAdapter } from '@lucia-auth/adapter-postgresql'
 import { GitHub, Google } from 'arctic'
 import { FastifyInstance } from 'fastify'
 import fastifyPlugin from 'fastify-plugin'
-import { Kysely } from 'kysely'
-import { DB } from 'kysely-codegen'
-import { Lucia, type Session, type User } from 'lucia'
-import { Client } from 'minio'
+import { Lucia } from 'lucia'
 import pg from 'pg'
 
 let lucia: Lucia
@@ -60,35 +57,6 @@ declare module 'lucia' {
             username: string
             email: string
         }
-    }
-}
-
-declare module 'fastify' {
-    interface FastifyInstance {
-        config: {
-            DEV_GITHUB_CLIENT_ID: string
-            DEV_GITHUB_CLIENT_SECRET: string
-            DEV_GOOGLE_CLIENT_ID: string
-            DEV_GOOGLE_CLIENT_SECRET: string
-            DATABASE_URL: string
-        }
-        lucia: {
-            luciaInstance: Lucia
-            oAuth: {
-                github: GitHub
-                google: Google
-            }
-        }
-        kysely: {
-            db: Kysely<DB>
-        }
-        minio: {
-            client: Client
-        }
-    }
-    interface FastifyRequest {
-        user: User | null
-        session: Session | null
     }
 }
 
