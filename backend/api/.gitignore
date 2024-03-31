@@ -3,4 +3,3 @@ node_modules
 result
 js-output
 .env
-backend/api/uploads
