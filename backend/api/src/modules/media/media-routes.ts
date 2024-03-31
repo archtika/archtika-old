@@ -1,9 +1,11 @@
 import { FastifyInstance } from 'fastify'
-import { createMedia, deleteMedia } from './media-controller.js'
 import {
-    DeleteMediaParamsSchemaType,
-    deleteMediaParamsSchema
-} from './media-schemas.js'
+    createMedia,
+    deleteMedia,
+    getAllMedia,
+    getMedia
+} from './media-controller.js'
+import { ParamsSchemaType, paramsSchema } from './media-schemas.js'
 
 const commonSchema = {
     schema: {
@@ -30,12 +32,33 @@ export default async function (fastify: FastifyInstance) {
         createMedia
     )
 
-    fastify.delete<{ Params: DeleteMediaParamsSchemaType }>(
+    fastify.get(
+        '/',
+        {
+            schema: {
+                tags: commonSchema.schema.tags
+            }
+        },
+        getAllMedia
+    )
+
+    fastify.get<{ Params: ParamsSchemaType }>(
         '/:id',
         {
             schema: {
                 tags: commonSchema.schema.tags,
-                params: deleteMediaParamsSchema
+                params: paramsSchema
+            }
+        },
+        getMedia
+    )
+
+    fastify.delete<{ Params: ParamsSchemaType }>(
+        '/:id',
+        {
+            schema: {
+                tags: commonSchema.schema.tags,
+                params: paramsSchema
             }
         },
         deleteMedia

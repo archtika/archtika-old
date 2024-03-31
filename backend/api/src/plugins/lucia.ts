@@ -5,6 +5,7 @@ import fastifyPlugin from 'fastify-plugin'
 import { Kysely } from 'kysely'
 import { DB } from 'kysely-codegen'
 import { Lucia, type Session, type User } from 'lucia'
+import { Client } from 'minio'
 import pg from 'pg'
 
 let lucia: Lucia
@@ -80,6 +81,9 @@ declare module 'fastify' {
         }
         kysely: {
             db: Kysely<DB>
+        }
+        minio: {
+            client: Client
         }
     }
     interface FastifyRequest {

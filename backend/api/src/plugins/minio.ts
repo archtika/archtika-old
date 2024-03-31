@@ -14,6 +14,10 @@ async function minio(fastify: FastifyInstance) {
     minioClient.makeBucket('archtika', 'us-east-1', (err) => {
         if (err) return console.error(err)
     })
+
+    fastify.decorate('minio', {
+        client: minioClient
+    })
 }
 
 export default fastifyPlugin(minio)
