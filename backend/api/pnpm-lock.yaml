@@ -48,8 +48,8 @@ dependencies:
     specifier: ^10.0.1
     version: 10.0.1
   '@lucia-auth/adapter-postgresql':
-    specifier: ^3.1.1
-    version: 3.1.1(lucia@3.1.1)(pg@8.11.3)
+    specifier: ^3.1.2
+    version: 3.1.2(lucia@3.1.1)(pg@8.11.3)
   '@sinclair/typebox':
     specifier: ^0.32.15
     version: 0.32.15
@@ -319,10 +319,10 @@ packages:
       wrap-ansi-cjs: /wrap-ansi@7.0.0
     dev: false
 
-  /@lucia-auth/adapter-postgresql@3.1.1(lucia@3.1.1)(pg@8.11.3):
-    resolution: {integrity: sha512-FxAi/Uq42YqBNVBLKXmqu3SImUPZChnQiBNUU2DSknO5eT0Ma0j5aj9g9WXRO+1hd3qESUA7D4BTYpnwEbOkkQ==}
+  /@lucia-auth/adapter-postgresql@3.1.2(lucia@3.1.1)(pg@8.11.3):
+    resolution: {integrity: sha512-XgScy312JsaiyJZ0OaUHakk01hFBldF1m8abX4Ctk2Dkt7lEVS/u0xZ2Sf6Hlji1wZtEM0uiIWdeMUu79XcXZA==}
     peerDependencies:
-      '@neondatabase/serverless': 0.7.x
+      '@neondatabase/serverless': 0.7 - 0.9
       lucia: 3.x
       pg: ^8.8.0
       postgres: ^3.3.0
