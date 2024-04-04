@@ -1,12 +1,7 @@
 import { createHash, randomUUID } from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import fs from 'fs'
-import path, { dirname } from 'path'
-import { fileURLToPath } from 'url'
+import path from 'path'
 import { ParamsSchemaType, multipartFileType } from './media-schemas.js'
-
-const __filename = fileURLToPath(import.meta.resolve('../../'))
-const __dirname = dirname(__filename)
 
 export async function createMedia(
     req: FastifyRequest<{
@@ -40,7 +35,7 @@ export async function createMedia(
     }
 
     const bucketName = 'archtika'
-    const objectName = `${randomId}${path.extname(data.filename)}`
+    const objectName = randomId
 
     try {
         await req.server.minio.client.putObject(
@@ -75,7 +70,7 @@ export async function getAllMedia(req: FastifyRequest, reply: FastifyReply) {
             const presignedUrl =
                 await req.server.minio.client.presignedGetObject(
                     'archtika',
-                    `${asset.id}.${asset.mimetype.split('/')[1]}`
+                    `${asset.id}`
                 )
             return {
                 ...asset,
@@ -107,7 +102,7 @@ export async function getMedia(
 
     const presignedUrl = await req.server.minio.client.presignedGetObject(
         'archtika',
-        `${media.id}.${media.mimetype.split('/')[1]}`
+        media.id
     )
 
     const assetWithPresignedUrl = {
@@ -137,10 +132,7 @@ export async function deleteMedia(
     }
 
     try {
-        await req.server.minio.client.removeObject(
-            'archtika',
-            `${media.id}.${media.mimetype.split('/')[1]}`
-        )
+        await req.server.minio.client.removeObject('archtika', media.id)
     } catch (err) {
         console.error(err)
         return reply.internalServerError('Error deleting file')

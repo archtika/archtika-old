@@ -10,17 +10,20 @@ export const load: PageServerLoad = async ({ fetch, params, parent }) => {
     const componentsData = await fetch(
         `http://localhost:3000/api/v1/pages/${params.pageId}/components`
     )
+    const mediaData = await fetch(`http://localhost:3000/api/v1/media`)
 
     const { website } = await parent()
     const page = await pageData.json()
     const pages = await pagesData.json()
     const components = await componentsData.json()
+    const media = await mediaData.json()
 
     return {
         website,
         page,
         pages,
-        components
+        components,
+        media
     }
 }
 

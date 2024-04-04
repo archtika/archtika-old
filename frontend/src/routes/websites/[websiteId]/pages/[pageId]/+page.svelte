@@ -19,6 +19,10 @@
     </details>
     <h2>{data.page.title}</h2>
 
+    {#each data.media as { url, name }}
+        <img src={url} alt={name} />
+    {/each}
+
     <h3>Components</h3>
     <div draggable="true">
         <h4>Text</h4>

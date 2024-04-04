@@ -16,3 +16,7 @@
         <p>{component.content.accordionContent}</p>
     </details>
 {/if}
+
+{#if component.type === 'image'}
+    <img src="" alt="" />
+{/if}
