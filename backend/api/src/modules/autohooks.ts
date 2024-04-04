@@ -6,11 +6,16 @@ export default async function (fastify: FastifyInstance) {
         const originHeader = req.headers.origin ?? null
         const hostHeader = req.headers.host ?? null
 
+        const allowedOrigins = [
+            'http://localhost:3000',
+            'http://localhost:5173'
+        ]
+
         if (
             req.method !== 'GET' &&
             (!originHeader ||
                 !hostHeader ||
-                !verifyRequestOrigin(originHeader, [hostHeader]))
+                !verifyRequestOrigin(originHeader, allowedOrigins))
         ) {
             return reply.notAcceptable()
         }

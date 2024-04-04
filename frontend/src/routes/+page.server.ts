@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
 }
 
 export const actions: Actions = {
-    createWebsite: async ({ request }) => {
+    createWebsite: async ({ request, fetch }) => {
         const data = await request.formData()
 
         await fetch('http://localhost:3000/api/v1/websites', {
