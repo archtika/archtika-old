@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { enhance } from '$app/forms'
     import type { PageServerData } from './$types'
 
     export let data: PageServerData
@@ -8,7 +9,7 @@
 
 <details open>
     <summary>Create website</summary>
-    <form method="post" action="?/createWebsite">
+    <form method="post" action="?/createWebsite" use:enhance>
         <label>
             Title:
             <input name="title" type="text" />

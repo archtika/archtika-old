@@ -6,7 +6,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     db.schema
         .createTable('collaboration.collaborator')
         .addColumn('website_id', 'uuid', (col) =>
-            col.references('structure.website.id').notNull()
+            col.references('structure.website.id').notNull().onDelete('cascade')
         )
         .addColumn('user_id', 'varchar(20)', (col) =>
             col.references('auth.auth_user.id').notNull()
