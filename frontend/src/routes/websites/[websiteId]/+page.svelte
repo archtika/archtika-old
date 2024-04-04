@@ -81,6 +81,10 @@
     {/each}
 {/if}
 
+<h3>Logs</h3>
+
+<a href="{$page.url}/logs">View full change-log</a>
+
 <h3>Delete</h3>
 
 <form method="post" action="?/deleteWebsite" use:enhance>

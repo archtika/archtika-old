@@ -1,10 +1,7 @@
 import { redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ fetch, params }) => {
-    const websiteData = await fetch(
-        `http://localhost:3000/api/v1/websites/${params.websiteId}`
-    )
+export const load: PageServerLoad = async ({ fetch, params, parent }) => {
     const collaboratorsData = await fetch(
         `http://localhost:3000/api/v1/websites/${params.websiteId}/collaborators`
     )
@@ -12,7 +9,7 @@ export const load: PageServerLoad = async ({ fetch, params }) => {
         `http://localhost:3000/api/v1/websites/${params.websiteId}/pages`
     )
 
-    const website = await websiteData.json()
+    const { website } = await parent()
     const collaborators = await collaboratorsData.json()
     const pages = await pagesData.json()
 

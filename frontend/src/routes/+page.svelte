@@ -38,9 +38,7 @@
             />
             <p>Last modified: {updatedAt ?? created_at}</p>
             <div>
-                <a href="/edit/{id}">Edit</a>
-                <a href="/view/{id}">View</a>
-                <a href="/generate/{id}">Generate</a>
+                <a href="/websites/{id}">Edit</a>
             </div>
         </article>
     {/each}
