@@ -30,7 +30,7 @@
             {/each}
         </ul>
     </details>
-    
+
     <h2>{data.page.title}</h2>
 
     <h3>Components</h3>

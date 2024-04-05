@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import path from 'path'
 import { ParamsSchemaType, multipartFileType } from './media-schemas.js'
+import { mimeTypes } from '../../utils/mimetypes.js'
 
 export async function createMedia(
     req: FastifyRequest<{
@@ -10,6 +11,15 @@ export async function createMedia(
     reply: FastifyReply
 ) {
     const data = req.body.file
+
+    const isMimetypeValid = Object.values(mimeTypes).some((types) =>
+        types.includes(data.mimetype)
+    )
+
+    if (!isMimetypeValid) {
+        return reply.badRequest('Invalid file type')
+    }
+
     const bufferData = await data.toBuffer()
     const buffer = Buffer.from(bufferData)
 

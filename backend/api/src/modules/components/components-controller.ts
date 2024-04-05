@@ -8,6 +8,7 @@ import {
     UpdateComponentSchemaType
 } from './components-schemas.js'
 import WebSocket from 'ws'
+import { mimeTypes } from '../../utils/mimetypes.js'
 
 export async function createComponent(
     req: FastifyRequest<{
@@ -23,12 +24,6 @@ export async function createComponent(
 
     if (type === 'image' || type === 'video' || type === 'audio') {
         assetId = req.body.assetId
-    }
-
-    const mimeTypes = {
-        image: ['image/jpeg', 'image/png', 'image/svg+xml'],
-        audio: ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg'],
-        video: ['video/mp4', 'video/webm', 'video/ogg']
     }
 
     const component = await req.server.kysely.db

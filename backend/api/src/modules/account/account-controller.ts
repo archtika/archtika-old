@@ -101,7 +101,7 @@ export async function loginWithGithubCallback(
 
         reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
-        return reply.redirect('/docs')
+        return reply.redirect('http://localhost:5173')
     }
 
     const userId = generateId(20)
@@ -134,7 +134,7 @@ export async function loginWithGithubCallback(
 
     reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
-    return reply.redirect('/docs')
+    return reply.redirect('http://localhost:5173')
 }
 
 export async function loginWithGoogle(
@@ -240,7 +240,7 @@ export async function loginWithGoogleCallback(
 
         reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
-        return reply.redirect('/docs')
+        return reply.redirect('http://localhost:5173')
     }
 
     const userId = generateId(20)
@@ -273,7 +273,7 @@ export async function loginWithGoogleCallback(
 
     reply.setCookie(cookie.name, cookie.value, cookie.attributes)
 
-    return reply.redirect('/docs')
+    return reply.redirect('http://localhost:5173')
 }
 
 export async function getAccount(req: FastifyRequest, reply: FastifyReply) {
@@ -296,7 +296,7 @@ export async function logout(req: FastifyRequest, reply: FastifyReply) {
     reply.clearCookie('google_oauth_state')
     reply.clearCookie('google_oauth_code_verifier')
 
-    return reply.status(200).send()
+    return reply.redirect('http://localhost:5173/login')
 }
 
 export async function deleteAccount(req: FastifyRequest, reply: FastifyReply) {

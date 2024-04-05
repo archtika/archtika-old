@@ -18,5 +18,22 @@
 {/if}
 
 {#if component.type === 'image'}
-    <img src={component.media.url} alt={component.media.name} />
+    <img src={component.media.url} alt={component.content.altText} />
+{/if}
+
+{#if component.type === 'audio'}
+    <audio controls title={component.content.altText}>
+        <source src={component.media.url} />
+    </audio>
+{/if}
+
+{#if component.type === 'video'}
+    <video
+        controls
+        loop={component.content.isLooped}
+        title={component.content.altText}
+        src={component.media.url}
+    >
+        <track default kind="captions" srclang="en" />
+    </video>
 {/if}

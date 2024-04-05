@@ -27,4 +27,19 @@ export const load: PageServerLoad = async ({ fetch, params, parent }) => {
     }
 }
 
-export const actions: Actions = {}
+export const actions: Actions = {
+    createComponent: async ({ request, fetch, params }) => {
+        const data = request.formData()
+
+        /* await fetch(
+            `http://localhost:3000/api/v1/pages/${params.pageId}/components`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+
+                })
+            }
+        ) */
+    }
+}

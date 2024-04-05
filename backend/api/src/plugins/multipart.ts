@@ -4,7 +4,10 @@ import fastifyPlugin from 'fastify-plugin'
 
 async function multipart(fastify: FastifyInstance) {
     fastify.register(fastifyMultipart, {
-        attachFieldsToBody: true
+        attachFieldsToBody: true,
+        limits: {
+            fileSize: 1024 * 1024 * 100
+        }
     })
 }
 
