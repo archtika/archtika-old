@@ -1,22 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte'
-
     export let component: any
-
-    let assetUrl: string
-    let assetName: string
-
-    onMount(async () => {
-        if (component.type !== 'image') {
-            return
-        }
-
-        const assetData = await fetch(`/media?id=${component.asset_id}`)
-        const assetRes = await assetData.json()
-
-        assetUrl = assetRes.url
-        assetName = assetRes.name
-    })
 </script>
 
 {#if component.type === 'text'}
@@ -35,5 +18,5 @@
 {/if}
 
 {#if component.type === 'image'}
-    <img src={assetUrl} alt={assetName} />
+    <img src={component.media.url} alt={component.media.name} />
 {/if}

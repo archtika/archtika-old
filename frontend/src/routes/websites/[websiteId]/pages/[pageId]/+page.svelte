@@ -3,6 +3,19 @@
     import RenderComponent from '$lib/components/RenderComponent.svelte'
 
     export let data: PageServerData
+
+    const componentsWithMedia = data.components.map((component: any) => {
+        if (['image', 'audio', 'video'].includes(component.type)) {
+            return {
+                ...component,
+                media: data.media.find(
+                    (media: any) => media.id === component.asset_id
+                )
+            }
+        }
+
+        return component
+    })
 </script>
 
 <div>
@@ -17,11 +30,8 @@
             {/each}
         </ul>
     </details>
+    
     <h2>{data.page.title}</h2>
-
-    {#each data.media as { url, name }}
-        <img src={url} alt={name} />
-    {/each}
 
     <h3>Components</h3>
     <div draggable="true">
@@ -30,7 +40,7 @@
 </div>
 
 <div>
-    {#each data.components as component}
+    {#each componentsWithMedia as component}
         <RenderComponent {component} />
     {/each}
 </div>
