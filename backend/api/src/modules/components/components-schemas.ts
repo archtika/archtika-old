@@ -27,22 +27,6 @@ const updateComponentTextSchema = Type.Object({
     })
 })
 
-const createComponentButtonSchema = Type.Object({
-    type: Type.Literal('button'),
-    content: Type.Object({
-        label: Type.String({ minLength: 1 }),
-        hyperlink: Type.String()
-    })
-})
-
-const updateComponentButtonSchema = Type.Object({
-    type: Type.Literal('button'),
-    content: Type.Object({
-        label: Type.Optional(Type.String({ minLength: 1 })),
-        hyperlink: Type.Optional(Type.String())
-    })
-})
-
 const createComponentImageSchema = Type.Object({
     type: Type.Literal('image'),
     content: Type.Object({
@@ -95,39 +79,12 @@ const updateComponentAudioSchema = Type.Object({
     assetId: Type.Optional(Type.String())
 })
 
-const createComponentAccordionSchema = Type.Object({
-    type: Type.Literal('accordion'),
-    content: Type.Object({
-        title: Type.String({ minLength: 1 }),
-        accordionContent: Type.String({ minLength: 1 }),
-        isOpen: Type.Optional(Type.Boolean())
-    })
-})
-
-const updateComponentAccordionSchema = Type.Object({
-    type: Type.Literal('accordion'),
-    content: Type.Object({
-        title: Type.Optional(Type.String({ minLength: 1 })),
-        accordionContent: Type.Optional(Type.String({ minLength: 1 })),
-        isOpen: Type.Optional(Type.Boolean())
-    })
-})
-
 export const exampleComponentValues = {
     Text: {
         value: {
             type: 'text',
             content: {
                 textContent: 'Hello, world!'
-            }
-        }
-    },
-    Button: {
-        value: {
-            type: 'button',
-            content: {
-                label: 'Click me!',
-                hyperlink: 'https://example.com'
             }
         }
     },
@@ -159,27 +116,15 @@ export const exampleComponentValues = {
             },
             assetId: '00000000-0000-0000-0000-000000000000'
         }
-    },
-    Accordion: {
-        value: {
-            type: 'accordion',
-            content: {
-                title: 'Accordion title',
-                accordionContent: 'Accordion content',
-                isOpen: true
-            }
-        }
     }
 }
 
 export const createComponentSchema = Type.Union(
     [
         createComponentTextSchema,
-        createComponentButtonSchema,
         createComponentImageSchema,
         createComponentVideoSchema,
-        createComponentAudioSchema,
-        createComponentAccordionSchema
+        createComponentAudioSchema
     ],
     {
         'x-examples': exampleComponentValues
@@ -191,11 +136,9 @@ export type CreateComponentSchemaType = Static<typeof createComponentSchema>
 export const updateComponentSchema = Type.Union(
     [
         updateComponentTextSchema,
-        updateComponentButtonSchema,
         updateComponentImageSchema,
         updateComponentVideoSchema,
-        updateComponentAudioSchema,
-        updateComponentAccordionSchema
+        updateComponentAudioSchema
     ],
     {
         'x-examples': exampleComponentValues

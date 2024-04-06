@@ -4,7 +4,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     await db.schema.createSchema('components').execute()
     await db.schema
         .createType('components.component_type')
-        .asEnum(['text', 'button', 'image', 'video', 'audio', 'accordion'])
+        .asEnum(['text', 'image', 'video', 'audio'])
         .execute()
 
     await db.schema

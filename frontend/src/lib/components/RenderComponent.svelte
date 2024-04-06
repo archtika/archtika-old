@@ -23,17 +23,6 @@
     {@html purifiedTextContent}
 {/if}
 
-{#if component.type === 'button'}
-    <a href={component.content.hyperlink}>{component.content.label}</a>
-{/if}
-
-{#if component.type === 'accordion'}
-    <details open={component.content.isOpen}>
-        <summary>{component.content.title}</summary>
-        <p>{component.content.accordionContent}</p>
-    </details>
-{/if}
-
 {#if component.type === 'image'}
     <img src={component.media.url} alt={component.content.altText} />
 {/if}
