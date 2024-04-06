@@ -1,9 +1,26 @@
 <script lang="ts">
+    import { Renderer, parse } from 'marked'
+    import DOMPurify from 'isomorphic-dompurify'
+
     export let component: any
+
+    const renderer = new Renderer()
+
+    renderer.image = function (text) {
+        return text
+    }
+
+    let purifiedTextContent: string
+
+    if (component.type === 'text') {
+        purifiedTextContent = DOMPurify.sanitize(
+            parse(component.content.textContent, { renderer }) as string
+        )
+    }
 </script>
 
 {#if component.type === 'text'}
-    <p>{component.content.textContent}</p>
+    {@html purifiedTextContent}
 {/if}
 
 {#if component.type === 'button'}
