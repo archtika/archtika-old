@@ -48,21 +48,30 @@ export const actions: Actions = {
                 const formData = new FormData()
                 formData.append('file', data.get('file') as File)
 
-                const imageData = await fetch(
-                    'http://localhost:3000/api/v1/media',
-                    {
-                        method: 'POST',
-                        body: formData
-                    }
-                )
-                const image = await imageData.json()
+                const existingFile = data.get('existing-file')
+
+                console.log(data.get('existing-file'))
+
+                let image
+
+                if (!existingFile) {
+                    const imageData = await fetch(
+                        'http://localhost:3000/api/v1/media',
+                        {
+                            method: 'POST',
+                            body: formData
+                        }
+                    )
+
+                    image = await imageData.json()
+                }
 
                 body = {
                     type: data.get('type'),
                     content: {
                         altText: data.get('alt-text')
                     },
-                    assetId: image.id
+                    assetId: existingFile ? existingFile : image.id
                 }
 
                 if (['audio', 'video'].includes(data.get('type') as string)) {
@@ -78,6 +87,16 @@ export const actions: Actions = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
+            }
+        )
+    },
+    deleteComponent: async ({ request, fetch, params }) => {
+        const data = await request.formData()
+
+        await fetch(
+            `http://localhost:3000/api/v1/pages/${params.pageId}/components/${data.get('id')}`,
+            {
+                method: 'DELETE'
             }
         )
     }

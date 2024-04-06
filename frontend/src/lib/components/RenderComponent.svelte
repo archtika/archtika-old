@@ -28,7 +28,11 @@
 {/if}
 
 {#if component.type === 'audio'}
-    <audio controls title={component.content.altText}>
+    <audio
+        controls
+        title={component.content.altText}
+        loop={component.content.isLooped}
+    >
         <source src={component.media.url} />
     </audio>
 {/if}
