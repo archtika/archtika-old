@@ -46,6 +46,6 @@
         "@types/ws": "^8.5.10",
         "kysely-codegen": "^0.14.1",
         "pino-pretty": "^11.0.0",
-        "typescript": "^5.4.3"
+        "typescript": "^5.4.4"
     }
 }
