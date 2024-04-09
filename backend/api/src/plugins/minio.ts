@@ -11,8 +11,16 @@ async function minio(fastify: FastifyInstance) {
         secretKey: 'minioadmin'
     })
 
-    minioClient.makeBucket('archtika', 'us-east-1', (err) => {
+    minioClient.bucketExists('archtika', (err, exists) => {
         if (err) return console.error(err)
+
+        if (exists) {
+            return
+        }
+
+        minioClient.makeBucket('archtika', 'us-east-1', (err) => {
+            if (err) return console.error(err)
+        })
     })
 
     fastify.decorate('minio', {
