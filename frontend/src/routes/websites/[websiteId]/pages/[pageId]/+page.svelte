@@ -36,89 +36,93 @@
     })
 </script>
 
-{JSON.stringify(data.components)}
+<div class="grid grid-cols-8">
+    <div class="col-span-1 outline outline-neutral-500">
+        <h1>{data.website.title}</h1>
+        <details open>
+            <summary>Pages</summary>
+            <ul>
+                {#each data.pages as { id, title }}
+                    <li>
+                        <a href={id}>{title}</a>
+                    </li>
+                {/each}
+            </ul>
+        </details>
 
-<div>
-    <h1>{data.website.title}</h1>
-    <details open>
-        <summary>Pages</summary>
-        <ul>
-            {#each data.pages as { id, title }}
-                <li>
-                    <a href={id}>{title}</a>
-                </li>
-            {/each}
-        </ul>
-    </details>
+        <h2>{data.page.title}</h2>
 
-    <h2>{data.page.title}</h2>
-
-    <h3>Components</h3>
-    <div draggable="true" class="outline">
-        <h4>Text</h4>
-        <form action="?/createComponent" method="post" use:enhance>
-            <input type="hidden" name="type" value="text" />
-            <label>
-                Content:
-                <textarea name="content" id="content" cols="30" rows="10"
-                ></textarea>
-            </label>
-            <button type="submit">Add</button>
-        </form>
-    </div>
-    {#each Object.entries(mimeTypes) as [type, mimes]}
-        {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
-
-        <div draggable="true" class="outline">
-            <h4>{title}</h4>
-            <form
-                action="?/createComponent"
-                method="post"
-                use:enhance
-                enctype="multipart/form-data"
-            >
-                <input type="hidden" name="type" value={type} />
+        <h3>Components</h3>
+        <div draggable="true" class="outline" role="presentation">
+            <h4>Text</h4>
+            <form action="?/createComponent" method="post" use:enhance>
+                <input type="hidden" name="type" value="text" />
                 <label>
-                    {title}:
-                    <input name="file" type="file" accept={mimes.join(', ')} />
+                    Content:
+                    <textarea name="content" id="content" cols="30" rows="10"
+                    ></textarea>
                 </label>
-                <fieldset>
-                    <legend>Select existing {type}:</legend>
-                    <div>
-                        {#each filteredMedia[type] as media}
-                            <label>
-                                <input
-                                    type="radio"
-                                    name="existing-file"
-                                    value={media.id}
-                                />
-                                {media.name}
-                            </label>
-                        {/each}
-                    </div>
-                </fieldset>
-                <label>
-                    Alt text:
-                    <input name="alt-text" type="text" />
-                </label>
-                {#if ['audio', 'video'].includes(type)}
-                    <label>
-                        Loop:
-                        <input name="is-looped" type="checkbox" />
-                    </label>
-                {/if}
                 <button type="submit">Add</button>
             </form>
         </div>
-    {/each}
-</div>
+        {#each Object.entries(mimeTypes) as [type, mimes]}
+            {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
 
-<div style="border" class="outline outline-red-500">
-    {#each componentsWithMedia as component}
-        <RenderComponent {component} />
-        <form action="?/deleteComponent" method="post" use:enhance>
-            <input type="hidden" name="id" value={component.id} />
-            <button type="submit">Delete</button>
-        </form>
-    {/each}
+            <div draggable="true" class="outline">
+                <h4>{title}</h4>
+                <form
+                    action="?/createComponent"
+                    method="post"
+                    use:enhance
+                    enctype="multipart/form-data"
+                >
+                    <input type="hidden" name="type" value={type} />
+                    <label>
+                        {title}:
+                        <input
+                            name="file"
+                            type="file"
+                            accept={mimes.join(', ')}
+                        />
+                    </label>
+                    <fieldset>
+                        <legend>Select existing {type}:</legend>
+                        <div>
+                            {#each filteredMedia[type] as media}
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="existing-file"
+                                        value={media.id}
+                                    />
+                                    {media.name}
+                                </label>
+                            {/each}
+                        </div>
+                    </fieldset>
+                    <label>
+                        Alt text:
+                        <input name="alt-text" type="text" />
+                    </label>
+                    {#if ['audio', 'video'].includes(type)}
+                        <label>
+                            Loop:
+                            <input name="is-looped" type="checkbox" />
+                        </label>
+                    {/if}
+                    <button type="submit">Add</button>
+                </form>
+            </div>
+        {/each}
+    </div>
+
+    <div role="presentation" class="outline outline-red-500 col-span-7">
+        {#each componentsWithMedia as component}
+            <RenderComponent {component} />
+            <form action="?/deleteComponent" method="post" use:enhance>
+                <input type="hidden" name="id" value={component.id} />
+                <button type="submit">Delete</button>
+            </form>
+        {/each}
+    </div>
 </div>
