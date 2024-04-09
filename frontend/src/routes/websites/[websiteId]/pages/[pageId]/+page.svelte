@@ -2,6 +2,7 @@
     import type { PageServerData } from './$types'
     import RenderComponent from '$lib/components/RenderComponent.svelte'
     import { enhance } from '$app/forms'
+    import type { Component, Media, FilteredMedia } from '$lib/types'
 
     export let data: PageServerData
 
@@ -11,18 +12,22 @@
         video: ['video/mp4', 'video/webm', 'video/ogg']
     }
 
-    function filterMedia(type: string) {
-        return data.media.filter((media: any) =>
-            mimeTypes[type as keyof typeof mimeTypes].includes(media.mimetype)
-        )
-    }
+    $: filteredMedia = Object.entries(mimeTypes).reduce(
+        (acc, [type, mimes]) => {
+            acc[type] = data.media.filter((media: Media) =>
+                mimes.includes(media.mimetype)
+            )
+            return acc
+        },
+        {} as FilteredMedia
+    )
 
-    $: componentsWithMedia = data.components.map((component: any) => {
+    $: componentsWithMedia = data.components.map((component: Component) => {
         if (['image', 'audio', 'video'].includes(component.type)) {
             return {
                 ...component,
                 media: data.media.find(
-                    (media: any) => media.id === component.asset_id
+                    (media: Media) => media.id === component.asset_id
                 )
             }
         }
@@ -30,6 +35,8 @@
         return component
     })
 </script>
+
+{JSON.stringify(data.components)}
 
 <div>
     <h1>{data.website.title}</h1>
@@ -78,7 +85,7 @@
                 <fieldset>
                     <legend>Select existing {type}:</legend>
                     <div>
-                        {#each filterMedia(type) as media}
+                        {#each filteredMedia[type] as media}
                             <label>
                                 <input
                                     type="radio"

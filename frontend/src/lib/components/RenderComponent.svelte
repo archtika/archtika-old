@@ -1,8 +1,9 @@
 <script lang="ts">
     import { Renderer, parse } from 'marked'
     import DOMPurify from 'isomorphic-dompurify'
+    import type { ComponentWithMedia } from '$lib/types'
 
-    export let component: any
+    export let component: ComponentWithMedia
 
     const renderer = new Renderer()
 
@@ -14,7 +15,7 @@
 
     if (component.type === 'text') {
         purifiedTextContent = DOMPurify.sanitize(
-            parse(component.content.textContent, { renderer }) as string
+            parse(component.content.textContent ?? '', { renderer }) as string
         )
     }
 </script>

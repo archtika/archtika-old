@@ -1,3 +1,4 @@
+import type { ComponentApiPayload } from '$lib/types'
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ fetch, params, parent }) => {
@@ -31,14 +32,17 @@ export const actions: Actions = {
     createComponent: async ({ request, fetch, params }) => {
         const data = await request.formData()
 
-        let body: any
+        let body: ComponentApiPayload = {
+            type: '',
+            content: {}
+        }
 
         switch (data.get('type')) {
             case 'text':
                 body = {
-                    type: data.get('type'),
+                    type: data.get('type') as string,
                     content: {
-                        textContent: data.get('content')
+                        textContent: data.get('content') as string
                     }
                 }
                 break
@@ -49,8 +53,6 @@ export const actions: Actions = {
                 formData.append('file', data.get('file') as File)
 
                 const existingFile = data.get('existing-file')
-
-                console.log(data.get('existing-file'))
 
                 let image
 
@@ -67,15 +69,15 @@ export const actions: Actions = {
                 }
 
                 body = {
-                    type: data.get('type'),
+                    type: data.get('type') as string,
                     content: {
-                        altText: data.get('alt-text')
+                        altText: data.get('alt-text') as string
                     },
                     assetId: existingFile ? existingFile : image.id
                 }
 
                 if (['audio', 'video'].includes(data.get('type') as string)) {
-                    body.content.isLooped = data.get('is-looped')
+                    body.content.isLooped = Boolean(data.get('is-looped'))
                 }
 
                 break

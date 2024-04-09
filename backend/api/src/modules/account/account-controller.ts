@@ -2,6 +2,18 @@ import { generateCodeVerifier, generateState } from 'arctic'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { generateId } from 'lucia'
 
+interface GitHubEmailObject {
+    email: string
+    verified: boolean
+    primary: boolean
+    visibility: string
+}
+
+interface RequestQuery {
+    code: string
+    state: string
+}
+
 export async function loginWithGithub(
     req: FastifyRequest,
     reply: FastifyReply
@@ -29,8 +41,8 @@ export async function loginWithGithubCallback(
     req: FastifyRequest,
     reply: FastifyReply
 ) {
-    const code = (req.query as any).code?.toString() ?? null
-    const state = (req.query as any).state?.toString() ?? null
+    const code = (req.query as RequestQuery).code?.toString() ?? null
+    const state = (req.query as RequestQuery).state?.toString() ?? null
     const storedState = req.cookies['github_oauth_state']
 
     if (!code || !state || state !== storedState) {
@@ -55,7 +67,9 @@ export async function loginWithGithubCallback(
     const githubUser = await githubUserResponse.json()
     const githubUserEmails = await githubUserEmailsResponse.json()
 
-    const primaryEmail = githubUserEmails.find((email: any) => email.primary)
+    const primaryEmail = githubUserEmails.find(
+        (email: GitHubEmailObject) => email.primary
+    )
 
     if (!primaryEmail) {
         return reply.unauthorized('No primary email found')
@@ -175,8 +189,8 @@ export async function loginWithGoogleCallback(
     req: FastifyRequest,
     reply: FastifyReply
 ) {
-    const code = (req.query as any).code?.toString() ?? null
-    const state = (req.query as any).state?.toString() ?? null
+    const code = (req.query as RequestQuery).code?.toString() ?? null
+    const state = (req.query as RequestQuery).state?.toString() ?? null
     const storedState = req.cookies['google_oauth_state']
     const codeVerifier = req.cookies['google_oauth_code_verifier']
 
