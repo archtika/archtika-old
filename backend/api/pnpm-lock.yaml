@@ -95,8 +95,8 @@ devDependencies:
     specifier: ^8.5.10
     version: 8.5.10
   kysely-codegen:
-    specifier: ^0.14.1
-    version: 0.14.1(kysely@0.27.3)(pg@8.11.3)
+    specifier: ^0.14.2
+    version: 0.14.2(kysely@0.27.3)(pg@8.11.3)
   pino-pretty:
     specifier: ^11.0.0
     version: 11.0.0
@@ -1859,8 +1859,8 @@ packages:
     resolution: {integrity: sha512-H/ZGY0nIAg3QcOwE1QN/rK/Fa7gJn7Ii5obwp6zyPO4xiPNwpIMjqy2gwjBEGqzkF/vSWEIBQCBuN19hYiL6Qg==}
     dev: false
 
-  /kysely-codegen@0.14.1(kysely@0.27.3)(pg@8.11.3):
-    resolution: {integrity: sha512-W6ULVWYnlBcGalHlKqw3ls0QjPl6n6z1xJ9ixPCh1lxDSbe98s4gjEbKC3hh8ZTCUTZSLSasi+QCii4AL/j7pw==}
+  /kysely-codegen@0.14.2(kysely@0.27.3)(pg@8.11.3):
+    resolution: {integrity: sha512-Jv0mKXVmcazRIaIAAi1sDSMD6MgTruhQ5XXY35TZXIRuO9WvzyZpVnn5omjUh6dTSF+SWiPPRP/HKwA5vm2N7A==}
     hasBin: true
     peerDependencies:
       '@libsql/kysely-libsql': ^0.3.0
