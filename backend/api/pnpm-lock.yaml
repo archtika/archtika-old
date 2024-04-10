@@ -25,7 +25,7 @@ dependencies:
     version: 8.2.0
   '@fastify/postgres':
     specifier: ^5.2.2
-    version: 5.2.2(pg@8.11.3)
+    version: 5.2.2(pg@8.11.5)
   '@fastify/rate-limit':
     specifier: ^9.1.0
     version: 9.1.0
@@ -49,7 +49,7 @@ dependencies:
     version: 10.0.1
   '@lucia-auth/adapter-postgresql':
     specifier: ^3.1.2
-    version: 3.1.2(lucia@3.1.1)(pg@8.11.3)
+    version: 3.1.2(lucia@3.1.1)(pg@8.11.5)
   '@sinclair/typebox':
     specifier: ^0.32.20
     version: 0.32.20
@@ -75,8 +75,8 @@ dependencies:
     specifier: ^7.1.3
     version: 7.1.3
   pg:
-    specifier: ^8.11.3
-    version: 8.11.3
+    specifier: ^8.11.5
+    version: 8.11.5
   prettier:
     specifier: ^3.2.5
     version: 3.2.5
@@ -89,14 +89,14 @@ devDependencies:
     specifier: ^20.12.2
     version: 20.12.2
   '@types/pg':
-    specifier: ^8.11.4
-    version: 8.11.4
+    specifier: ^8.11.5
+    version: 8.11.5
   '@types/ws':
     specifier: ^8.5.10
     version: 8.5.10
   kysely-codegen:
     specifier: ^0.14.2
-    version: 0.14.2(kysely@0.27.3)(pg@8.11.3)
+    version: 0.14.2(kysely@0.27.3)(pg@8.11.5)
   pino-pretty:
     specifier: ^11.0.0
     version: 11.0.0
@@ -203,13 +203,13 @@ packages:
       stream-wormhole: 1.1.0
     dev: false
 
-  /@fastify/postgres@5.2.2(pg@8.11.3):
+  /@fastify/postgres@5.2.2(pg@8.11.5):
     resolution: {integrity: sha512-8TWRqDSiXJp0SZjbHrqwyhl0f55eV4fpYAd9m7G0hGUpyEZJFwcxIDQYjnlRAXcVTq5NloUjFH6DxgmxZ3apbQ==}
     peerDependencies:
       pg: '>=6.0.0'
     dependencies:
       fastify-plugin: 4.5.1
-      pg: 8.11.3
+      pg: 8.11.5
     dev: false
 
   /@fastify/rate-limit@9.1.0:
@@ -319,7 +319,7 @@ packages:
       wrap-ansi-cjs: /wrap-ansi@7.0.0
     dev: false
 
-  /@lucia-auth/adapter-postgresql@3.1.2(lucia@3.1.1)(pg@8.11.3):
+  /@lucia-auth/adapter-postgresql@3.1.2(lucia@3.1.1)(pg@8.11.5):
     resolution: {integrity: sha512-XgScy312JsaiyJZ0OaUHakk01hFBldF1m8abX4Ctk2Dkt7lEVS/u0xZ2Sf6Hlji1wZtEM0uiIWdeMUu79XcXZA==}
     peerDependencies:
       '@neondatabase/serverless': 0.7 - 0.9
@@ -335,7 +335,7 @@ packages:
         optional: true
     dependencies:
       lucia: 3.1.1
-      pg: 8.11.3
+      pg: 8.11.5
     dev: false
 
   /@lukeed/ms@2.0.2:
@@ -976,8 +976,8 @@ packages:
       undici-types: 5.26.5
     dev: true
 
-  /@types/pg@8.11.4:
-    resolution: {integrity: sha512-yw3Bwbda6vO+NvI1Ue/YKOwtl31AYvvd/e73O3V4ZkNzuGpTDndLSyc0dQRB2xrQqDePd20pEGIfqSp/GH3pRw==}
+  /@types/pg@8.11.5:
+    resolution: {integrity: sha512-2xMjVviMxneZHDHX5p5S6tsRRs7TpDHeeK7kTTMe/kAC/mRRNjWHjZg0rkiY+e17jXSZV3zJYDxXV8Cy72/Vuw==}
     dependencies:
       '@types/node': 20.12.2
       pg-protocol: 1.6.0
@@ -1141,10 +1141,6 @@ packages:
   /buffer-crc32@0.2.13:
     resolution: {integrity: sha512-VO9Ht/+p3SN7SKWqcrgEzjGbRSJYTx+Q1pTQC0wrWqHx0vpJraQ6GtHx8tvcg1rlK1byhU5gccxgOgj7B0TDkQ==}
     dev: false
-
-  /buffer-writer@2.0.0:
-    resolution: {integrity: sha512-a7ZpuTZU1TRtnwyCNW3I5dc0wWNC3VR9S++Ewyk2HHZdrO3CQJqSpd+95Us590V6AL7JqUAH2IwZ/398PmNFgw==}
-    engines: {node: '>=4'}
 
   /buffer@6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
@@ -1859,7 +1855,7 @@ packages:
     resolution: {integrity: sha512-H/ZGY0nIAg3QcOwE1QN/rK/Fa7gJn7Ii5obwp6zyPO4xiPNwpIMjqy2gwjBEGqzkF/vSWEIBQCBuN19hYiL6Qg==}
     dev: false
 
-  /kysely-codegen@0.14.2(kysely@0.27.3)(pg@8.11.3):
+  /kysely-codegen@0.14.2(kysely@0.27.3)(pg@8.11.5):
     resolution: {integrity: sha512-Jv0mKXVmcazRIaIAAi1sDSMD6MgTruhQ5XXY35TZXIRuO9WvzyZpVnn5omjUh6dTSF+SWiPPRP/HKwA5vm2N7A==}
     hasBin: true
     peerDependencies:
@@ -1897,7 +1893,7 @@ packages:
       kysely: 0.27.3
       micromatch: 4.0.5
       minimist: 1.2.8
-      pg: 8.11.3
+      pg: 8.11.5
     dev: true
 
   /kysely@0.27.3:
@@ -2130,9 +2126,6 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
-  /packet-reader@1.0.0:
-    resolution: {integrity: sha512-HAKu/fG3HpHFO0AA8WE8q2g+gBJaZ9MG7fcKk+IJPLTGAD6Psw4443l+9DGRbOIh3/aXr7Phy0TjilYivJo5XQ==}
-
   /path-exists@3.0.0:
     resolution: {integrity: sha512-bpC7GYwiDYQ4wYLe+FA8lhRjhQCMcQGuSgGGqDkg/QerRWw9CmGRT0iSOVRSZJ29NMLZgIzqaljJ63oaL4NIJQ==}
     engines: {node: '>=4'}
@@ -2165,8 +2158,8 @@ packages:
     requiresBuild: true
     optional: true
 
-  /pg-connection-string@2.6.2:
-    resolution: {integrity: sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==}
+  /pg-connection-string@2.6.4:
+    resolution: {integrity: sha512-v+Z7W/0EO707aNMaAEfiGnGL9sxxumwLl2fJvCQtMn9Fxsg+lPpPkdcyBSv/KFgpGdYkMfn+EI1Or2EHjpgLCA==}
 
   /pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
@@ -2177,15 +2170,19 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /pg-pool@3.6.1(pg@8.11.3):
-    resolution: {integrity: sha512-jizsIzhkIitxCGfPRzJn1ZdcosIt3pz9Sh3V01fm1vZnbnCMgmGl5wvGGdNN2EL9Rmb0EcFoCkixH4Pu+sP9Og==}
+  /pg-pool@3.6.2(pg@8.11.5):
+    resolution: {integrity: sha512-Htjbg8BlwXqSBQ9V8Vjtc+vzf/6fVUuak/3/XXKA9oxZprwW3IMDQTGHP+KDmVL7rtd+R1QjbnCFPuTHm3G4hg==}
     peerDependencies:
       pg: '>=8.0'
     dependencies:
-      pg: 8.11.3
+      pg: 8.11.5
 
   /pg-protocol@1.6.0:
     resolution: {integrity: sha512-M+PDm637OY5WM307051+bsDia5Xej6d9IR4GwJse1qA1DIhiKlksvrneZOYQq42OM+spubpcNYEo2FcKQrDk+Q==}
+    dev: true
+
+  /pg-protocol@1.6.1:
+    resolution: {integrity: sha512-jPIlvgoD63hrEuihvIg+tJhoGjUsLPn6poJY9N5CnlPd91c2T18T/9zBtLxZSb1EhYxBRoZJtzScCaWlYLtktg==}
 
   /pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
@@ -2210,8 +2207,8 @@ packages:
       postgres-range: 1.1.4
     dev: true
 
-  /pg@8.11.3:
-    resolution: {integrity: sha512-+9iuvG8QfaaUrrph+kpF24cXkH1YOOUeArRNYIxq1viYHZagBxrTno7cecY1Fa44tJeZvaoG+Djpkc3JwehN5g==}
+  /pg@8.11.5:
+    resolution: {integrity: sha512-jqgNHSKL5cbDjFlHyYsCXmQDrfIX/3RsNwYqpd4N0Kt8niLuNoRNH+aazv6cOd43gPh9Y4DjQCtb+X0MH0Hvnw==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -2219,11 +2216,9 @@ packages:
       pg-native:
         optional: true
     dependencies:
-      buffer-writer: 2.0.0
-      packet-reader: 1.0.0
-      pg-connection-string: 2.6.2
-      pg-pool: 3.6.1(pg@8.11.3)
-      pg-protocol: 1.6.0
+      pg-connection-string: 2.6.4
+      pg-pool: 3.6.2(pg@8.11.5)
+      pg-protocol: 1.6.1
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
