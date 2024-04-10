@@ -9,10 +9,13 @@ export const handle: Handle = async ({ event, resolve }) => {
         throw redirect(302, '/login')
     }
 
-    const account = await accountData.json()
+    if (accountData.ok) {
+        if (event.url.pathname === '/login') throw redirect(302, '/account')
 
-    event.locals.account = account
+        const account = await accountData.json()
 
-    const response = await resolve(event)
-    return response
+        event.locals.account = account
+    }
+
+    return await resolve(event)
 }
