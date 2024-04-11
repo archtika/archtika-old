@@ -1,6 +1,7 @@
 import { Kysely, sql } from 'kysely'
+import { DB } from 'kysely-codegen'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<DB>) {
     await db.schema.createSchema('media').execute()
 
     await db.schema
@@ -19,7 +20,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .execute()
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<DB>) {
     await db.schema.dropTable('media.media_asset').execute()
     await db.schema.dropSchema('media').execute()
 }

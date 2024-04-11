@@ -1,6 +1,7 @@
 import { Kysely, sql } from 'kysely'
+import { DB } from 'kysely-codegen'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<DB>) {
     await db.schema.createSchema('tracking').execute()
     await db.schema
         .createType('tracking.entity_type')
@@ -168,7 +169,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     `.execute(db)
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<DB>) {
     await db.schema.dropTable('tracking.change_log').execute()
     await sql`DROP TRIGGER log_website_changes ON structure.website`.execute(db)
     await sql`DROP TRIGGER log_page_changes ON structure.page`.execute(db)

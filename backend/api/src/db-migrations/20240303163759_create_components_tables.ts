@@ -1,6 +1,7 @@
 import { Kysely, sql } from 'kysely'
+import { DB } from 'kysely-codegen'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<DB>) {
     await db.schema.createSchema('components').execute()
     await db.schema
         .createType('components.component_type')
@@ -51,7 +52,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .execute()
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<DB>) {
     await db.schema.dropTable('components.component_position').execute()
     await db.schema.dropTable('components.component').execute()
     await db.schema.dropType('components.component_type').execute()

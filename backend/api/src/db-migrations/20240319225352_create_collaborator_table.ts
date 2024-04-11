@@ -1,6 +1,7 @@
 import { Kysely, sql } from 'kysely'
+import { DB } from 'kysely-codegen'
 
-export async function up(db: Kysely<any>): Promise<void> {
+export async function up(db: Kysely<DB>) {
     db.schema.createSchema('collaboration').execute()
 
     db.schema
@@ -24,7 +25,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         .execute()
 }
 
-export async function down(db: Kysely<any>): Promise<void> {
+export async function down(db: Kysely<DB>) {
     db.schema.dropTable('collaboration.collaborator').execute()
     db.schema.dropSchema('collaboration').execute()
 }
