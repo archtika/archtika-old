@@ -45,3 +45,23 @@
 {/if}
 
 <h2>Shared with you</h2>
+
+{#if data.sharedWebsites.length === 0}
+    <p>No websites shared with you.</p>
+{:else}
+    {#each data.sharedWebsites as { id, title, created_at, updatedAt }}
+        <article>
+            <h3>{title}</h3>
+            <img
+                src="https://picsum.photos/id/1/200/100"
+                alt=""
+                width="200"
+                height="100"
+            />
+            <p>Last modified: {updatedAt ?? created_at}</p>
+            <div>
+                <a href="/websites/{id}">Edit</a>
+            </div>
+        </article>
+    {/each}
+{/if}

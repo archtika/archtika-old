@@ -1,7 +1,12 @@
 import type { ComponentApiPayload } from '$lib/types'
 import type { Actions, PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ fetch, params, parent }) => {
+export const load: PageServerLoad = async ({
+    fetch,
+    params,
+    parent,
+    locals
+}) => {
     const pageData = await fetch(
         `http://localhost:3000/api/v1/websites/${params.websiteId}/pages/${params.pageId}`
     )
@@ -24,7 +29,8 @@ export const load: PageServerLoad = async ({ fetch, params, parent }) => {
         page,
         pages,
         components,
-        media
+        media,
+        account: locals.account
     }
 }
 

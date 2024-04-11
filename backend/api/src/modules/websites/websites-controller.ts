@@ -3,7 +3,8 @@ import { sql } from 'kysely'
 import {
     CreateWebsiteSchemaType,
     UpdateWebsiteSchemaType,
-    WebsiteParamsSchemaType
+    WebsiteParamsSchemaType,
+    GetWebsitesQuerySchemaType
 } from './websites-schemas.js'
 
 export async function createWebsite(
@@ -26,11 +27,26 @@ export async function createWebsite(
     return reply.status(201).send(website)
 }
 
-export async function getAllWebsites(req: FastifyRequest, reply: FastifyReply) {
+export async function getAllWebsites(
+    req: FastifyRequest<{ Querystring: GetWebsitesQuerySchemaType }>,
+    reply: FastifyReply
+) {
+    const isShared = req.query.shared ?? false
+
     const allWebsites = await req.server.kysely.db
         .selectFrom('structure.website')
         .selectAll()
-        .where('user_id', '=', req.user?.id ?? '')
+        .$if(!isShared, (qb) => qb.where('user_id', '=', req.user?.id ?? ''))
+        .$if(isShared, (qb) =>
+            qb.where(({ exists, selectFrom }) =>
+                exists(
+                    selectFrom('collaboration.collaborator')
+                        .where('user_id', '=', req.user?.id ?? '')
+                        .where('permission_level', '>=', 10)
+                        .whereRef('website_id', '=', 'structure.website.id')
+                )
+            )
+        )
         .execute()
 
     return reply.status(200).send(allWebsites)

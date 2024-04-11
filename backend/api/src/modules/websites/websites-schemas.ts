@@ -13,6 +13,12 @@ export const createWebsiteSchema = Type.Object({
 
 export type CreateWebsiteSchemaType = Static<typeof createWebsiteSchema>
 
+export const getWebsitesQuerySchema = Type.Object({
+    shared: Type.Optional(Type.Boolean({ default: false }))
+})
+
+export type GetWebsitesQuerySchemaType = Static<typeof getWebsitesQuerySchema>
+
 export const updateWebsiteSchema = Type.Object({
     title: Type.Optional(Type.String({ minLength: 5, maxLength: 50 })),
     metaDescription: Type.Optional(Type.String({ maxLength: 200 }))

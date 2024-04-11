@@ -14,14 +14,21 @@ export async function getAllCollaborators(
     const collaborators = await req.server.kysely.db
         .selectFrom('collaboration.collaborator')
         .selectAll()
-        .where(({ eb, and, exists, selectFrom }) =>
-            and([
-                eb('website_id', '=', id),
-                exists(
-                    selectFrom('structure.website').where(
-                        and({ id, user_id: req.user?.id })
+        .where(({ or, eb, and, exists, selectFrom }) =>
+            or([
+                and([
+                    eb('website_id', '=', id),
+                    exists(
+                        selectFrom('structure.website').where(
+                            and({ id, user_id: req.user?.id })
+                        )
                     )
-                )
+                ]),
+                and([
+                    eb('user_id', '=', req.user?.id ?? ''),
+                    eb('website_id', '=', id),
+                    eb('permission_level', '>=', 10)
+                ])
             ])
         )
         .execute()

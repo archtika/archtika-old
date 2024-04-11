@@ -10,9 +10,11 @@ import {
     CreateWebsiteSchemaType,
     UpdateWebsiteSchemaType,
     WebsiteParamsSchemaType,
+    GetWebsitesQuerySchemaType,
     createWebsiteSchema,
     updateWebsiteSchema,
-    websiteParamsSchema
+    websiteParamsSchema,
+    getWebsitesQuerySchema
 } from './websites-schemas.js'
 
 const commonSchema = {
@@ -33,7 +35,16 @@ export default async function (fastify: FastifyInstance) {
         createWebsite
     )
 
-    fastify.get('/', commonSchema, getAllWebsites)
+    fastify.get(
+        '/',
+        {
+            schema: {
+                querystring: getWebsitesQuerySchema,
+                tags: commonSchema.schema.tags
+            }
+        },
+        getAllWebsites
+    )
 
     fastify.get<{ Params: WebsiteParamsSchemaType }>(
         '/:id',

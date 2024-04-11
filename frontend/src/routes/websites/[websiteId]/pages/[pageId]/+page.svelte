@@ -3,6 +3,8 @@
     import RenderComponent from '$lib/components/RenderComponent.svelte'
     import { enhance } from '$app/forms'
     import type { Component, Media, FilteredMedia } from '$lib/types'
+    import { page } from '$app/stores'
+    import { browser } from '$app/environment'
 
     export let data: PageServerData
 
@@ -34,6 +36,32 @@
 
         return component
     })
+
+    let ws: WebSocket
+
+    if (browser) {
+        ws = new WebSocket(
+            `ws://localhost:3000/api/v1/pages/${$page.params.pageId}/components`
+        )
+
+        ws.onopen = () => {
+            console.log('Websocket connected')
+        }
+
+        ws.onmessage = ({ data }) => {
+            let updatedComponents = JSON.parse(data)
+
+            componentsWithMedia = updatedComponents
+        }
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error: ', error)
+        }
+
+        ws.onclose = () => {
+            console.log('Websocket connection closed')
+        }
+    }
 </script>
 
 <div class="grid grid-cols-8">
@@ -55,7 +83,17 @@
         <h3>Components</h3>
         <div draggable="true" class="outline" role="presentation">
             <h4>Text</h4>
-            <form action="?/createComponent" method="post" use:enhance>
+            <form
+                action="?/createComponent"
+                method="post"
+                use:enhance={() => {
+                    return ({ update }) => {
+                        update().finally(() => {
+                            ws.send(JSON.stringify(componentsWithMedia))
+                        })
+                    }
+                }}
+            >
                 <input type="hidden" name="type" value="text" />
                 <label>
                     Content:
@@ -117,9 +155,19 @@
     </div>
 
     <div role="presentation" class="outline outline-red-500 col-span-7">
-        {#each componentsWithMedia as component}
+        {#each componentsWithMedia as component (component.id)}
             <RenderComponent {component} />
-            <form action="?/deleteComponent" method="post" use:enhance>
+            <form
+                action="?/deleteComponent"
+                method="post"
+                use:enhance={() => {
+                    return ({ update }) => {
+                        update().finally(() => {
+                            ws.send(JSON.stringify(componentsWithMedia))
+                        })
+                    }
+                }}
+            >
                 <input type="hidden" name="id" value={component.id} />
                 <button type="submit">Delete</button>
             </form>

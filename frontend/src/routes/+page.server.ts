@@ -4,8 +4,14 @@ export const load: PageServerLoad = async ({ fetch }) => {
     const websitesData = await fetch('http://localhost:3000/api/v1/websites')
     const websites = await websitesData.json()
 
+    const sharedWebsitesData = await fetch(
+        'http://localhost:3000/api/v1/websites/?shared=true'
+    )
+    const sharedWebsites = await sharedWebsitesData.json()
+
     return {
-        websites
+        websites,
+        sharedWebsites
     }
 }
 
