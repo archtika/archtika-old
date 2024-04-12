@@ -28,7 +28,7 @@
         if (['image', 'audio', 'video'].includes(component.type)) {
             return {
                 ...component,
-                media: data.media.find(
+                media: data.pageMedia.find(
                     (media: Media) => media.id === component.asset_id
                 )
             }
@@ -111,7 +111,13 @@
                 <form
                     action="?/createComponent"
                     method="post"
-                    use:enhance
+                    use:enhance={() => {
+                        return ({ update }) => {
+                            update().finally(() => {
+                                ws.send(JSON.stringify(componentsWithMedia))
+                            })
+                        }
+                    }}
                     enctype="multipart/form-data"
                 >
                     <input type="hidden" name="type" value={type} />

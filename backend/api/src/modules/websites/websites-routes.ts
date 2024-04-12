@@ -35,7 +35,7 @@ export default async function (fastify: FastifyInstance) {
         createWebsite
     )
 
-    fastify.get(
+    fastify.get<{ Querystring: GetWebsitesQuerySchemaType }>(
         '/',
         {
             schema: {

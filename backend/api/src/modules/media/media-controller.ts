@@ -1,12 +1,17 @@
 import { createHash, randomUUID } from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import path from 'path'
-import { ParamsSchemaType, multipartFileType } from './media-schemas.js'
+import {
+    CreateMediaAssociationSchemaType,
+    GetAllMediaQuerySchemaType,
+    ParamsSchemaType,
+    multipartFileSchemaType
+} from './media-schemas.js'
 import { mimeTypes } from '../../utils/mimetypes.js'
 
 export async function createMedia(
     req: FastifyRequest<{
-        Body: { file: multipartFileType }
+        Body: { file: multipartFileSchemaType }
     }>,
     reply: FastifyReply
 ) {
@@ -68,11 +73,80 @@ export async function createMedia(
     return reply.status(201).send(media)
 }
 
-export async function getAllMedia(req: FastifyRequest, reply: FastifyReply) {
+export async function createMediaAssociation(
+    req: FastifyRequest<{
+        Body: CreateMediaAssociationSchemaType
+    }>,
+    reply: FastifyReply
+) {
+    const { assetId, pageId } = req.body
+
+    await req.server.kysely.db
+        .insertInto('media.media_page_link')
+        .values(({ selectFrom }) => ({
+            media_id: selectFrom('media.media_asset')
+                .select('id')
+                .where(({ and }) =>
+                    and({ id: assetId, user_id: req.user?.id })
+                ),
+            page_id: selectFrom('structure.page')
+                .select('id')
+                .where('id', '=', pageId)
+                .where(({ or, exists, ref }) =>
+                    or([
+                        exists(
+                            selectFrom('structure.website').where(({ and }) =>
+                                and({
+                                    id: ref('structure.page.website_id'),
+                                    user_id: req.user?.id
+                                })
+                            )
+                        ),
+                        exists(
+                            selectFrom('collaboration.collaborator')
+                                .where(({ and }) =>
+                                    and({
+                                        website_id: ref(
+                                            'structure.page.website_id'
+                                        ),
+                                        user_id: req.user?.id
+                                    })
+                                )
+                                .where('permission_level', '>=', 20)
+                        )
+                    ])
+                )
+        }))
+        .onConflict((oc) =>
+            oc.constraint('mediaPageLinkPrimaryKey').doNothing()
+        )
+        .returningAll()
+        .executeTakeFirst()
+}
+
+export async function getAllMedia(
+    req: FastifyRequest<{ Querystring: GetAllMediaQuerySchemaType }>,
+    reply: FastifyReply
+) {
+    const pageId = req.query.pageId
+
+    console.log(pageId)
+
     const media = await req.server.kysely.db
         .selectFrom('media.media_asset')
         .selectAll()
-        .where('user_id', '=', req.user?.id ?? '')
+        .$if(!pageId, (qb) => qb.where('user_id', '=', req.user?.id ?? ''))
+        .$if(Boolean(pageId), (qb) =>
+            qb.where(({ exists, selectFrom }) =>
+                exists(
+                    selectFrom('media.media_page_link').where(
+                        'page_id',
+                        '=',
+                        pageId ?? ''
+                    )
+                )
+            )
+        )
         .execute()
 
     const assetsWithPresignedUrls = await Promise.all(

@@ -1,11 +1,19 @@
 import { FastifyInstance } from 'fastify'
 import {
     createMedia,
+    createMediaAssociation,
     deleteMedia,
     getAllMedia,
     getMedia
 } from './media-controller.js'
-import { ParamsSchemaType, paramsSchema } from './media-schemas.js'
+import {
+    ParamsSchemaType,
+    CreateMediaAssociationSchemaType,
+    createMediaAssociationSchema,
+    paramsSchema,
+    GetAllMediaQuerySchemaType,
+    getAllMediaQuerySchema
+} from './media-schemas.js'
 
 const commonSchema = {
     schema: {
@@ -32,11 +40,23 @@ export default async function (fastify: FastifyInstance) {
         createMedia
     )
 
-    fastify.get(
+    fastify.post<{ Body: CreateMediaAssociationSchemaType }>(
+        '/association',
+        {
+            schema: {
+                tags: commonSchema.schema.tags,
+                body: createMediaAssociationSchema
+            }
+        },
+        createMediaAssociation
+    )
+
+    fastify.get<{ Querystring: GetAllMediaQuerySchemaType }>(
         '/',
         {
             schema: {
-                tags: commonSchema.schema.tags
+                tags: commonSchema.schema.tags,
+                querystring: getAllMediaQuerySchema
             }
         },
         getAllMedia

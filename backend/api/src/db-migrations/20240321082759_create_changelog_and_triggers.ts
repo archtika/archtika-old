@@ -147,7 +147,7 @@ export async function up(db: Kysely<DB>) {
       FOR EACH ROW
       EXECUTE FUNCTION tracking.log_change();
 
-      CREATE CONSTRAINT TRIGGER log_page_changes
+      CREATE TRIGGER log_page_changes
       AFTER INSERT OR UPDATE OR DELETE ON structure.page
       FOR EACH ROW
       EXECUTE FUNCTION tracking.log_change();
