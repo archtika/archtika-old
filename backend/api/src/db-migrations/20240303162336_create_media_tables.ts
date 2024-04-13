@@ -35,6 +35,7 @@ export async function up(db: Kysely<DB>) {
 }
 
 export async function down(db: Kysely<DB>) {
+    await db.schema.dropTable('media.media_page_link').execute()
     await db.schema.dropTable('media.media_asset').execute()
     await db.schema.dropSchema('media').execute()
 }

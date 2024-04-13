@@ -60,17 +60,31 @@ export async function addCollaborator(
 
     try {
         const collaborator = await req.server.kysely.db
-            .insertInto('collaboration.collaborator')
-            .values(({ selectFrom, and }) => ({
-                website_id: selectFrom('structure.website')
-                    .select('id')
-                    .where(and({ id: websiteId, user_id: req.user?.id }))
-                    .where('user_id', '!=', userId),
-                user_id: userId,
-                permission_level: permissionLevel
-            }))
-            .returningAll()
-            .executeTakeFirstOrThrow()
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .insertInto('collaboration.collaborator')
+                    .values(({ selectFrom, and }) => ({
+                        website_id: selectFrom('structure.website')
+                            .select('id')
+                            .where(
+                                and({ id: websiteId, user_id: req.user?.id })
+                            )
+                            .where('user_id', '!=', userId),
+                        user_id: userId,
+                        permission_level: permissionLevel
+                    }))
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(201).send(collaborator)
     } catch (error) {
@@ -90,27 +104,39 @@ export async function updateCollaborator(
 
     try {
         const collaborator = await req.server.kysely.db
-            .updateTable('collaboration.collaborator')
-            .set({
-                website_id: websiteId,
-                user_id: userId,
-                permission_level: permissionLevel
-            })
-            .where(({ selectFrom, exists, and }) =>
-                and([
-                    and({ website_id: websiteId, user_id: userId }),
-                    exists(
-                        selectFrom('structure.website').where(
-                            and({
-                                id: websiteId,
-                                user_id: req.user?.id
-                            })
-                        )
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .updateTable('collaboration.collaborator')
+                    .set({
+                        website_id: websiteId,
+                        user_id: userId,
+                        permission_level: permissionLevel
+                    })
+                    .where(({ selectFrom, exists, and }) =>
+                        and([
+                            and({ website_id: websiteId, user_id: userId }),
+                            exists(
+                                selectFrom('structure.website').where(
+                                    and({
+                                        id: websiteId,
+                                        user_id: req.user?.id
+                                    })
+                                )
+                            )
+                        ])
                     )
-                ])
-            )
-            .returningAll()
-            .executeTakeFirstOrThrow()
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(200).send(collaborator)
     } catch (error) {
@@ -126,19 +152,34 @@ export async function removeCollaborator(
 
     try {
         const collaborator = await req.server.kysely.db
-            .deleteFrom('collaboration.collaborator')
-            .where(({ exists, selectFrom, and }) =>
-                and([
-                    and({ website_id: websiteId, user_id: userId }),
-                    exists(
-                        selectFrom('structure.website').where(
-                            and({ id: websiteId, user_id: req.user?.id })
-                        )
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .deleteFrom('collaboration.collaborator')
+                    .where(({ exists, selectFrom, and }) =>
+                        and([
+                            and({ website_id: websiteId, user_id: userId }),
+                            exists(
+                                selectFrom('structure.website').where(
+                                    and({
+                                        id: websiteId,
+                                        user_id: req.user?.id
+                                    })
+                                )
+                            )
+                        ])
                     )
-                ])
-            )
-            .returningAll()
-            .executeTakeFirstOrThrow()
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(200).send(collaborator)
     } catch (error) {

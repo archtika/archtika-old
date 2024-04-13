@@ -26,55 +26,80 @@ export async function createComponent(
         assetId = req.body.assetId
     }
 
-    const component = await req.server.kysely.db
-        .insertInto('components.component')
-        .values(({ selectFrom }) => ({
-            page_id: selectFrom('structure.page')
-                .select('id')
-                .where('id', '=', id)
-                .where(({ or, exists, ref }) =>
-                    or([
-                        exists(
-                            selectFrom('structure.website').where(({ and }) =>
-                                and({
-                                    id: ref('structure.page.website_id'),
-                                    user_id: req.user?.id
-                                })
-                            )
-                        ),
-                        exists(
-                            selectFrom('collaboration.collaborator')
-                                .where(({ and }) =>
-                                    and({
-                                        website_id: ref(
-                                            'structure.page.website_id'
-                                        ),
-                                        user_id: req.user?.id
-                                    })
-                                )
-                                .where('permission_level', '>=', 20)
-                        )
-                    ])
-                ),
-            type,
-            content: JSON.stringify(content),
-            ...(assetId
-                ? {
-                      asset_id: selectFrom('media.media_asset')
-                          .select('media.media_asset.id')
-                          .where('media.media_asset.id', '=', assetId)
-                          .where(
-                              'media.media_asset.mimetype',
-                              'in',
-                              mimeTypes[type as keyof typeof mimeTypes]
-                          )
-                  }
-                : {})
-        }))
-        .returningAll()
-        .executeTakeFirstOrThrow()
+    try {
+        const component = await req.server.kysely.db
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
 
-    return reply.status(201).send(component)
+                return await trx
+                    .insertInto('components.component')
+                    .values(({ selectFrom }) => ({
+                        page_id: selectFrom('structure.page')
+                            .select('id')
+                            .where('id', '=', id)
+                            .where(({ or, exists, ref }) =>
+                                or([
+                                    exists(
+                                        selectFrom('structure.website').where(
+                                            ({ and }) =>
+                                                and({
+                                                    id: ref(
+                                                        'structure.page.website_id'
+                                                    ),
+                                                    user_id: req.user?.id
+                                                })
+                                        )
+                                    ),
+                                    exists(
+                                        selectFrom('collaboration.collaborator')
+                                            .where(({ and }) =>
+                                                and({
+                                                    website_id: ref(
+                                                        'structure.page.website_id'
+                                                    ),
+                                                    user_id: req.user?.id
+                                                })
+                                            )
+                                            .where('permission_level', '>=', 20)
+                                    )
+                                ])
+                            ),
+                        type,
+                        content: JSON.stringify(content),
+                        ...(assetId
+                            ? {
+                                  asset_id: selectFrom('media.media_asset')
+                                      .select('media.media_asset.id')
+                                      .where(
+                                          'media.media_asset.id',
+                                          '=',
+                                          assetId
+                                      )
+                                      .where(
+                                          'media.media_asset.mimetype',
+                                          'in',
+                                          mimeTypes[
+                                              type as keyof typeof mimeTypes
+                                          ]
+                                      )
+                              }
+                            : {})
+                    }))
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
+
+        return reply.status(201).send(component)
+    } catch (error) {
+        return reply.notFound('Page not found or not allowed')
+    }
 }
 
 export async function getAllComponents(
@@ -247,57 +272,72 @@ export async function updateComponent(
     const { pageId, componentId } = req.params
     const { content, type } = req.body
 
-    let assetId
+    let assetId: string | undefined
 
     if (type === 'image' || type === 'video' || type === 'audio') {
         assetId = req.body.assetId
     }
 
     try {
-        const page = await req.server.kysely.db
-            .updateTable('components.component')
-            .set({
-                content: JSON.stringify(content),
-                asset_id: assetId,
-                updated_at: sql`now()`
-            })
-            .where(({ and }) =>
-                and({
-                    page_id: pageId,
-                    id: componentId,
-                    type
-                })
-            )
-            .where(({ or, exists, selectFrom }) =>
-                or([
-                    exists(
-                        selectFrom('structure.website').where(({ and }) =>
-                            and({
-                                id: selectFrom('structure.page')
-                                    .select('website_id')
-                                    .where('id', '=', pageId),
-                                user_id: req.user?.id
-                            })
-                        )
-                    ),
-                    exists(
-                        selectFrom('collaboration.collaborator')
-                            .where(({ and }) =>
-                                and({
-                                    website_id: selectFrom('structure.page')
-                                        .select('website_id')
-                                        .where('id', '=', pageId),
-                                    user_id: req.user?.id
-                                })
-                            )
-                            .where('permission_level', '>=', 20)
-                    )
-                ])
-            )
-            .returningAll()
-            .executeTakeFirstOrThrow()
+        const component = await req.server.kysely.db
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
 
-        return reply.status(200).send(page)
+                return await trx
+                    .updateTable('components.component')
+                    .set({
+                        content: JSON.stringify(content),
+                        asset_id: assetId,
+                        updated_at: sql`now()`
+                    })
+                    .where(({ and }) =>
+                        and({
+                            page_id: pageId,
+                            id: componentId,
+                            type
+                        })
+                    )
+                    .where(({ or, exists, selectFrom }) =>
+                        or([
+                            exists(
+                                selectFrom('structure.website').where(
+                                    ({ and }) =>
+                                        and({
+                                            id: selectFrom('structure.page')
+                                                .select('website_id')
+                                                .where('id', '=', pageId),
+                                            user_id: req.user?.id
+                                        })
+                                )
+                            ),
+                            exists(
+                                selectFrom('collaboration.collaborator')
+                                    .where(({ and }) =>
+                                        and({
+                                            website_id: selectFrom(
+                                                'structure.page'
+                                            )
+                                                .select('website_id')
+                                                .where('id', '=', pageId),
+                                            user_id: req.user?.id
+                                        })
+                                    )
+                                    .where('permission_level', '>=', 20)
+                            )
+                        ])
+                    )
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
+
+        return reply.status(200).send(component)
     } catch (error) {
         return reply.notFound(
             'Page not found or not allowed or invalid component type'
@@ -314,39 +354,56 @@ export async function deleteComponent(
     const { pageId, componentId } = req.params
 
     try {
-        const page = await req.server.kysely.db
-            .deleteFrom('components.component')
-            .where(({ and }) => and({ page_id: pageId, id: componentId }))
-            .where(({ or, exists, selectFrom }) =>
-                or([
-                    exists(
-                        selectFrom('structure.website').where(({ and }) =>
-                            and({
-                                id: selectFrom('structure.page')
-                                    .select('website_id')
-                                    .where('id', '=', pageId),
-                                user_id: req.user?.id
-                            })
-                        )
-                    ),
-                    exists(
-                        selectFrom('collaboration.collaborator')
-                            .where(({ and }) =>
-                                and({
-                                    website_id: selectFrom('structure.page')
-                                        .select('website_id')
-                                        .where('id', '=', pageId),
-                                    user_id: req.user?.id
-                                })
-                            )
-                            .where('permission_level', '>=', 20)
-                    )
-                ])
-            )
-            .returningAll()
-            .executeTakeFirstOrThrow()
+        const component = await req.server.kysely.db
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
 
-        return reply.status(200).send(page)
+                return await trx
+                    .deleteFrom('components.component')
+                    .where(({ and }) =>
+                        and({ page_id: pageId, id: componentId })
+                    )
+                    .where(({ or, exists, selectFrom }) =>
+                        or([
+                            exists(
+                                selectFrom('structure.website').where(
+                                    ({ and }) =>
+                                        and({
+                                            id: selectFrom('structure.page')
+                                                .select('website_id')
+                                                .where('id', '=', pageId),
+                                            user_id: req.user?.id
+                                        })
+                                )
+                            ),
+                            exists(
+                                selectFrom('collaboration.collaborator')
+                                    .where(({ and }) =>
+                                        and({
+                                            website_id: selectFrom(
+                                                'structure.page'
+                                            )
+                                                .select('website_id')
+                                                .where('id', '=', pageId),
+                                            user_id: req.user?.id
+                                        })
+                                    )
+                                    .where('permission_level', '>=', 20)
+                            )
+                        ])
+                    )
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
+
+        return reply.status(200).send(component)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }
@@ -364,59 +421,73 @@ export async function setComponentPosition(
 
     try {
         const componentPositon = await req.server.kysely.db
-            .insertInto('components.component_position')
-            .values(({ selectFrom }) => ({
-                component_id: selectFrom('components.component')
-                    .select('id')
-                    .where('id', '=', id)
-                    .where(({ or, exists, ref }) =>
-                        or([
-                            exists(
-                                selectFrom('structure.website').where(
-                                    ({ and }) =>
-                                        and({
-                                            id: selectFrom('structure.page')
-                                                .select('website_id')
-                                                .where(
-                                                    'id',
-                                                    '=',
-                                                    ref(
-                                                        'components.component.page_id'
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .insertInto('components.component_position')
+                    .values(({ selectFrom }) => ({
+                        component_id: selectFrom('components.component')
+                            .select('id')
+                            .where('id', '=', id)
+                            .where(({ or, exists, ref }) =>
+                                or([
+                                    exists(
+                                        selectFrom('structure.website').where(
+                                            ({ and }) =>
+                                                and({
+                                                    id: selectFrom(
+                                                        'structure.page'
                                                     )
-                                                ),
-                                            user_id: req.user?.id
-                                        })
-                                )
-                            ),
-                            exists(
-                                selectFrom('collaboration.collaborator')
-                                    .where(({ and }) =>
-                                        and({
-                                            website_id: selectFrom(
-                                                'structure.page'
+                                                        .select('website_id')
+                                                        .where(
+                                                            'id',
+                                                            '=',
+                                                            ref(
+                                                                'components.component.page_id'
+                                                            )
+                                                        ),
+                                                    user_id: req.user?.id
+                                                })
+                                        )
+                                    ),
+                                    exists(
+                                        selectFrom('collaboration.collaborator')
+                                            .where(({ and }) =>
+                                                and({
+                                                    website_id: selectFrom(
+                                                        'structure.page'
+                                                    )
+                                                        .select('website_id')
+                                                        .where(
+                                                            'id',
+                                                            '=',
+                                                            ref(
+                                                                'components.component.page_id'
+                                                            )
+                                                        ),
+                                                    user_id: req.user?.id
+                                                })
                                             )
-                                                .select('website_id')
-                                                .where(
-                                                    'id',
-                                                    '=',
-                                                    ref(
-                                                        'components.component.page_id'
-                                                    )
-                                                ),
-                                            user_id: req.user?.id
-                                        })
+                                            .where('permission_level', '>=', 20)
                                     )
-                                    .where('permission_level', '>=', 20)
-                            )
-                        ])
-                    ),
-                grid_x,
-                grid_y,
-                grid_width,
-                grid_height
-            }))
-            .returningAll()
-            .executeTakeFirstOrThrow()
+                                ])
+                            ),
+                        grid_x,
+                        grid_y,
+                        grid_width,
+                        grid_height
+                    }))
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(201).send(componentPositon)
     } catch (error) {
@@ -435,58 +506,77 @@ export async function updateComponentPosition(
     const { grid_x, grid_y, grid_width, grid_height } = req.body
 
     try {
-        const componentPositon = await req.server.kysely.db
-            .updateTable('components.component_position')
-            .set({
-                component_id: id,
-                grid_x,
-                grid_y,
-                grid_width,
-                grid_height
-            })
-            .where('component_id', '=', id)
-            .where(({ or, exists, selectFrom }) =>
-                or([
-                    exists(
-                        selectFrom('structure.website').where(({ and }) =>
-                            and({
-                                id: selectFrom('structure.page')
-                                    .select('website_id')
-                                    .where(
-                                        'id',
-                                        '=',
-                                        selectFrom('components.component')
-                                            .select('page_id')
-                                            .where('id', '=', id)
-                                    ),
-                                user_id: req.user?.id
-                            })
-                        )
-                    ),
-                    exists(
-                        selectFrom('collaboration.collaborator')
-                            .where(({ and }) =>
-                                and({
-                                    website_id: selectFrom('structure.page')
-                                        .select('website_id')
-                                        .where(
-                                            'id',
-                                            '=',
-                                            selectFrom('components.component')
-                                                .select('page_id')
-                                                .where('id', '=', id)
-                                        ),
-                                    user_id: req.user?.id
-                                })
-                            )
-                            .where('permission_level', '>=', 20)
-                    )
-                ])
-            )
-            .returningAll()
-            .executeTakeFirstOrThrow()
+        const componentPosition = await req.server.kysely.db
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
 
-        return reply.status(200).send(componentPositon)
+                return await trx
+                    .updateTable('components.component_position')
+                    .set({
+                        component_id: id,
+                        grid_x,
+                        grid_y,
+                        grid_width,
+                        grid_height
+                    })
+                    .where('component_id', '=', id)
+                    .where(({ or, exists, selectFrom }) =>
+                        or([
+                            exists(
+                                selectFrom('structure.website').where(
+                                    ({ and }) =>
+                                        and({
+                                            id: selectFrom('structure.page')
+                                                .select('website_id')
+                                                .where(
+                                                    'id',
+                                                    '=',
+                                                    selectFrom(
+                                                        'components.component'
+                                                    )
+                                                        .select('page_id')
+                                                        .where('id', '=', id)
+                                                ),
+                                            user_id: req.user?.id
+                                        })
+                                )
+                            ),
+                            exists(
+                                selectFrom('collaboration.collaborator')
+                                    .where(({ and }) =>
+                                        and({
+                                            website_id: selectFrom(
+                                                'structure.page'
+                                            )
+                                                .select('website_id')
+                                                .where(
+                                                    'id',
+                                                    '=',
+                                                    selectFrom(
+                                                        'components.component'
+                                                    )
+                                                        .select('page_id')
+                                                        .where('id', '=', id)
+                                                ),
+                                            user_id: req.user?.id
+                                        })
+                                    )
+                                    .where('permission_level', '>=', 20)
+                            )
+                        ])
+                    )
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
+
+        return reply.status(200).send(componentPosition)
     } catch (error) {
         return reply.notFound('Component not found or not allowed')
     }

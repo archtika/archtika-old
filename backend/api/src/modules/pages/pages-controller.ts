@@ -19,35 +19,47 @@ export async function createPage(
 
     try {
         const page = await req.server.kysely.db
-            .insertInto('structure.page')
-            .values(({ selectFrom, and, or, exists }) => ({
-                website_id: selectFrom('structure.website')
-                    .select('id')
-                    .where(
-                        or([
-                            and({ id, user_id: req.user?.id }),
-                            exists(
-                                selectFrom('collaboration.collaborator')
-                                    .where(
-                                        and({
-                                            user_id: req.user?.id,
-                                            website_id: id
-                                        })
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .insertInto('structure.page')
+                    .values(({ selectFrom, and, or, exists }) => ({
+                        website_id: selectFrom('structure.website')
+                            .select('id')
+                            .where(
+                                or([
+                                    and({ id, user_id: req.user?.id }),
+                                    exists(
+                                        selectFrom('collaboration.collaborator')
+                                            .where(
+                                                and({
+                                                    user_id: req.user?.id,
+                                                    website_id: id
+                                                })
+                                            )
+                                            .where('permission_level', '>=', 20)
                                     )
-                                    .where('permission_level', '>=', 20)
-                            )
-                        ])
-                    ),
-                route: `/${route}`,
-                title,
-                meta_description: metaDescription
-            }))
-            .returningAll()
-            .executeTakeFirstOrThrow()
+                                ])
+                            ),
+                        route: `/${route}`,
+                        title,
+                        meta_description: metaDescription
+                    }))
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(201).send(page)
     } catch (error) {
-        return reply.notFound('Website not found or not allowed')
+        return reply.notFound('Page not found or not allowed')
     }
 }
 
@@ -161,38 +173,50 @@ export async function updatePage(
 
     try {
         const page = await req.server.kysely.db
-            .updateTable('structure.page')
-            .set({
-                ...(route ? { route: `/${route}` } : {}),
-                title,
-                meta_description: metaDescription,
-                updated_at: sql`now()`
-            })
-            .where(({ exists, and, selectFrom, or }) =>
-                or([
-                    exists(
-                        selectFrom('structure.website').where(
-                            and({
-                                id: websiteId,
-                                user_id: req.user?.id
-                            })
-                        )
-                    ),
-                    exists(
-                        selectFrom('collaboration.collaborator')
-                            .where(
-                                and({
-                                    user_id: req.user?.id,
-                                    website_id: websiteId
-                                })
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .updateTable('structure.page')
+                    .set({
+                        ...(route ? { route: `/${route}` } : {}),
+                        title,
+                        meta_description: metaDescription,
+                        updated_at: sql`now()`
+                    })
+                    .where(({ exists, and, selectFrom, or }) =>
+                        or([
+                            exists(
+                                selectFrom('structure.website').where(
+                                    and({
+                                        id: websiteId,
+                                        user_id: req.user?.id
+                                    })
+                                )
+                            ),
+                            exists(
+                                selectFrom('collaboration.collaborator')
+                                    .where(
+                                        and({
+                                            user_id: req.user?.id,
+                                            website_id: websiteId
+                                        })
+                                    )
+                                    .where('permission_level', '>=', 20)
                             )
-                            .where('permission_level', '>=', 20)
+                        ])
                     )
-                ])
-            )
-            .where('id', '=', pageId)
-            .returningAll()
-            .executeTakeFirstOrThrow()
+                    .where('id', '=', pageId)
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(200).send(page)
     } catch (error) {
@@ -208,32 +232,46 @@ export async function deletePage(
 
     try {
         const page = await req.server.kysely.db
-            .deleteFrom('structure.page')
-            .where(({ exists, and, selectFrom, or }) =>
-                or([
-                    exists(
-                        selectFrom('structure.website').where(
-                            and({
-                                id: websiteId,
-                                user_id: req.user?.id
-                            })
-                        )
-                    ),
-                    exists(
-                        selectFrom('collaboration.collaborator')
-                            .where(
-                                and({
-                                    user_id: req.user?.id,
-                                    website_id: websiteId
-                                })
+            .transaction()
+            .execute(async (trx) => {
+                await trx
+                    .updateTable('structure.website')
+                    .set({
+                        last_modified_by: req.user?.id
+                    })
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+
+                return await trx
+                    .deleteFrom('structure.page')
+                    .where(({ exists, and, selectFrom, or }) =>
+                        or([
+                            exists(
+                                selectFrom('structure.website').where(
+                                    and({
+                                        id: websiteId,
+                                        user_id: req.user?.id
+                                    })
+                                )
+                            ),
+                            exists(
+                                selectFrom('collaboration.collaborator')
+                                    .where(
+                                        and({
+                                            user_id: req.user?.id,
+                                            website_id: websiteId
+                                        })
+                                    )
+                                    .where('permission_level', '>=', 20)
                             )
-                            .where('permission_level', '>=', 20)
+                        ])
                     )
-                ])
-            )
-            .where(({ and }) => and({ id: pageId, website_id: websiteId }))
-            .returningAll()
-            .executeTakeFirstOrThrow()
+                    .where(({ and }) =>
+                        and({ id: pageId, website_id: websiteId })
+                    )
+                    .returningAll()
+                    .executeTakeFirstOrThrow()
+            })
 
         return reply.status(200).send(page)
     } catch (error) {
