@@ -44,7 +44,7 @@ export const actions: Actions = {
             }
         )
 
-        redirect(303, '/')
+        throw redirect(303, '/')
     },
     addCollaborator: async ({ request, fetch, params }) => {
         const data = await request.formData()

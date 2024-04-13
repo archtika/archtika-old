@@ -1,4 +1,5 @@
 import type { ComponentApiPayload } from '$lib/types'
+import { error } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({
@@ -10,6 +11,11 @@ export const load: PageServerLoad = async ({
     const pageData = await fetch(
         `http://localhost:3000/api/v1/websites/${params.websiteId}/pages/${params.pageId}`
     )
+
+    if (!pageData.ok) {
+        throw error(404, 'Page not found')
+    }
+
     const pagesData = await fetch(
         `http://localhost:3000/api/v1/websites/${params.websiteId}/pages`
     )

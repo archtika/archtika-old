@@ -6,11 +6,13 @@ export const handle: Handle = async ({ event, resolve }) => {
     )
 
     if (!accountData.ok && event.url.pathname !== '/login') {
-        redirect(302, '/login')
+        throw redirect(302, '/login')
     }
 
     if (accountData.ok) {
-        if (event.url.pathname === '/login') redirect(302, '/account')
+        if (event.url.pathname === '/login') {
+            throw redirect(302, '/account')
+        }
 
         const account = await accountData.json()
 
