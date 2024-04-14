@@ -4,6 +4,7 @@ import {
     ParamsSchemaType,
     SingleParamsSchemaType
 } from './collaborators-schemas.js'
+import { updateLastModifiedByColumn } from '../../utils/queries.js'
 
 export async function getAllCollaborators(
     req: FastifyRequest<{ Params: SingleParamsSchemaType }>,
@@ -62,13 +63,7 @@ export async function addCollaborator(
         const collaborator = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .insertInto('collaboration.collaborator')
@@ -106,13 +101,7 @@ export async function updateCollaborator(
         const collaborator = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .updateTable('collaboration.collaborator')
@@ -154,13 +143,7 @@ export async function removeCollaborator(
         const collaborator = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .deleteFrom('collaboration.collaborator')
