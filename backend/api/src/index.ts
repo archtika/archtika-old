@@ -11,6 +11,7 @@ import { Client } from 'minio'
 import os from 'os'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
+import './utils/typebox-custom-schemas.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

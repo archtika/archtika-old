@@ -1,14 +1,14 @@
 import { Static, Type } from '@sinclair/typebox'
 
 export const singleParamsSchema = Type.Object({
-    id: Type.String({ minLength: 36, maxLength: 36 })
+    id: Type.String({ format: 'uuid' })
 })
 
 export type SingleParamsSchemaType = Static<typeof singleParamsSchema>
 
 export const paramsSchema = Type.Object({
-    pageId: Type.String({ minLength: 36, maxLength: 36 }),
-    componentId: Type.String({ minLength: 36, maxLength: 36 })
+    pageId: Type.String({ format: 'uuid' }),
+    componentId: Type.String({ format: 'uuid' })
 })
 
 export type ParamsSchemaType = Static<typeof paramsSchema>
@@ -32,7 +32,7 @@ const createComponentImageSchema = Type.Object({
     content: Type.Object({
         altText: Type.Optional(Type.String({ minLength: 1 }))
     }),
-    assetId: Type.String()
+    assetId: Type.String({ format: 'uuid' })
 })
 
 const updateComponentImageSchema = Type.Object({
@@ -40,7 +40,7 @@ const updateComponentImageSchema = Type.Object({
     content: Type.Object({
         altText: Type.Optional(Type.String({ minLength: 1 }))
     }),
-    assetId: Type.Optional(Type.String())
+    assetId: Type.Optional(Type.String({ format: 'uuid' }))
 })
 
 const createComponentVideoSchema = Type.Object({
@@ -49,7 +49,7 @@ const createComponentVideoSchema = Type.Object({
         altText: Type.Optional(Type.String({ minLength: 1 })),
         isLooped: Type.Optional(Type.Boolean())
     }),
-    assetId: Type.String()
+    assetId: Type.String({ format: 'uuid' })
 })
 
 const updateComponentVideoSchema = Type.Object({
@@ -58,7 +58,7 @@ const updateComponentVideoSchema = Type.Object({
         altText: Type.Optional(Type.String({ minLength: 1 })),
         isLooped: Type.Optional(Type.Boolean())
     }),
-    assetId: Type.Optional(Type.String())
+    assetId: Type.Optional(Type.String({ format: 'uuid' }))
 })
 
 const createComponentAudioSchema = Type.Object({
@@ -67,7 +67,7 @@ const createComponentAudioSchema = Type.Object({
         altText: Type.Optional(Type.String({ minLength: 1 })),
         isLooped: Type.Optional(Type.Boolean())
     }),
-    assetId: Type.String()
+    assetId: Type.String({ format: 'uuid' })
 })
 
 const updateComponentAudioSchema = Type.Object({
@@ -76,7 +76,7 @@ const updateComponentAudioSchema = Type.Object({
         altText: Type.Optional(Type.String({ minLength: 1 })),
         isLooped: Type.Optional(Type.Boolean())
     }),
-    assetId: Type.Optional(Type.String())
+    assetId: Type.Optional(Type.String({ format: 'uuid' }))
 })
 
 export const exampleComponentValues = {

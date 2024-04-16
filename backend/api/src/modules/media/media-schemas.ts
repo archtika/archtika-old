@@ -10,13 +10,11 @@ export type multipartFileSchemaType = Static<typeof multipartFileSchema>
 
 export const createMediaAssociationSchema = Type.Object({
     assetId: Type.String({
-        minLength: 36,
-        maxLength: 36,
+        format: 'uuid',
         default: '00000000-0000-0000-0000-000000000000'
     }),
     pageId: Type.String({
-        minLength: 36,
-        maxLength: 36,
+        format: 'uuid',
         default: '00000000-0000-0000-0000-000000000000'
     })
 })
@@ -26,13 +24,13 @@ export type CreateMediaAssociationSchemaType = Static<
 >
 
 export const getAllMediaQuerySchema = Type.Object({
-    pageId: Type.Optional(Type.String({ minLength: 36, maxLength: 36 }))
+    pageId: Type.Optional(Type.String({ format: 'uuid' }))
 })
 
 export type GetAllMediaQuerySchemaType = Static<typeof getAllMediaQuerySchema>
 
 export const paramsSchema = Type.Object({
-    id: Type.String({ minLength: 36, maxLength: 36 })
+    id: Type.String({ format: 'uuid' })
 })
 
 export type ParamsSchemaType = Static<typeof paramsSchema>
