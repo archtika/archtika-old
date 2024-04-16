@@ -29,7 +29,7 @@ export async function up(db: Kysely<DB>) {
         .addColumn('website_id', 'uuid', (col) =>
             col.references('structure.website.id').notNull().onDelete('cascade')
         )
-        .addColumn('user_id', 'varchar(20)', (col) =>
+        .addColumn('user_id', 'uuid', (col) =>
             col.notNull().references('auth.auth_user.id')
         )
         .addColumn('entity_type', sql`tracking.entity_type`, (col) =>

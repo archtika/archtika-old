@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit'
+import { error, redirect } from '@sveltejs/kit'
 import type { Actions, PageServerLoad } from './$types'
 
 export const load: PageServerLoad = async ({ fetch, params, parent }) => {
@@ -37,12 +37,16 @@ export const actions: Actions = {
         )
     },
     deleteWebsite: async ({ fetch, params }) => {
-        await fetch(
+        const deletionRequest = await fetch(
             `http://localhost:3000/api/v1/websites/${params.websiteId}`,
             {
                 method: 'DELETE'
             }
         )
+
+        if (!deletionRequest.ok) {
+            throw error(403, 'Not allowed')
+        }
 
         throw redirect(303, '/')
     },

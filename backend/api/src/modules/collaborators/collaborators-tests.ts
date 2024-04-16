@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import assert from 'node:assert'
 import { after, before, describe, it } from 'node:test'
 import { app as buildApp } from '../../index.js'
+import { testUser, testCollabUser } from '../../utils/testing/fakes.js'
 
 describe('collaborators', async () => {
     let app: FastifyInstance
@@ -15,7 +16,7 @@ describe('collaborators', async () => {
         await app.kysely.db
             .insertInto('auth.auth_user')
             .values({
-                id: 'qkj7ld6pgsqvurgfxaao',
+                id: testUser.id,
                 username: 'testuser',
                 email: 'testuser@example.com'
             })
@@ -25,9 +26,7 @@ describe('collaborators', async () => {
         const collaborator = await app.kysely.db
             .insertInto('auth.auth_user')
             .values({
-                id: 'clijlrpji1vlwqzof7zd',
-                username: 'collabuser',
-                email: 'collabuser@example.com'
+                ...testCollabUser
             })
             .onConflict((oc) =>
                 oc.column('id').doUpdateSet(({ ref }) => ({
@@ -42,10 +41,10 @@ describe('collaborators', async () => {
         const website = await app.kysely.db
             .insertInto('structure.website')
             .values({
-                user_id: 'qkj7ld6pgsqvurgfxaao',
+                user_id: testUser.id,
                 title: 'Some title',
                 meta_description: 'Some description',
-                last_modified_by: 'qkj7ld6pgsqvurgfxaao'
+                last_modified_by: testUser.id
             })
             .returningAll()
             .executeTakeFirstOrThrow()
@@ -53,8 +52,8 @@ describe('collaborators', async () => {
         websiteId = website.id
     })
 
-    after(() => {
-        app.close()
+    after(async () => {
+        await app.close()
     })
 
     describe('POST /api/v1/websites/{websiteId}/collaborators/{userId}', () => {

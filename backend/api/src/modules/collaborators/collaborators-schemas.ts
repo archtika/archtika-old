@@ -8,7 +8,7 @@ export type SingleParamsSchemaType = Static<typeof singleParamsSchema>
 
 export const paramsSchema = Type.Object({
     websiteId: Type.String({ minLength: 36, maxLength: 36 }),
-    userId: Type.String({ minLength: 20, maxLength: 20 })
+    userId: Type.String({ minLength: 36, maxLength: 36 })
 })
 
 export type ParamsSchemaType = Static<typeof paramsSchema>

@@ -9,11 +9,14 @@ export async function up(db: Kysely<DB>) {
         .addColumn('website_id', 'uuid', (col) =>
             col.references('structure.website.id').notNull().onDelete('cascade')
         )
-        .addColumn('user_id', 'varchar(20)', (col) =>
+        .addColumn('user_id', 'uuid', (col) =>
             col.references('auth.auth_user.id').notNull()
         )
         .addColumn('permission_level', 'integer', (col) =>
-            col.notNull().defaultTo(10)
+            col
+                .notNull()
+                .defaultTo(10)
+                .check(sql`permission_level IN (10, 20, 30)`)
         )
         .addColumn('invited_at', 'timestamptz', (col) =>
             col.notNull().defaultTo(sql`now()`)
