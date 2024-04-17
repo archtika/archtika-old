@@ -292,10 +292,6 @@ export async function loginWithGoogleCallback(
 }
 
 export async function getAccount(req: FastifyRequest, reply: FastifyReply) {
-    console.log(
-        `POSTGRES SESSION VARIABLE: ${JSON.stringify(await sql`SELECT current_setting('archtika.current_user_id')`.execute(req.server.kysely.db))}`
-    )
-
     const user = await req.server.kysely.db
         .selectFrom('auth.auth_user')
         .selectAll()
