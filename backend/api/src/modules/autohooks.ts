@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { verifyRequestOrigin } from 'lucia'
 import { testUser } from '../utils/testing/fakes.js'
+import { sql } from 'kysely'
 
 export default async function (fastify: FastifyInstance) {
     fastify.addHook('preHandler', async (req, reply) => {
@@ -59,5 +60,11 @@ export default async function (fastify: FastifyInstance) {
         ) {
             return reply.unauthorized()
         }
+    })
+
+    fastify.addHook('preHandler', async (req, reply) => {
+        await sql`SET archtika.current_user_id = '${sql.raw(req.user?.id ?? '')}'`.execute(
+            req.server.kysely.db
+        )
     })
 }

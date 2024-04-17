@@ -1,6 +1,7 @@
 import { generateCodeVerifier, generateState } from 'arctic'
 import { randomUUID } from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { sql } from 'kysely'
 
 interface GitHubEmailObject {
     email: string
@@ -291,6 +292,10 @@ export async function loginWithGoogleCallback(
 }
 
 export async function getAccount(req: FastifyRequest, reply: FastifyReply) {
+    console.log(
+        `POSTGRES SESSION VARIABLE: ${JSON.stringify(await sql`SELECT current_setting('archtika.current_user_id')`.execute(req.server.kysely.db))}`
+    )
+
     const user = await req.server.kysely.db
         .selectFrom('auth.auth_user')
         .selectAll()
