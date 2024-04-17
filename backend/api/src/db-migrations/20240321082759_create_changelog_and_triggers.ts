@@ -58,59 +58,61 @@ export async function up(db: Kysely<DB>) {
         new_value_val JSONB;
         change_summary_text VARCHAR;
         website_id_val UUID;
-        last_modified_by_val VARCHAR;
+        last_modified_by_val UUID;
       BEGIN
-        IF TG_TABLE_NAME = 'website' THEN
-          entity_type_val := 'website';
-          website_id_val := COALESCE(NEW.id, OLD.id);
-          last_modified_by_val := COALESCE(NEW.last_modified_by, OLD.last_modified_by);
-        ELSIF TG_TABLE_NAME = 'page' THEN
-          entity_type_val := 'page';
-          website_id_val := COALESCE(NEW.website_id, OLD.website_id);
-          SELECT website.last_modified_by INTO last_modified_by_val
-          FROM structure.website
-          WHERE website.id = website_id_val;
-        ELSIF TG_TABLE_NAME = 'component' THEN
-          entity_type_val := 'component';
-          SELECT page.website_id INTO website_id_val
-          FROM structure.page
-          WHERE page.id = COALESCE(NEW.page_id, OLD.page_id);
-          SELECT website.last_modified_by INTO last_modified_by_val
-          FROM structure.website
-          WHERE website.id = website_id_val;
-        ELSIF TG_TABLE_NAME = 'component_position' THEN
-          entity_type_val := 'component-position';
-          SELECT page.website_id INTO website_id_val
-          FROM structure.page
-          WHERE page.id = (
-            SELECT component.page_id
-            FROM components.component
-            WHERE component.id = COALESCE(NEW.component_id, OLD.component_id)
-          );
-          SELECT website.last_modified_by INTO last_modified_by_val
-          FROM structure.website
-          WHERE website.id = website_id_val;
-        ELSIF TG_TABLE_NAME = 'collaborator' THEN
-          entity_type_val := 'collaborator';
-          website_id_val := COALESCE(NEW.website_id, OLD.website_id);
-          SELECT website.last_modified_by INTO last_modified_by_val
-          FROM structure.website
-          WHERE website.id = website_id_val;
-        END IF;
+        CASE TG_TABLE_NAME
+          WHEN 'website' THEN
+            entity_type_val := 'website';
+            website_id_val := NEW.id;
+            last_modified_by_val := NEW.last_modified_by;
+          WHEN 'page' THEN
+            entity_type_val := 'page';
+            website_id_val := NEW.website_id;
+            SELECT website.last_modified_by INTO last_modified_by_val
+            FROM structure.website
+            WHERE website.id = website_id_val;
+          WHEN 'component' THEN
+            entity_type_val := 'component';
+            SELECT page.website_id INTO website_id_val
+            FROM structure.page
+            WHERE page.id = NEW.page_id;
+            SELECT website.last_modified_by INTO last_modified_by_val
+            FROM structure.website
+            WHERE website.id = website_id_val;
+          WHEN 'component_position' THEN
+            entity_type_val := 'component-position';
+            SELECT page.website_id INTO website_id_val
+            FROM structure.page
+            WHERE page.id = (
+              SELECT component.page_id
+              FROM components.component
+              WHERE component.id = NEW.component_id
+            );
+            SELECT website.last_modified_by INTO last_modified_by_val
+            FROM structure.website
+            WHERE website.id = website_id_val;
+          WHEN 'collaborator' THEN
+            entity_type_val := 'collaborator';
+            website_id_val := NEW.website_id;
+            SELECT website.last_modified_by INTO last_modified_by_val
+            FROM structure.website
+            WHERE website.id = website_id_val;
+        END CASE;        
 
-        IF TG_OP = 'INSERT' THEN
-          action_type_val := 'create';
-          previous_value_val := row_to_json(OLD);
-          new_value_val := row_to_json(NEW);
-        ELSIF TG_OP = 'UPDATE' THEN
-          action_type_val := 'update';
-          previous_value_val := row_to_json(OLD);
-          new_value_val := row_to_json(NEW);
-        ELSIF TG_OP = 'DELETE' THEN
-          action_type_val := 'delete';
-          previous_value_val := row_to_json(OLD);
-          new_value_val := NULL;
-        END IF; 
+        CASE TG_OP
+          WHEN 'INSERT' THEN
+            action_type_val := 'create';
+            previous_value_val := row_to_json(OLD);
+            new_value_val := row_to_json(NEW);
+          WHEN 'UPDATE' THEN
+            action_type_val := 'update';
+            previous_value_val := row_to_json(OLD);
+            new_value_val := row_to_json(NEW);
+          WHEN 'DELETE' THEN
+            action_type_val := 'delete';
+            previous_value_val := row_to_json(OLD);
+            new_value_val := NULL;
+        END CASE; 
 
         change_summary_text := action_type_val || ' ' || TG_TABLE_NAME;
 
