@@ -12,16 +12,16 @@ export async function up(db: Kysely<DB>) {
                 .notNull()
                 .defaultTo(sql`gen_random_uuid()`)
         )
-        .addColumn('user_id', 'varchar(20)', (col) =>
+        .addColumn('user_id', 'uuid', (col) =>
             col.notNull().references('auth.auth_user.id').onDelete('cascade')
         )
-        .addColumn('title', 'varchar', (col) => col.notNull())
-        .addColumn('meta_description', 'varchar')
+        .addColumn('title', 'varchar(50)', (col) => col.notNull())
+        .addColumn('meta_description', 'varchar(200)')
         .addColumn('created_at', 'timestamptz', (col) =>
             col.notNull().defaultTo(sql`now()`)
         )
         .addColumn('updated_at', 'timestamptz')
-        .addColumn('last_modified_by', 'varchar(20)', (col) =>
+        .addColumn('last_modified_by', 'uuid', (col) =>
             col.notNull().references('auth.auth_user.id').onDelete('cascade')
         )
         .execute()
@@ -37,9 +37,11 @@ export async function up(db: Kysely<DB>) {
         .addColumn('website_id', 'uuid', (col) =>
             col.notNull().references('structure.website.id').onDelete('cascade')
         )
-        .addColumn('route', 'varchar', (col) => col.notNull())
-        .addColumn('title', 'varchar', (col) => col.notNull())
-        .addColumn('meta_description', 'varchar')
+        .addColumn('route', 'varchar(200)', (col) =>
+            col.notNull().check(sql`route ~ '^(?!.*--)[a-z0-9\\-/]*[^-/]$'`)
+        )
+        .addColumn('title', 'varchar(50)', (col) => col.notNull())
+        .addColumn('meta_description', 'varchar(200)')
         .addColumn('created_at', 'timestamptz', (col) =>
             col.notNull().defaultTo(sql`now()`)
         )

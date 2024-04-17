@@ -6,9 +6,6 @@ import {
     updateCollaborator
 } from './collaborators-controller.js'
 import {
-    CollaboratorSchemaType,
-    ParamsSchemaType,
-    SingleParamsSchemaType,
     collaboratorSchema,
     paramsSchema,
     singleParamsSchema
@@ -21,7 +18,7 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.get<{ Params: SingleParamsSchemaType }>(
+    fastify.get(
         '/:id/collaborators',
         {
             schema: {
@@ -32,10 +29,7 @@ export default async function (fastify: FastifyInstance) {
         getAllCollaborators
     )
 
-    fastify.post<{
-        Params: ParamsSchemaType
-        Body: CollaboratorSchemaType
-    }>(
+    fastify.post(
         '/:websiteId/collaborators/:userId',
         {
             schema: {
@@ -47,10 +41,7 @@ export default async function (fastify: FastifyInstance) {
         addCollaborator
     )
 
-    fastify.patch<{
-        Params: ParamsSchemaType
-        Body: CollaboratorSchemaType
-    }>(
+    fastify.patch(
         '/:websiteId/collaborators/:userId',
         {
             schema: {
@@ -62,7 +53,7 @@ export default async function (fastify: FastifyInstance) {
         updateCollaborator
     )
 
-    fastify.delete<{ Params: ParamsSchemaType }>(
+    fastify.delete(
         '/:websiteId/collaborators/:userId',
         {
             schema: {

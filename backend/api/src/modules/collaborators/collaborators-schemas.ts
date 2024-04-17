@@ -1,20 +1,23 @@
 import { Static, Type } from '@sinclair/typebox'
 
 export const singleParamsSchema = Type.Object({
-    id: Type.String({ minLength: 36, maxLength: 36 })
+    id: Type.String({ format: 'uuid' })
 })
 
 export type SingleParamsSchemaType = Static<typeof singleParamsSchema>
 
 export const paramsSchema = Type.Object({
-    websiteId: Type.String({ minLength: 36, maxLength: 36 }),
-    userId: Type.String({ minLength: 20, maxLength: 20 })
+    websiteId: Type.String({ format: 'uuid' }),
+    userId: Type.String({ format: 'uuid' })
 })
 
 export type ParamsSchemaType = Static<typeof paramsSchema>
 
 export const collaboratorSchema = Type.Object({
-    permissionLevel: Type.Integer({ default: 10 })
+    permissionLevel: Type.Union(
+        [Type.Literal(10), Type.Literal(20), Type.Literal(30)],
+        { default: 10 }
+    )
 })
 
 export type CollaboratorSchemaType = Static<typeof collaboratorSchema>

@@ -17,8 +17,8 @@ describe('media', async () => {
         app = buildApp()
     })
 
-    after(() => {
-        app.close()
+    after(async () => {
+        await app.close()
     })
 
     // Does not work yet, needs to be tested further

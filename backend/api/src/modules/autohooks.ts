@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify'
 import { verifyRequestOrigin } from 'lucia'
+import { testUser } from '../utils/testing/fakes.js'
 
 export default async function (fastify: FastifyInstance) {
     fastify.addHook('preHandler', async (req, reply) => {
@@ -44,9 +45,7 @@ export default async function (fastify: FastifyInstance) {
             req.session = session
         } else {
             req.user =
-                process.env.NODE_ENV === 'test'
-                    ? { id: 'qkj7ld6pgsqvurgfxaao' }
-                    : null
+                process.env.NODE_ENV === 'test' ? { id: testUser.id } : null
             req.session = null
         }
     })

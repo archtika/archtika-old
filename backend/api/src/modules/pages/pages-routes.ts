@@ -7,10 +7,6 @@ import {
     updatePage
 } from './pages-controller.js'
 import {
-    CreatePageSchemaType,
-    PageParamsSchemaType,
-    SinglePageParamsSchemaType,
-    UpdatePageSchemaType,
     createPageSchema,
     pageParamsSchema,
     singlePageParamsSchema,
@@ -24,10 +20,7 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.post<{
-        Params: SinglePageParamsSchemaType
-        Body: CreatePageSchemaType
-    }>(
+    fastify.post(
         '/:id/pages',
         {
             schema: {
@@ -39,7 +32,7 @@ export default async function (fastify: FastifyInstance) {
         createPage
     )
 
-    fastify.get<{ Params: SinglePageParamsSchemaType }>(
+    fastify.get(
         '/:id/pages',
         {
             schema: {
@@ -50,7 +43,7 @@ export default async function (fastify: FastifyInstance) {
         getAllPages
     )
 
-    fastify.get<{ Params: PageParamsSchemaType }>(
+    fastify.get(
         '/:websiteId/pages/:pageId',
         {
             schema: {
@@ -61,7 +54,7 @@ export default async function (fastify: FastifyInstance) {
         getPage
     )
 
-    fastify.patch<{ Params: PageParamsSchemaType; Body: UpdatePageSchemaType }>(
+    fastify.patch(
         '/:websiteId/pages/:pageId',
         {
             schema: {
@@ -73,7 +66,7 @@ export default async function (fastify: FastifyInstance) {
         updatePage
     )
 
-    fastify.delete<{ Params: PageParamsSchemaType }>(
+    fastify.delete(
         '/:websiteId/pages/:pageId',
         {
             schema: { tags: commonSchema.schema.tags, params: pageParamsSchema }

@@ -6,6 +6,7 @@ import {
     SinglePageParamsSchemaType,
     UpdatePageSchemaType
 } from './pages-schemas.js'
+import { updateLastModifiedByColumn } from '../../utils/queries.js'
 
 export async function createPage(
     req: FastifyRequest<{
@@ -21,13 +22,7 @@ export async function createPage(
         const page = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .insertInto('structure.page')
@@ -175,13 +170,7 @@ export async function updatePage(
         const page = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .updateTable('structure.page')
@@ -234,13 +223,7 @@ export async function deletePage(
         const page = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .deleteFrom('structure.page')

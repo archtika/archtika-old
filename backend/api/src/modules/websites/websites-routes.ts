@@ -7,14 +7,10 @@ import {
     updateWebsite
 } from './websites-controller.js'
 import {
-    CreateWebsiteSchemaType,
-    UpdateWebsiteSchemaType,
-    WebsiteParamsSchemaType,
-    GetWebsitesQuerySchemaType,
     createWebsiteSchema,
+    getWebsitesQuerySchema,
     updateWebsiteSchema,
-    websiteParamsSchema,
-    getWebsitesQuerySchema
+    websiteParamsSchema
 } from './websites-schemas.js'
 
 const commonSchema = {
@@ -24,7 +20,7 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.post<{ Body: CreateWebsiteSchemaType }>(
+    fastify.post(
         '/',
         {
             schema: {
@@ -35,7 +31,7 @@ export default async function (fastify: FastifyInstance) {
         createWebsite
     )
 
-    fastify.get<{ Querystring: GetWebsitesQuerySchemaType }>(
+    fastify.get(
         '/',
         {
             schema: {
@@ -46,7 +42,7 @@ export default async function (fastify: FastifyInstance) {
         getAllWebsites
     )
 
-    fastify.get<{ Params: WebsiteParamsSchemaType }>(
+    fastify.get(
         '/:id',
         {
             schema: {
@@ -57,10 +53,7 @@ export default async function (fastify: FastifyInstance) {
         getWebsite
     )
 
-    fastify.patch<{
-        Params: WebsiteParamsSchemaType
-        Body: UpdateWebsiteSchemaType
-    }>(
+    fastify.patch(
         '/:id',
         {
             schema: {
@@ -72,7 +65,7 @@ export default async function (fastify: FastifyInstance) {
         updateWebsite
     )
 
-    fastify.delete<{ Params: WebsiteParamsSchemaType }>(
+    fastify.delete(
         '/:id',
         {
             schema: {

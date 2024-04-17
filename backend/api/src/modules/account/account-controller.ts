@@ -1,6 +1,6 @@
 import { generateCodeVerifier, generateState } from 'arctic'
+import { randomUUID } from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { generateId } from 'lucia'
 
 interface GitHubEmailObject {
     email: string
@@ -118,7 +118,7 @@ export async function loginWithGithubCallback(
         return reply.redirect('http://localhost:5173')
     }
 
-    const userId = generateId(20)
+    const userId = randomUUID()
 
     await req.server.kysely.db
         .insertInto('auth.auth_user')
@@ -257,7 +257,7 @@ export async function loginWithGoogleCallback(
         return reply.redirect('http://localhost:5173')
     }
 
-    const userId = generateId(20)
+    const userId = randomUUID()
 
     await req.server.kysely.db
         .insertInto('auth.auth_user')

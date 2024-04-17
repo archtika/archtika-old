@@ -9,6 +9,7 @@ import {
 } from './components-schemas.js'
 import WebSocket from 'ws'
 import { mimeTypes } from '../../utils/mimetypes.js'
+import { updateLastModifiedByColumn } from '../../utils/queries.js'
 
 export async function createComponent(
     req: FastifyRequest<{
@@ -30,13 +31,7 @@ export async function createComponent(
         const component = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .insertInto('components.component')
@@ -282,13 +277,7 @@ export async function updateComponent(
         const component = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .updateTable('components.component')
@@ -357,13 +346,7 @@ export async function deleteComponent(
         const component = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .deleteFrom('components.component')
@@ -423,13 +406,7 @@ export async function setComponentPosition(
         const componentPositon = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .insertInto('components.component_position')
@@ -509,13 +486,7 @@ export async function updateComponentPosition(
         const componentPosition = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
-                await trx
-                    .updateTable('structure.website')
-                    .set({
-                        last_modified_by: req.user?.id
-                    })
-                    .returningAll()
-                    .executeTakeFirstOrThrow()
+                updateLastModifiedByColumn(req, trx)
 
                 return await trx
                     .updateTable('components.component_position')

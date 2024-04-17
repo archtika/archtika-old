@@ -10,11 +10,6 @@ import {
     updateComponentPosition
 } from './components-controller.js'
 import {
-    ComponentPositionSchemaType,
-    CreateComponentSchemaType,
-    ParamsSchemaType,
-    SingleParamsSchemaType,
-    UpdateComponentSchemaType,
     componentPositionSchema,
     createComponentSchema,
     paramsSchema,
@@ -29,10 +24,7 @@ const commonSchema = {
 }
 
 export default async function (fastify: FastifyInstance) {
-    fastify.post<{
-        Params: SingleParamsSchemaType
-        Body: CreateComponentSchemaType
-    }>(
+    fastify.post(
         '/pages/:id/components',
         {
             schema: {
@@ -54,7 +46,7 @@ export default async function (fastify: FastifyInstance) {
         wsHandler: getAllComponentsWebsocket
     })
 
-    fastify.get<{ Params: ParamsSchemaType }>(
+    fastify.get(
         '/pages/:pageId/components/:componentId',
         {
             schema: {
@@ -65,10 +57,7 @@ export default async function (fastify: FastifyInstance) {
         getComponent
     )
 
-    fastify.patch<{
-        Params: ParamsSchemaType
-        Body: UpdateComponentSchemaType
-    }>(
+    fastify.patch(
         '/pages/:pageId/components/:componentId',
         {
             schema: {
@@ -88,10 +77,7 @@ export default async function (fastify: FastifyInstance) {
         deleteComponent
     )
 
-    fastify.post<{
-        Params: SingleParamsSchemaType
-        Body: ComponentPositionSchemaType
-    }>(
+    fastify.post(
         '/components/:id/position',
         {
             schema: {
@@ -103,10 +89,7 @@ export default async function (fastify: FastifyInstance) {
         setComponentPosition
     )
 
-    fastify.patch<{
-        Params: SingleParamsSchemaType
-        Body: ComponentPositionSchemaType
-    }>(
+    fastify.patch(
         '/components/:id/position',
         {
             schema: {

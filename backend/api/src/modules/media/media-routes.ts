@@ -7,12 +7,9 @@ import {
     getMedia
 } from './media-controller.js'
 import {
-    ParamsSchemaType,
-    CreateMediaAssociationSchemaType,
     createMediaAssociationSchema,
-    paramsSchema,
-    GetAllMediaQuerySchemaType,
-    getAllMediaQuerySchema
+    getAllMediaQuerySchema,
+    paramsSchema
 } from './media-schemas.js'
 
 const commonSchema = {
@@ -40,7 +37,7 @@ export default async function (fastify: FastifyInstance) {
         createMedia
     )
 
-    fastify.post<{ Body: CreateMediaAssociationSchemaType }>(
+    fastify.post(
         '/association',
         {
             schema: {
@@ -51,7 +48,7 @@ export default async function (fastify: FastifyInstance) {
         createMediaAssociation
     )
 
-    fastify.get<{ Querystring: GetAllMediaQuerySchemaType }>(
+    fastify.get(
         '/',
         {
             schema: {
@@ -62,7 +59,7 @@ export default async function (fastify: FastifyInstance) {
         getAllMedia
     )
 
-    fastify.get<{ Params: ParamsSchemaType }>(
+    fastify.get(
         '/:id',
         {
             schema: {
@@ -73,7 +70,7 @@ export default async function (fastify: FastifyInstance) {
         getMedia
     )
 
-    fastify.delete<{ Params: ParamsSchemaType }>(
+    fastify.delete(
         '/:id',
         {
             schema: {
