@@ -1,7 +1,6 @@
 import { generateCodeVerifier, generateState } from 'arctic'
 import { randomUUID } from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { sql } from 'kysely'
 
 interface GitHubEmailObject {
     email: string
