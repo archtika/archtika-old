@@ -8,27 +8,6 @@ export const multipartFileSchema = Type.Object({
 
 export type multipartFileSchemaType = Static<typeof multipartFileSchema>
 
-export const createMediaAssociationSchema = Type.Object({
-    assetId: Type.String({
-        format: 'uuid',
-        default: '00000000-0000-0000-0000-000000000000'
-    }),
-    pageId: Type.String({
-        format: 'uuid',
-        default: '00000000-0000-0000-0000-000000000000'
-    })
-})
-
-export type CreateMediaAssociationSchemaType = Static<
-    typeof createMediaAssociationSchema
->
-
-export const getAllMediaQuerySchema = Type.Object({
-    pageId: Type.Optional(Type.String({ format: 'uuid' }))
-})
-
-export type GetAllMediaQuerySchemaType = Static<typeof getAllMediaQuerySchema>
-
 export const paramsSchema = Type.Object({
     id: Type.String({ format: 'uuid' })
 })

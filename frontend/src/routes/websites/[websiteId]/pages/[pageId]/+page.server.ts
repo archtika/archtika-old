@@ -23,16 +23,12 @@ export const load: PageServerLoad = async ({
         `http://localhost:3000/api/v1/pages/${params.pageId}/components`
     )
     const mediaData = await fetch(`http://localhost:3000/api/v1/media`)
-    const pageMediaData = await fetch(
-        `http://localhost:3000/api/v1/media/?pageId=${params.pageId}`
-    )
 
     const { website } = await parent()
     const page = await pageData.json()
     const pages = await pagesData.json()
     const components = await componentsData.json()
     const media = await mediaData.json()
-    const pageMedia = await pageMediaData.json()
 
     return {
         website,
@@ -40,7 +36,6 @@ export const load: PageServerLoad = async ({
         pages,
         components,
         media,
-        pageMedia,
         account: locals.account
     }
 }
@@ -84,15 +79,6 @@ export const actions: Actions = {
 
                     image = await imageData.json()
                 }
-
-                await fetch('http://localhost:3000/api/v1/media/association', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        assetId: existingFile ? existingFile : image.id,
-                        pageId: params.pageId
-                    })
-                })
 
                 body = {
                     type: data.get('type') as string,

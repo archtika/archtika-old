@@ -2,9 +2,9 @@
     import type { PageServerData } from './$types'
     import RenderComponent from '$lib/components/RenderComponent.svelte'
     import { enhance } from '$app/forms'
-    import type { Component, Media, FilteredMedia } from '$lib/types'
     import { page } from '$app/stores'
     import { browser } from '$app/environment'
+    import type { Component } from '$lib/types'
 
     export let data: PageServerData
 
@@ -14,28 +14,13 @@
         video: ['video/mp4', 'video/webm', 'video/ogg']
     }
 
-    $: filteredMedia = Object.entries(mimeTypes).reduce(
-        (acc, [type, mimes]) => {
-            acc[type] = data.media.filter((media: Media) =>
-                mimes.includes(media.mimetype)
-            )
-            return acc
-        },
-        {} as FilteredMedia
-    )
+    let components = data.components
 
-    $: componentsWithMedia = data.components.map((component: Component) => {
-        if (['image', 'audio', 'video'].includes(component.type)) {
-            return {
-                ...component,
-                media: data.pageMedia.find(
-                    (media: Media) => media.id === component.asset_id
-                )
-            }
-        }
+    function getMedia(type: string) {
+        if (!data.media[type]) return []
 
-        return component
-    })
+        return data.media[type]
+    }
 
     let ws: WebSocket
 
@@ -49,9 +34,20 @@
         }
 
         ws.onmessage = ({ data }) => {
-            let updatedComponents = JSON.parse(data)
+            let newComponent = JSON.parse(data)
 
-            componentsWithMedia = updatedComponents
+            const index = components.findIndex((component: Component) => {
+                return component.id === newComponent.id
+            })
+
+            if (index !== -1) {
+                components = [
+                    ...components.slice(0, index),
+                    ...components.slice(index + 1)
+                ]
+            } else {
+                components = [...components, newComponent]
+            }
         }
 
         ws.onerror = (error) => {
@@ -83,17 +79,7 @@
         <h3>Components</h3>
         <div draggable="true" class="outline" role="presentation">
             <h4>Text</h4>
-            <form
-                action="?/createComponent"
-                method="post"
-                use:enhance={() => {
-                    return ({ update }) => {
-                        update().finally(() => {
-                            ws.send(JSON.stringify(componentsWithMedia))
-                        })
-                    }
-                }}
-            >
+            <form action="?/createComponent" method="post" use:enhance>
                 <input type="hidden" name="type" value="text" />
                 <label>
                     Content:
@@ -111,13 +97,7 @@
                 <form
                     action="?/createComponent"
                     method="post"
-                    use:enhance={() => {
-                        return ({ update }) => {
-                            update().finally(() => {
-                                ws.send(JSON.stringify(componentsWithMedia))
-                            })
-                        }
-                    }}
+                    use:enhance
                     enctype="multipart/form-data"
                 >
                     <input type="hidden" name="type" value={type} />
@@ -132,7 +112,7 @@
                     <fieldset>
                         <legend>Select existing {type}:</legend>
                         <div>
-                            {#each filteredMedia[type] as media}
+                            {#each getMedia(type) as media}
                                 <label>
                                     <input
                                         type="radio"
@@ -161,19 +141,9 @@
     </div>
 
     <div role="presentation" class="outline outline-red-500 col-span-7">
-        {#each componentsWithMedia as component (component.id)}
+        {#each components as component (component.id)}
             <RenderComponent {component} />
-            <form
-                action="?/deleteComponent"
-                method="post"
-                use:enhance={() => {
-                    return ({ update }) => {
-                        update().finally(() => {
-                            ws.send(JSON.stringify(componentsWithMedia))
-                        })
-                    }
-                }}
-            >
+            <form action="?/deleteComponent" method="post" use:enhance>
                 <input type="hidden" name="id" value={component.id} />
                 <button type="submit">Delete</button>
             </form>

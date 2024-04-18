@@ -91,6 +91,21 @@ export async function createComponent(
                     .executeTakeFirstOrThrow()
             })
 
+        const presignedUrl = await req.server.minio.client.presignedGetObject(
+            'archtika',
+            `${component.asset_id}`
+        )
+
+        const componentWithUrl = {
+            ...component,
+            url: presignedUrl
+        }
+
+        await req.server.redis.pub.publish(
+            `components_${id}`,
+            JSON.stringify(componentWithUrl)
+        )
+
         return reply.status(201).send(component)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
@@ -171,7 +186,21 @@ export async function getAllComponents(
         }
     }
 
-    return reply.status(200).send(allComponents)
+    const componentsWithUrls = await Promise.all(
+        allComponents.map(async (component) => {
+            const presignedUrl =
+                await req.server.minio.client.presignedGetObject(
+                    'archtika',
+                    `${component.asset_id}`
+                )
+            return {
+                ...component,
+                url: presignedUrl
+            }
+        })
+    )
+
+    return reply.status(200).send(componentsWithUrls)
 }
 
 export async function getAllComponentsWebsocket(
@@ -182,11 +211,11 @@ export async function getAllComponentsWebsocket(
 
     const channelName = `components_${id}`
 
-    socket.on('message', (message) => {
-        req.server.redis.pub.publish(channelName, message.toString())
+    socket.on('message', async (message) => {
+        await req.server.redis.pub.publish(channelName, message.toString())
     })
 
-    req.server.redis.sub.subscribe(channelName, (err) => {
+    await req.server.redis.sub.subscribe(channelName, (err) => {
         if (err) {
             console.error(`Error subscribing to ${channelName}: ${err.message}`)
         }
@@ -200,10 +229,10 @@ export async function getAllComponentsWebsocket(
         }
     })
 
-    socket.on('close', () => {
-        req.server.redis.sub.unsubscribe()
-        req.server.redis.sub.quit()
-        req.server.redis.pub.quit()
+    socket.on('close', async () => {
+        await req.server.redis.sub.unsubscribe()
+        await req.server.redis.sub.quit()
+        await req.server.redis.pub.quit()
     })
 }
 
@@ -326,6 +355,21 @@ export async function updateComponent(
                     .executeTakeFirstOrThrow()
             })
 
+        const presignedUrl = await req.server.minio.client.presignedGetObject(
+            'archtika',
+            `${component.asset_id}`
+        )
+
+        const componentWithUrl = {
+            ...component,
+            url: presignedUrl
+        }
+
+        await req.server.redis.pub.publish(
+            `components_${pageId}`,
+            JSON.stringify(componentWithUrl)
+        )
+
         return reply.status(200).send(component)
     } catch (error) {
         return reply.notFound(
@@ -385,6 +429,21 @@ export async function deleteComponent(
                     .returningAll()
                     .executeTakeFirstOrThrow()
             })
+
+        const presignedUrl = await req.server.minio.client.presignedGetObject(
+            'archtika',
+            `${component.asset_id}`
+        )
+
+        const componentWithUrl = {
+            ...component,
+            url: presignedUrl
+        }
+
+        await req.server.redis.pub.publish(
+            `components_${pageId}`,
+            JSON.stringify(componentWithUrl)
+        )
 
         return reply.status(200).send(component)
     } catch (error) {

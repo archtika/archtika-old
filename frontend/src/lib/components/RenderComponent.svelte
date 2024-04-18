@@ -1,9 +1,9 @@
 <script lang="ts">
     import { Renderer, parse } from 'marked'
     import DOMPurify from 'isomorphic-dompurify'
-    import type { ComponentWithMedia } from '$lib/types'
+    import type { Component } from '$lib/types'
 
-    export let component: ComponentWithMedia
+    export let component: Component
 
     const renderer = new Renderer()
 
@@ -25,7 +25,7 @@
 {/if}
 
 {#if component.type === 'image'}
-    <img src={component.media.url} alt={component.content.altText} />
+    <img src={component.url} alt={component.content.altText} />
 {/if}
 
 {#if component.type === 'audio'}
@@ -34,7 +34,7 @@
         title={component.content.altText}
         loop={component.content.isLooped}
     >
-        <source src={component.media.url} />
+        <source src={component.url} />
     </audio>
 {/if}
 
@@ -43,7 +43,7 @@
         controls
         loop={component.content.isLooped}
         title={component.content.altText}
-        src={component.media.url}
+        src={component.url}
     >
         <track default kind="captions" srclang="en" />
     </video>

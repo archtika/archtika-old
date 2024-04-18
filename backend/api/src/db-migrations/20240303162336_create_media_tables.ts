@@ -28,24 +28,9 @@ export async function up(db: Kysely<DB>) {
         )
         .addUniqueConstraint('uniqueFileHash', ['file_hash', 'user_id'])
         .execute()
-
-    await db.schema
-        .createTable('media.media_page_link')
-        .addColumn('media_id', 'uuid', (col) =>
-            col.notNull().references('media.media_asset.id')
-        )
-        .addColumn('page_id', 'uuid', (col) =>
-            col.notNull().references('structure.page.id')
-        )
-        .addPrimaryKeyConstraint('mediaPageLinkPrimaryKey', [
-            'media_id',
-            'page_id'
-        ])
-        .execute()
 }
 
 export async function down(db: Kysely<DB>) {
-    await db.schema.dropTable('media.media_page_link').execute()
     await db.schema.dropTable('media.media_asset').execute()
     await db.schema.dropSchema('media').execute()
 }

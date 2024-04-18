@@ -1,12 +1,7 @@
 import { createHash, randomUUID } from 'crypto'
 import { FastifyReply, FastifyRequest } from 'fastify'
 import path from 'path'
-import {
-    CreateMediaAssociationSchemaType,
-    GetAllMediaQuerySchemaType,
-    ParamsSchemaType,
-    multipartFileSchemaType
-} from './media-schemas.js'
+import { ParamsSchemaType, multipartFileSchemaType } from './media-schemas.js'
 import { mimeTypes } from '../../utils/mimetypes.js'
 
 export async function createMedia(
@@ -73,80 +68,11 @@ export async function createMedia(
     return reply.status(201).send(media)
 }
 
-export async function createMediaAssociation(
-    req: FastifyRequest<{
-        Body: CreateMediaAssociationSchemaType
-    }>,
-    reply: FastifyReply
-) {
-    const { assetId, pageId } = req.body
-
-    await req.server.kysely.db
-        .insertInto('media.media_page_link')
-        .values(({ selectFrom }) => ({
-            media_id: selectFrom('media.media_asset')
-                .select('id')
-                .where(({ and }) =>
-                    and({ id: assetId, user_id: req.user?.id })
-                ),
-            page_id: selectFrom('structure.page')
-                .select('id')
-                .where('id', '=', pageId)
-                .where(({ or, exists, ref }) =>
-                    or([
-                        exists(
-                            selectFrom('structure.website').where(({ and }) =>
-                                and({
-                                    id: ref('structure.page.website_id'),
-                                    user_id: req.user?.id
-                                })
-                            )
-                        ),
-                        exists(
-                            selectFrom('collaboration.collaborator')
-                                .where(({ and }) =>
-                                    and({
-                                        website_id: ref(
-                                            'structure.page.website_id'
-                                        ),
-                                        user_id: req.user?.id
-                                    })
-                                )
-                                .where('permission_level', '>=', 20)
-                        )
-                    ])
-                )
-        }))
-        .onConflict((oc) =>
-            oc.constraint('mediaPageLinkPrimaryKey').doNothing()
-        )
-        .returningAll()
-        .executeTakeFirst()
-}
-
-export async function getAllMedia(
-    req: FastifyRequest<{ Querystring: GetAllMediaQuerySchemaType }>,
-    reply: FastifyReply
-) {
-    const pageId = req.query.pageId
-
-    console.log(pageId)
-
+export async function getAllMedia(req: FastifyRequest, reply: FastifyReply) {
     const media = await req.server.kysely.db
         .selectFrom('media.media_asset')
         .selectAll()
-        .$if(!pageId, (qb) => qb.where('user_id', '=', req.user?.id ?? ''))
-        .$if(Boolean(pageId), (qb) =>
-            qb.where(({ exists, selectFrom }) =>
-                exists(
-                    selectFrom('media.media_page_link').where(
-                        'page_id',
-                        '=',
-                        pageId ?? ''
-                    )
-                )
-            )
-        )
+        .where('user_id', '=', req.user?.id ?? '')
         .execute()
 
     const assetsWithPresignedUrls = await Promise.all(
@@ -163,7 +89,31 @@ export async function getAllMedia(
         })
     )
 
-    return reply.status(200).send(assetsWithPresignedUrls)
+    const groupedAssets = assetsWithPresignedUrls.reduce(
+        (acc: Record<string, any[]>, asset) => {
+            let type
+            if (asset.mimetype.startsWith('image/')) {
+                type = 'image'
+            } else if (asset.mimetype.startsWith('audio/')) {
+                type = 'audio'
+            } else if (asset.mimetype.startsWith('video/')) {
+                type = 'video'
+            } else {
+                throw new Error('Invalid mimetype')
+            }
+
+            if (!acc[type]) {
+                acc[type] = []
+            }
+
+            acc[type].push(asset)
+
+            return acc
+        },
+        {}
+    )
+
+    return reply.status(200).send(groupedAssets)
 }
 
 export async function getMedia(

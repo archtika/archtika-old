@@ -16,7 +16,7 @@ import './utils/typebox-custom-schemas.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-const cpuCount = os.cpus().length
+const cpuCount = os.availableParallelism()
 
 const envToLogger = {
     development: {
