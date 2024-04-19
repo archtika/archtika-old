@@ -144,7 +144,7 @@
         class="outline outline-red-500 col-span-7 grid grid-cols-6 grid-rows-12 gap-2"
     >
         {#each components as component (component.id)}
-            <RenderComponent {component} />
+            <RenderComponent {component} {mimeTypes} {getMedia} />
         {/each}
     </div>
 </div>

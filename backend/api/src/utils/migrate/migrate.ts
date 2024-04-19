@@ -25,6 +25,7 @@ const kyselyDB = new Kysely<DB>({
 
 const migrator = new Migrator({
     db: kyselyDB,
+    migrationTableSchema: 'kysely',
     provider: new FileMigrationProvider({
         fs,
         path,
