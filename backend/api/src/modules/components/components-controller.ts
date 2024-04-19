@@ -228,12 +228,6 @@ export async function getAllComponentsWebsocket(
             )
         }
     })
-
-    socket.on('close', async () => {
-        await req.server.redis.sub.unsubscribe()
-        await req.server.redis.sub.quit()
-        await req.server.redis.pub.quit()
-    })
 }
 
 export async function getComponent(

@@ -16,7 +16,7 @@
 
     let components = data.components
 
-    function getMedia(type: string) {
+    $: getMedia = (type: string) => {
         if (!data.media[type]) return []
 
         return data.media[type]
@@ -77,7 +77,7 @@
         <h2>{data.page.title}</h2>
 
         <h3>Components</h3>
-        <div draggable="true" class="outline" role="presentation">
+        <div class="outline">
             <h4>Text</h4>
             <form action="?/createComponent" method="post" use:enhance>
                 <input type="hidden" name="type" value="text" />
@@ -92,7 +92,7 @@
         {#each Object.entries(mimeTypes) as [type, mimes]}
             {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
 
-            <div draggable="true" class="outline">
+            <div class="outline">
                 <h4>{title}</h4>
                 <form
                     action="?/createComponent"
@@ -140,13 +140,11 @@
         {/each}
     </div>
 
-    <div role="presentation" class="outline outline-red-500 col-span-7">
+    <div
+        class="outline outline-red-500 col-span-7 grid grid-cols-6 grid-rows-12 gap-2"
+    >
         {#each components as component (component.id)}
             <RenderComponent {component} />
-            <form action="?/deleteComponent" method="post" use:enhance>
-                <input type="hidden" name="id" value={component.id} />
-                <button type="submit">Delete</button>
-            </form>
         {/each}
     </div>
 </div>

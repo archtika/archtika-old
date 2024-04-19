@@ -2,6 +2,7 @@
     import { Renderer, parse } from 'marked'
     import DOMPurify from 'isomorphic-dompurify'
     import type { Component } from '$lib/types'
+    import { enhance } from '$app/forms'
 
     export let component: Component
 
@@ -20,31 +21,38 @@
     }
 </script>
 
-{#if component.type === 'text'}
-    {@html purifiedTextContent}
-{/if}
+<div>
+    {#if component.type === 'text'}
+        {@html purifiedTextContent}
+    {/if}
 
-{#if component.type === 'image'}
-    <img src={component.url} alt={component.content.altText} />
-{/if}
+    {#if component.type === 'image'}
+        <img src={component.url} alt={component.content.altText} />
+    {/if}
 
-{#if component.type === 'audio'}
-    <audio
-        controls
-        title={component.content.altText}
-        loop={component.content.isLooped}
-    >
-        <source src={component.url} />
-    </audio>
-{/if}
+    {#if component.type === 'audio'}
+        <audio
+            controls
+            title={component.content.altText}
+            loop={component.content.isLooped}
+        >
+            <source src={component.url} />
+        </audio>
+    {/if}
 
-{#if component.type === 'video'}
-    <video
-        controls
-        loop={component.content.isLooped}
-        title={component.content.altText}
-        src={component.url}
-    >
-        <track default kind="captions" srclang="en" />
-    </video>
-{/if}
+    {#if component.type === 'video'}
+        <video
+            controls
+            loop={component.content.isLooped}
+            title={component.content.altText}
+            src={component.url}
+        >
+            <track default kind="captions" srclang="en" />
+        </video>
+    {/if}
+
+    <form action="?/deleteComponent" method="post" use:enhance>
+        <input type="hidden" name="id" value={component.id} />
+        <button type="submit">Delete</button>
+    </form>
+</div>

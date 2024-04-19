@@ -7,13 +7,15 @@ async function redis(fastify: FastifyInstance) {
         host: 'localhost',
         password: 'dev',
         port: 16379,
-        namespace: 'sub'
+        namespace: 'sub',
+        closeClient: true
     })
     fastify.register(fastifyRedis, {
         host: 'localhost',
         password: 'dev',
         port: 16379,
-        namespace: 'pub'
+        namespace: 'pub',
+        closeClient: true
     })
 }
 
