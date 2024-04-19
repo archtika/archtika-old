@@ -14,7 +14,7 @@
         video: ['video/mp4', 'video/webm', 'video/ogg']
     }
 
-    let components = data.components
+    $: components = data.components
 
     $: getMedia = (type: string) => {
         if (!data.media[type]) return []
