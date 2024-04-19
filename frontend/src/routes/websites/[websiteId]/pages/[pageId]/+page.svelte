@@ -76,6 +76,35 @@
 
         <h2>{data.page.title}</h2>
 
+        <details open>
+            <summary>Update page</summary>
+            <form
+                method="post"
+                action="?/updatePage"
+                use:enhance={() => {
+                    return async ({ update }) => {
+                        await update({ reset: false })
+                    }
+                }}
+            >
+                <label>
+                    Route:
+                    <input name="route" type="text" value={data.page.route} />
+                </label>
+                <label>
+                    Title:
+                    <input name="title" type="text" value={data.page.title} />
+                </label>
+                <label>
+                    Description:
+                    <textarea name="description"
+                        >{data.page.meta_description}</textarea
+                    >
+                </label>
+                <button type="submit">Update</button>
+            </form>
+        </details>
+
         <h3>Components</h3>
         <div class="outline">
             <h4>Text</h4>

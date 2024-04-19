@@ -41,6 +41,22 @@ export const load: PageServerLoad = async ({
 }
 
 export const actions: Actions = {
+    updatePage: async ({ request, fetch, params }) => {
+        const data = await request.formData()
+
+        await fetch(
+            `http://localhost:3000/api/v1/websites/${params.websiteId}/pages/${params.pageId}`,
+            {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    route: data.get('route'),
+                    title: data.get('title'),
+                    metaDescription: data.get('description')
+                })
+            }
+        )
+    },
     createComponent: async ({ request, fetch, params }) => {
         const data = await request.formData()
 
