@@ -91,10 +91,14 @@ export async function createComponent(
                     .executeTakeFirstOrThrow()
             })
 
-        const presignedUrl = await req.server.minio.client.presignedGetObject(
-            'archtika',
-            `${component.asset_id}`
-        )
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
 
         const componentWithUrl = {
             ...component,
@@ -106,7 +110,7 @@ export async function createComponent(
             JSON.stringify(componentWithUrl)
         )
 
-        return reply.status(201).send(component)
+        return reply.status(201).send(componentWithUrl)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }
@@ -188,11 +192,15 @@ export async function getAllComponents(
 
     const componentsWithUrls = await Promise.all(
         allComponents.map(async (component) => {
-            const presignedUrl =
-                await req.server.minio.client.presignedGetObject(
+            let presignedUrl = null
+
+            if (component.asset_id) {
+                presignedUrl = await req.server.minio.client.presignedGetObject(
                     'archtika',
                     `${component.asset_id}`
                 )
+            }
+
             return {
                 ...component,
                 url: presignedUrl
@@ -274,7 +282,21 @@ export async function getComponent(
             )
             .executeTakeFirstOrThrow()
 
-        return reply.status(200).send(component)
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
+
+        const componentWithUrl = {
+            ...component,
+            url: presignedUrl
+        }
+
+        return reply.status(200).send(componentWithUrl)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }
@@ -349,10 +371,14 @@ export async function updateComponent(
                     .executeTakeFirstOrThrow()
             })
 
-        const presignedUrl = await req.server.minio.client.presignedGetObject(
-            'archtika',
-            `${component.asset_id}`
-        )
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
 
         const componentWithUrl = {
             ...component,
@@ -364,7 +390,7 @@ export async function updateComponent(
             JSON.stringify(componentWithUrl)
         )
 
-        return reply.status(200).send(component)
+        return reply.status(200).send(componentWithUrl)
     } catch (error) {
         return reply.notFound(
             'Page not found or not allowed or invalid component type'
@@ -424,10 +450,14 @@ export async function deleteComponent(
                     .executeTakeFirstOrThrow()
             })
 
-        const presignedUrl = await req.server.minio.client.presignedGetObject(
-            'archtika',
-            `${component.asset_id}`
-        )
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
 
         const componentWithUrl = {
             ...component,
@@ -439,7 +469,7 @@ export async function deleteComponent(
             JSON.stringify(componentWithUrl)
         )
 
-        return reply.status(200).send(component)
+        return reply.status(200).send(componentWithUrl)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }

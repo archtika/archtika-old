@@ -192,5 +192,22 @@ export const actions: Actions = {
                 method: 'DELETE'
             }
         )
+    },
+    setComponentPosition: async ({ request, fetch, params }) => {
+        const data = await request.formData()
+
+        await fetch(
+            `http://localhost:3000/api/v1/components/${data.get('id')}/position`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    grid_x: data.get('grid_x'),
+                    grid_y: data.get('grid_y'),
+                    grid_width: data.get('grid_width'),
+                    grid_height: data.get('grid_height')
+                })
+            }
+        )
     }
 }

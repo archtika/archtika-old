@@ -14,12 +14,41 @@
         video: ['video/mp4', 'video/webm', 'video/ogg']
     }
 
-    $: components = data.components
+    $: components = data.components.map((component: Component) => ({
+        ...component,
+        zone: 0
+    }))
 
     $: getMedia = (type: string) => {
         if (!data.media[type]) return []
 
         return data.media[type]
+    }
+
+    function handleDragStart(event: DragEvent) {
+        const componentId = (event.target as HTMLElement).getAttribute(
+            'data-component-id'
+        )
+
+        if (componentId) {
+            event.dataTransfer?.setData('text/plain', componentId)
+        }
+    }
+
+    function handleDrop(event: DragEvent) {
+        const componentId = event.dataTransfer?.getData('text/plain')
+
+        const zoneElement = (event.target as HTMLElement).closest(
+            '[data-zone-id]'
+        )
+        const zoneId = zoneElement?.getAttribute('data-zone-id')
+
+        components = components.map((component: Component) => {
+            if (component.id === componentId && zoneId) {
+                return { ...component, zone: parseInt(zoneId) }
+            }
+            return component
+        })
     }
 
     let ws: WebSocket
@@ -169,11 +198,26 @@
         {/each}
     </div>
 
-    <div
-        class="outline outline-red-500 col-span-7 grid grid-cols-6 grid-rows-12 gap-2"
-    >
-        {#each components as component (component.id)}
-            <RenderComponent {component} {mimeTypes} {getMedia} />
+    <div class="outline outline-red-500 col-span-7 grid grid-cols-12">
+        {#each Array(components.length * 24) as _, i}
+            <div
+                class="outline outline-blue-500"
+                data-zone-id={i}
+                on:dragover|preventDefault
+                on:drop|preventDefault={handleDrop}
+                role="presentation"
+            >
+                {#each components as component (component.id)}
+                    {#if component.zone === i}
+                        <RenderComponent
+                            {component}
+                            {mimeTypes}
+                            {getMedia}
+                            on:dragstart={handleDragStart}
+                        />
+                    {/if}
+                {/each}
+            </div>
         {/each}
     </div>
 </div>

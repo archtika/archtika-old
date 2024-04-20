@@ -23,7 +23,13 @@
     }
 </script>
 
-<div>
+<div
+    draggable="true"
+    on:dragstart
+    role="presentation"
+    class="resize"
+    data-component-id={component.id}
+>
     {#if component.type === 'text'}
         {@html purifiedTextContent}
 
