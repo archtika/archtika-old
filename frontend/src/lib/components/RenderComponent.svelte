@@ -3,7 +3,7 @@
     import DOMPurify from 'isomorphic-dompurify'
     import type { Component } from '$lib/types'
     import { enhance } from '$app/forms'
-    import { components, currentComponentSpan } from '$lib/stores'
+    import { components } from '$lib/stores'
 
     export let component: Component
     export let mimeTypes: Record<string, string[]>
@@ -39,16 +39,31 @@
                         target.parentElement
                     ).getPropertyValue('grid-area')
 
+                    const currentComponentIndex = $components.findIndex(
+                        (component) => {
+                            return (
+                                component.id ===
+                                target.parentElement?.getAttribute(
+                                    'data-component-id'
+                                )
+                            )
+                        }
+                    )
+
                     let [rowStart, colStart, rowEnd, colEnd] = gridArea
                         .split(' / ')
                         .map(Number)
 
                     if (colEnd === colStart) {
                         colEnd += 2
-                        $currentComponentSpan.colEnd += 2
+                        $components[currentComponentIndex].colEndSpan =
+                            ($components[currentComponentIndex].colEndSpan ??
+                                0) + 2
                     } else {
                         colEnd += 1
-                        $currentComponentSpan.colEnd += 1
+                        $components[currentComponentIndex].colEndSpan =
+                            ($components[currentComponentIndex].colEndSpan ??
+                                0) + 1
                     }
 
                     target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
@@ -64,16 +79,31 @@
                         target.parentElement
                     ).getPropertyValue('grid-area')
 
+                    const currentComponentIndex = $components.findIndex(
+                        (component) => {
+                            return (
+                                component.id ===
+                                target.parentElement?.getAttribute(
+                                    'data-component-id'
+                                )
+                            )
+                        }
+                    )
+
                     let [rowStart, colStart, rowEnd, colEnd] = gridArea
                         .split(' / ')
                         .map(Number)
 
                     if (rowEnd === rowStart) {
                         rowEnd += 2
-                        $currentComponentSpan.rowEnd += 2
+                        $components[currentComponentIndex].rowEndSpan =
+                            ($components[currentComponentIndex].rowEndSpan ??
+                                0) + 2
                     } else {
                         rowEnd += 1
-                        $currentComponentSpan.rowEnd += 1
+                        $components[currentComponentIndex].rowEndSpan =
+                            ($components[currentComponentIndex].rowEndSpan ??
+                                0) + 1
                     }
 
                     target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`

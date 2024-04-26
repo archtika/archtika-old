@@ -5,7 +5,7 @@
     import { page } from '$app/stores'
     import { browser } from '$app/environment'
     import type { Component } from '$lib/types'
-    import { components, currentComponentSpan } from '$lib/stores'
+    import { components } from '$lib/stores'
 
     export let data: PageServerData
 
@@ -50,8 +50,8 @@
             ...$components[index],
             rowStart: rowStart,
             colStart: colStart,
-            rowEnd: rowEnd + $currentComponentSpan.rowEnd,
-            colEnd: colEnd + $currentComponentSpan.colEnd
+            rowEnd: rowEnd + ($components[index].rowEndSpan ?? 0),
+            colEnd: colEnd + ($components[index].colEndSpan ?? 0)
         }
     }
 

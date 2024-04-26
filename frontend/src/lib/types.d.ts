@@ -15,6 +15,8 @@ export interface Component {
     colStart: number
     rowEnd: number
     colEnd: number
+    rowEndSpan: number
+    colEndSpan: number
 }
 
 export interface ComponentApiPayload {
