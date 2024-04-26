@@ -223,7 +223,7 @@
                 {component}
                 {mimeTypes}
                 {getMedia}
-                className="bg-pink-200"
+                className="bg-pink-200 outline outline-black"
                 styles="grid-area: {component.rowStart ??
                     1} / {component.colStart ?? 1} / {component.rowEnd ??
                     1} / {component.colEnd ?? 1}"
