@@ -46,8 +46,6 @@
         })
     }
 
-    function handleResize(event: Event, row: number, col: number) {}
-
     let ws: WebSocket
 
     if (browser) {
@@ -198,7 +196,7 @@
     <div
         class="outline outline-red-500 grid grid-cols-12 grid-rows-[repeat(12,10rem)]"
     >
-        {#each Array(components.length * 24) as _, i}
+        {#each Array(144) as _, i}
             {@const row = Math.floor(i / 12) + 1}
             {@const col = (i % 12) + 1}
 
@@ -219,8 +217,6 @@
                 styles="grid-area: {component.row ?? 1} / {component.col ??
                     1} / {component.row ?? 1} / {component.col ?? 1}"
                 on:dragstart={handleDragStart}
-                on:resize={(event) =>
-                    handleResize(event, component.row, component.col)}
             />
         {/each}
     </div>

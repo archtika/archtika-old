@@ -28,7 +28,6 @@
 <div
     draggable="true"
     on:dragstart
-    on:resize
     role="presentation"
     class={className}
     style={styles}
