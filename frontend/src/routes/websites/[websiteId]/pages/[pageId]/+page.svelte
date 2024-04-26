@@ -51,9 +51,7 @@
             rowStart: rowStart,
             colStart: colStart,
             rowEnd: rowEnd + $currentComponentSpan.rowEnd,
-            colEnd: colEnd + $currentComponentSpan.colEnd,
-            rowEndSpan: $currentComponentSpan.rowEnd,
-            colEndSpan: $currentComponentSpan.colEnd
+            colEnd: colEnd + $currentComponentSpan.colEnd
         }
     }
 
