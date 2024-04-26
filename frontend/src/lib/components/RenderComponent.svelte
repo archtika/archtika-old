@@ -7,6 +7,8 @@
     export let component: Component
     export let mimeTypes: Record<string, string[]>
     export let getMedia: (type: string) => { id: string; name: string }[]
+    export let className = ''
+    export let styles: string
 
     const renderer = new Renderer()
 
@@ -26,8 +28,10 @@
 <div
     draggable="true"
     on:dragstart
+    on:resize
     role="presentation"
-    class="resize"
+    class={className}
+    style={styles}
     data-component-id={component.id}
 >
     {#if component.type === 'text'}

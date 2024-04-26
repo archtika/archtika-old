@@ -35,21 +35,18 @@
         }
     }
 
-    function handleDrop(event: DragEvent) {
+    function handleDrop(event: DragEvent, row: number, col: number) {
         const componentId = event.dataTransfer?.getData('text/plain')
 
-        const zoneElement = (event.target as HTMLElement).closest(
-            '[data-zone-id]'
-        )
-        const zoneId = zoneElement?.getAttribute('data-zone-id')
-
         components = components.map((component: Component) => {
-            if (component.id === componentId && zoneId) {
-                return { ...component, zone: parseInt(zoneId) }
+            if (component.id === componentId) {
+                return { ...component, col, row }
             }
             return component
         })
     }
+
+    function handleResize(event: Event, row: number, col: number) {}
 
     let ws: WebSocket
 
@@ -89,8 +86,8 @@
     }
 </script>
 
-<div class="grid grid-cols-8">
-    <div class="col-span-1 outline outline-neutral-500">
+<div class="grid grid-cols-[fit-content(20ch),minmax(min(50vw,30ch),1fr)]">
+    <div class="outline outline-green-500">
         <h1>{data.website.title}</h1>
         <details open>
             <summary>Pages</summary>
@@ -198,26 +195,33 @@
         {/each}
     </div>
 
-    <div class="outline outline-red-500 col-span-7 grid grid-cols-12">
+    <div
+        class="outline outline-red-500 grid grid-cols-12 grid-rows-[repeat(12,10rem)]"
+    >
         {#each Array(components.length * 24) as _, i}
+            {@const row = Math.floor(i / 12) + 1}
+            {@const col = (i % 12) + 1}
+
             <div
                 class="outline outline-blue-500"
-                data-zone-id={i}
+                style="grid-area: {row} / {col} / {row} / {col}"
                 on:dragover|preventDefault
-                on:drop|preventDefault={handleDrop}
+                on:drop|preventDefault={(event) => handleDrop(event, row, col)}
                 role="presentation"
-            >
-                {#each components as component (component.id)}
-                    {#if component.zone === i}
-                        <RenderComponent
-                            {component}
-                            {mimeTypes}
-                            {getMedia}
-                            on:dragstart={handleDragStart}
-                        />
-                    {/if}
-                {/each}
-            </div>
+            />
+        {/each}
+        {#each components as component (component.id)}
+            <RenderComponent
+                {component}
+                {mimeTypes}
+                {getMedia}
+                className="bg-pink-200 resize overflow-auto"
+                styles="grid-area: {component.row ?? 1} / {component.col ??
+                    1} / {component.row ?? 1} / {component.col ?? 1}"
+                on:dragstart={handleDragStart}
+                on:resize={(event) =>
+                    handleResize(event, component.row, component.col)}
+            />
         {/each}
     </div>
 </div>
