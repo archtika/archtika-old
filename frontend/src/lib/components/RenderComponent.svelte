@@ -3,6 +3,7 @@
     import DOMPurify from 'isomorphic-dompurify'
     import type { Component } from '$lib/types'
     import { enhance } from '$app/forms'
+    import { components, currentComponentSpan } from '$lib/stores'
 
     export let component: Component
     export let mimeTypes: Record<string, string[]>
@@ -23,16 +24,86 @@
             parse(component.content.textContent ?? '', { renderer }) as string
         )
     }
+
+    function handleResize(event: MouseEvent) {
+        const target = event.target as HTMLElement
+
+        switch (target.getAttribute('data-resizer')) {
+            case 'right':
+                {
+                    console.log('Right!')
+
+                    if (!target.parentElement) return
+
+                    const gridArea = getComputedStyle(
+                        target.parentElement
+                    ).getPropertyValue('grid-area')
+
+                    let [rowStart, colStart, rowEnd, colEnd] = gridArea
+                        .split(' / ')
+                        .map(Number)
+
+                    if (colEnd === colStart) {
+                        colEnd += 2
+                        $currentComponentSpan.colEnd += 2
+                    } else {
+                        colEnd += 1
+                        $currentComponentSpan.colEnd += 1
+                    }
+
+                    target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
+                }
+                break
+            case 'bottom':
+                {
+                    console.log('Bottom!')
+
+                    if (!target.parentElement) return
+
+                    const gridArea = getComputedStyle(
+                        target.parentElement
+                    ).getPropertyValue('grid-area')
+
+                    let [rowStart, colStart, rowEnd, colEnd] = gridArea
+                        .split(' / ')
+                        .map(Number)
+
+                    if (rowEnd === rowStart) {
+                        rowEnd += 2
+                        $currentComponentSpan.rowEnd += 2
+                    } else {
+                        rowEnd += 1
+                        $currentComponentSpan.rowEnd += 1
+                    }
+
+                    target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
+                }
+                break
+        }
+    }
 </script>
 
 <div
     draggable="true"
     on:dragstart
     role="presentation"
-    class={className}
+    class="{className} relative"
     style={styles}
     data-component-id={component.id}
 >
+    <div
+        class="w-4 h-4 rounded-full outline outline-black bg-white absolute top-1/2 -end-2 -translate-y-1/2 cursor-e-resize"
+        data-resizer="right"
+        on:mousedown|preventDefault={handleResize}
+        role="presentation"
+    />
+    <div
+        class="w-4 h-4 rounded-full outline outline-black bg-white absolute -bottom-2 end-1/2 translate-x-1/2 cursor-s-resize"
+        data-resizer="bottom"
+        on:mousedown|preventDefault={handleResize}
+        role="presentation"
+    />
+
     {#if component.type === 'text'}
         {@html purifiedTextContent}
 

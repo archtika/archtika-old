@@ -5,6 +5,7 @@
     import { page } from '$app/stores'
     import { browser } from '$app/environment'
     import type { Component } from '$lib/types'
+    import { components, currentComponentSpan } from '$lib/stores'
 
     export let data: PageServerData
 
@@ -14,10 +15,7 @@
         video: ['video/mp4', 'video/webm', 'video/ogg']
     }
 
-    $: components = data.components.map((component: Component) => ({
-        ...component,
-        zone: 0
-    }))
+    $: $components = data.components
 
     $: getMedia = (type: string) => {
         if (!data.media[type]) return []
@@ -35,15 +33,28 @@
         }
     }
 
-    function handleDrop(event: DragEvent, row: number, col: number) {
+    function handleDrop(
+        event: DragEvent,
+        rowStart: number,
+        colStart: number,
+        rowEnd: number,
+        colEnd: number
+    ) {
         const componentId = event.dataTransfer?.getData('text/plain')
 
-        components = components.map((component: Component) => {
-            if (component.id === componentId) {
-                return { ...component, col, row }
-            }
-            return component
+        const index = $components.findIndex((component: Component) => {
+            return component.id === componentId
         })
+
+        $components[index] = {
+            ...$components[index],
+            rowStart: rowStart,
+            colStart: colStart,
+            rowEnd: rowEnd + $currentComponentSpan.rowEnd,
+            colEnd: colEnd + $currentComponentSpan.colEnd,
+            rowEndSpan: $currentComponentSpan.rowEnd,
+            colEndSpan: $currentComponentSpan.colEnd
+        }
     }
 
     let ws: WebSocket
@@ -60,17 +71,17 @@
         ws.onmessage = ({ data }) => {
             let newComponent = JSON.parse(data)
 
-            const index = components.findIndex((component: Component) => {
+            const index = $components.findIndex((component: Component) => {
                 return component.id === newComponent.id
             })
 
             if (index !== -1) {
-                components = [
-                    ...components.slice(0, index),
-                    ...components.slice(index + 1)
+                $components = [
+                    ...$components.slice(0, index),
+                    ...$components.slice(index + 1)
                 ]
             } else {
-                components = [...components, newComponent]
+                $components = [...$components, newComponent]
             }
         }
 
@@ -204,18 +215,20 @@
                 class="outline outline-blue-500"
                 style="grid-area: {row} / {col} / {row} / {col}"
                 on:dragover|preventDefault
-                on:drop|preventDefault={(event) => handleDrop(event, row, col)}
+                on:drop|preventDefault={(event) =>
+                    handleDrop(event, row, col, row, col)}
                 role="presentation"
             />
         {/each}
-        {#each components as component (component.id)}
+        {#each $components as component (component.id)}
             <RenderComponent
                 {component}
                 {mimeTypes}
                 {getMedia}
-                className="bg-pink-200 resize overflow-auto"
-                styles="grid-area: {component.row ?? 1} / {component.col ??
-                    1} / {component.row ?? 1} / {component.col ?? 1}"
+                className="bg-pink-200"
+                styles="grid-area: {component.rowStart ??
+                    1} / {component.colStart ?? 1} / {component.rowEnd ??
+                    1} / {component.colEnd ?? 1}"
                 on:dragstart={handleDragStart}
             />
         {/each}
