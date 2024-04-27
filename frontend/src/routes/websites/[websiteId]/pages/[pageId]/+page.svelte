@@ -67,19 +67,17 @@
         }
 
         ws.onmessage = ({ data }) => {
-            let newComponent = JSON.parse(data)
+            const { operation_type, data: newComponent } = JSON.parse(data)
 
-            const index = $components.findIndex((component: Component) => {
-                return component.id === newComponent.id
-            })
-
-            if (index !== -1) {
-                $components = [
-                    ...$components.slice(0, index),
-                    ...$components.slice(index + 1)
-                ]
-            } else {
-                $components = [...$components, newComponent]
+            switch (operation_type) {
+                case 'create':
+                    $components = [...$components, newComponent]
+                    break
+                case 'update' || 'delete':
+                    $components = $components.filter((component) => {
+                        return component.id !== newComponent.id
+                    })
+                    break
             }
         }
 
@@ -92,6 +90,9 @@
         }
     }
 </script>
+
+{JSON.stringify(data.components.length)}
+{JSON.stringify($components.length)}
 
 <div class="grid grid-cols-[fit-content(20ch),minmax(min(50vw,30ch),1fr)]">
     <div class="outline outline-green-500">
@@ -218,7 +219,7 @@
                 role="presentation"
             />
         {/each}
-        {#each $components as component (component.id)}
+        {#each $components as component, i (i)}
             <RenderComponent
                 {component}
                 {mimeTypes}

@@ -107,7 +107,7 @@ export async function createComponent(
 
         await req.server.redis.pub.publish(
             `components_${id}`,
-            JSON.stringify(componentWithUrl)
+            JSON.stringify({ operation_type: 'create', data: componentWithUrl })
         )
 
         return reply.status(201).send(componentWithUrl)
@@ -400,7 +400,7 @@ export async function updateComponent(
 
         await req.server.redis.pub.publish(
             `components_${pageId}`,
-            JSON.stringify(componentWithUrl)
+            JSON.stringify({ operation_type: 'update', data: componentWithUrl })
         )
 
         return reply.status(200).send(componentWithUrl)
@@ -479,7 +479,7 @@ export async function deleteComponent(
 
         await req.server.redis.pub.publish(
             `components_${pageId}`,
-            JSON.stringify(componentWithUrl)
+            JSON.stringify({ operation_type: 'delete', data: componentWithUrl })
         )
 
         return reply.status(200).send(componentWithUrl)
