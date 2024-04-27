@@ -66,6 +66,11 @@
                                 0) + 1
                     }
 
+                    $components[currentComponentIndex].rowStart = rowStart
+                    $components[currentComponentIndex].colStart = colStart
+                    $components[currentComponentIndex].rowEnd = rowEnd
+                    $components[currentComponentIndex].colEnd = colEnd
+
                     target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
                 }
                 break
@@ -105,6 +110,11 @@
                             ($components[currentComponentIndex].rowEndSpan ??
                                 0) + 1
                     }
+
+                    $components[currentComponentIndex].rowStart = rowStart
+                    $components[currentComponentIndex].colStart = colStart
+                    $components[currentComponentIndex].rowEnd = rowEnd
+                    $components[currentComponentIndex].colEnd = colEnd
 
                     target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
                 }
@@ -235,5 +245,16 @@
     <form action="?/deleteComponent" method="post" use:enhance>
         <input type="hidden" name="id" value={component.id} />
         <button type="submit">Delete</button>
+    </form>
+
+    {JSON.stringify(component)}
+
+    <form action="?/updateComponentPosition" method="post" use:enhance>
+        <input type="hidden" name="component-id" value={component.id} />
+        <input type="hidden" name="row-start" value={component.rowStart} />
+        <input type="hidden" name="col-start" value={component.colStart} />
+        <input type="hidden" name="row-end" value={component.rowEnd} />
+        <input type="hidden" name="col-end" value={component.colEnd} />
+        <button type="submit">Update component position</button>
     </form>
 </div>

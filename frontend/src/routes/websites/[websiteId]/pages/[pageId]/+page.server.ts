@@ -111,12 +111,27 @@ export const actions: Actions = {
                 break
         }
 
-        await fetch(
+        const createdComponentRes = await fetch(
             `http://localhost:3000/api/v1/pages/${params.pageId}/components`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
+            }
+        )
+        const createdComponent = await createdComponentRes.json()
+
+        await fetch(
+            `http://localhost:3000/api/v1/components/${createdComponent.id}/position`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    row_start: 1,
+                    col_start: 1,
+                    row_end: 1,
+                    col_end: 1
+                })
             }
         )
     },
@@ -193,19 +208,19 @@ export const actions: Actions = {
             }
         )
     },
-    setComponentPosition: async ({ request, fetch, params }) => {
+    updateComponentPosition: async ({ request, fetch }) => {
         const data = await request.formData()
 
         await fetch(
-            `http://localhost:3000/api/v1/components/${data.get('id')}/position`,
+            `http://localhost:3000/api/v1/components/${data.get('component-id')}/position`,
             {
-                method: 'POST',
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    grid_x: data.get('grid_x'),
-                    grid_y: data.get('grid_y'),
-                    grid_width: data.get('grid_width'),
-                    grid_height: data.get('grid_height')
+                    row_start: data.get('row-start'),
+                    col_start: data.get('col-start'),
+                    row_end: data.get('row-end'),
+                    col_end: data.get('col-end')
                 })
             }
         )

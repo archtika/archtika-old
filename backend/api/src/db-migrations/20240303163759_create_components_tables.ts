@@ -45,17 +45,17 @@ export async function up(db: Kysely<DB>) {
                 .references('components.component.id')
                 .onDelete('cascade')
         )
-        .addColumn('grid_x', 'integer', (col) =>
-            col.notNull().check(sql`grid_x >= 0`)
+        .addColumn('row_start', 'integer', (col) =>
+            col.notNull().check(sql`row_start >= 0`)
         )
-        .addColumn('grid_y', 'integer', (col) =>
-            col.notNull().check(sql`grid_y >= 0`)
+        .addColumn('col_start', 'integer', (col) =>
+            col.notNull().check(sql`col_start >= 0`)
         )
-        .addColumn('grid_width', 'integer', (col) =>
-            col.notNull().check(sql`grid_width > 0`)
+        .addColumn('row_end', 'integer', (col) =>
+            col.notNull().check(sql`row_end >= 0`)
         )
-        .addColumn('grid_height', 'integer', (col) =>
-            col.notNull().check(sql`grid_height > 0`)
+        .addColumn('col_end', 'integer', (col) =>
+            col.notNull().check(sql`col_end >= 0`)
         )
         .execute()
 }

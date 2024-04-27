@@ -483,7 +483,7 @@ export async function setComponentPosition(
     reply: FastifyReply
 ) {
     const { id } = req.params
-    const { grid_x, grid_y, grid_width, grid_height } = req.body
+    const { row_start, col_start, row_end, col_end } = req.body
 
     try {
         const componentPositon = await req.server.kysely.db
@@ -540,10 +540,10 @@ export async function setComponentPosition(
                                     )
                                 ])
                             ),
-                        grid_x,
-                        grid_y,
-                        grid_width,
-                        grid_height
+                        row_start,
+                        col_start,
+                        row_end,
+                        col_end
                     }))
                     .returningAll()
                     .executeTakeFirstOrThrow()
@@ -563,7 +563,7 @@ export async function updateComponentPosition(
     reply: FastifyReply
 ) {
     const { id } = req.params
-    const { grid_x, grid_y, grid_width, grid_height } = req.body
+    const { row_start, col_start, row_end, col_end } = req.body
 
     try {
         const componentPosition = await req.server.kysely.db
@@ -575,10 +575,10 @@ export async function updateComponentPosition(
                     .updateTable('components.component_position')
                     .set({
                         component_id: id,
-                        grid_x,
-                        grid_y,
-                        grid_width,
-                        grid_height
+                        row_start,
+                        col_start,
+                        row_end,
+                        col_end
                     })
                     .where('component_id', '=', id)
                     .where(({ or, exists, selectFrom }) =>
