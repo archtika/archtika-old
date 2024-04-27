@@ -48,10 +48,10 @@
 
         $components[index] = {
             ...$components[index],
-            rowStart: rowStart,
-            colStart: colStart,
-            rowEnd: rowEnd + ($components[index].rowEndSpan ?? 0),
-            colEnd: colEnd + ($components[index].colEndSpan ?? 0)
+            row_start: rowStart,
+            col_start: colStart,
+            row_end: rowEnd + ($components[index].row_end_span ?? 0),
+            col_end: colEnd + ($components[index].col_end_span ?? 0)
         }
     }
 
@@ -224,9 +224,9 @@
                 {mimeTypes}
                 {getMedia}
                 className="bg-pink-200 outline outline-black"
-                styles="grid-area: {component.rowStart ??
-                    1} / {component.colStart ?? 1} / {component.rowEnd ??
-                    1} / {component.colEnd ?? 1}"
+                styles="grid-area: {component.row_start ??
+                    1} / {component.col_start ?? 1} / {component.row_end ??
+                    1} / {component.col_end ?? 1}"
                 on:dragstart={handleDragStart}
             />
         {/each}

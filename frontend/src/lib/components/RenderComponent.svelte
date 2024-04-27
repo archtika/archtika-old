@@ -56,20 +56,20 @@
 
                     if (colEnd === colStart) {
                         colEnd += 2
-                        $components[currentComponentIndex].colEndSpan =
-                            ($components[currentComponentIndex].colEndSpan ??
+                        $components[currentComponentIndex].col_end_span =
+                            ($components[currentComponentIndex].col_end_span ??
                                 0) + 2
                     } else {
                         colEnd += 1
-                        $components[currentComponentIndex].colEndSpan =
-                            ($components[currentComponentIndex].colEndSpan ??
+                        $components[currentComponentIndex].col_end_span =
+                            ($components[currentComponentIndex].col_end_span ??
                                 0) + 1
                     }
 
-                    $components[currentComponentIndex].rowStart = rowStart
-                    $components[currentComponentIndex].colStart = colStart
-                    $components[currentComponentIndex].rowEnd = rowEnd
-                    $components[currentComponentIndex].colEnd = colEnd
+                    $components[currentComponentIndex].row_start = rowStart
+                    $components[currentComponentIndex].col_start = colStart
+                    $components[currentComponentIndex].row_end = rowEnd
+                    $components[currentComponentIndex].col_end = colEnd
 
                     target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
                 }
@@ -101,20 +101,20 @@
 
                     if (rowEnd === rowStart) {
                         rowEnd += 2
-                        $components[currentComponentIndex].rowEndSpan =
-                            ($components[currentComponentIndex].rowEndSpan ??
+                        $components[currentComponentIndex].row_end_span =
+                            ($components[currentComponentIndex].row_end_span ??
                                 0) + 2
                     } else {
                         rowEnd += 1
-                        $components[currentComponentIndex].rowEndSpan =
-                            ($components[currentComponentIndex].rowEndSpan ??
+                        $components[currentComponentIndex].row_end_span =
+                            ($components[currentComponentIndex].row_end_span ??
                                 0) + 1
                     }
 
-                    $components[currentComponentIndex].rowStart = rowStart
-                    $components[currentComponentIndex].colStart = colStart
-                    $components[currentComponentIndex].rowEnd = rowEnd
-                    $components[currentComponentIndex].colEnd = colEnd
+                    $components[currentComponentIndex].row_start = rowStart
+                    $components[currentComponentIndex].col_start = colStart
+                    $components[currentComponentIndex].row_end = rowEnd
+                    $components[currentComponentIndex].col_end = colEnd
 
                     target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
                 }
@@ -247,14 +247,22 @@
         <button type="submit">Delete</button>
     </form>
 
-    {JSON.stringify(component)}
-
     <form action="?/updateComponentPosition" method="post" use:enhance>
         <input type="hidden" name="component-id" value={component.id} />
-        <input type="hidden" name="row-start" value={component.rowStart} />
-        <input type="hidden" name="col-start" value={component.colStart} />
-        <input type="hidden" name="row-end" value={component.rowEnd} />
-        <input type="hidden" name="col-end" value={component.colEnd} />
+        <input type="hidden" name="row-start" value={component.row_start} />
+        <input type="hidden" name="col-start" value={component.col_start} />
+        <input type="hidden" name="row-end" value={component.row_end} />
+        <input type="hidden" name="col-end" value={component.col_end} />
+        <input
+            type="hidden"
+            name="row-end-span"
+            value={component.row_end_span}
+        />
+        <input
+            type="hidden"
+            name="col-end-span"
+            value={component.col_end_span}
+        />
         <button type="submit">Update component position</button>
     </form>
 </div>

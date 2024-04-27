@@ -57,6 +57,12 @@ export async function up(db: Kysely<DB>) {
         .addColumn('col_end', 'integer', (col) =>
             col.notNull().check(sql`col_end >= 0`)
         )
+        .addColumn('row_end_span', 'integer', (col) =>
+            col.notNull().check(sql`row_end_span >= 0`)
+        )
+        .addColumn('col_end_span', 'integer', (col) =>
+            col.notNull().check(sql`col_end_span >= 0`)
+        )
         .execute()
 }
 

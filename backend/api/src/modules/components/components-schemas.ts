@@ -151,7 +151,9 @@ export const componentPositionSchema = Type.Object({
     row_start: Type.Integer({ minimum: 0 }),
     col_start: Type.Integer({ minimum: 0 }),
     row_end: Type.Integer({ minimum: 0 }),
-    col_end: Type.Integer({ minimum: 0 })
+    col_end: Type.Integer({ minimum: 0 }),
+    row_end_span: Type.Integer({ minimum: 0 }),
+    col_end_span: Type.Integer({ minimum: 0 })
 })
 
 export type ComponentPositionSchemaType = Static<typeof componentPositionSchema>

@@ -130,7 +130,9 @@ export const actions: Actions = {
                     row_start: 1,
                     col_start: 1,
                     row_end: 1,
-                    col_end: 1
+                    col_end: 1,
+                    row_end_span: 0,
+                    col_end_span: 0
                 })
             }
         )
@@ -220,7 +222,9 @@ export const actions: Actions = {
                     row_start: data.get('row-start'),
                     col_start: data.get('col-start'),
                     row_end: data.get('row-end'),
-                    col_end: data.get('col-end')
+                    col_end: data.get('col-end'),
+                    row_end_span: data.get('row-end-span'),
+                    col_end_span: data.get('col-end-span')
                 })
             }
         )

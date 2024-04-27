@@ -124,7 +124,20 @@ export async function getAllComponents(
 
     const allComponents = await req.server.kysely.db
         .selectFrom('components.component')
-        .selectAll()
+        .innerJoin(
+            'components.component_position',
+            'components.component.id',
+            'components.component_position.component_id'
+        )
+        .selectAll('components.component')
+        .select([
+            'components.component_position.row_start',
+            'components.component_position.col_start',
+            'components.component_position.row_end',
+            'components.component_position.col_end',
+            'components.component_position.row_end_span',
+            'components.component_position.col_end_span'
+        ])
         .where('page_id', '=', id)
         .where(({ or, exists, selectFrom }) =>
             or([
@@ -483,7 +496,14 @@ export async function setComponentPosition(
     reply: FastifyReply
 ) {
     const { id } = req.params
-    const { row_start, col_start, row_end, col_end } = req.body
+    const {
+        row_start,
+        col_start,
+        row_end,
+        col_end,
+        row_end_span,
+        col_end_span
+    } = req.body
 
     try {
         const componentPositon = await req.server.kysely.db
@@ -543,7 +563,9 @@ export async function setComponentPosition(
                         row_start,
                         col_start,
                         row_end,
-                        col_end
+                        col_end,
+                        row_end_span,
+                        col_end_span
                     }))
                     .returningAll()
                     .executeTakeFirstOrThrow()
@@ -563,7 +585,14 @@ export async function updateComponentPosition(
     reply: FastifyReply
 ) {
     const { id } = req.params
-    const { row_start, col_start, row_end, col_end } = req.body
+    const {
+        row_start,
+        col_start,
+        row_end,
+        col_end,
+        row_end_span,
+        col_end_span
+    } = req.body
 
     try {
         const componentPosition = await req.server.kysely.db
@@ -578,7 +607,9 @@ export async function updateComponentPosition(
                         row_start,
                         col_start,
                         row_end,
-                        col_end
+                        col_end,
+                        row_end_span,
+                        col_end_span
                     })
                     .where('component_id', '=', id)
                     .where(({ or, exists, selectFrom }) =>
