@@ -73,7 +73,8 @@
                 case 'create':
                     $components = [...$components, newComponent]
                     break
-                case 'update' || 'delete':
+                case 'update':
+                case 'delete':
                     $components = $components.filter((component) => {
                         return component.id !== newComponent.id
                     })
@@ -90,9 +91,6 @@
         }
     }
 </script>
-
-{JSON.stringify(data.components.length)}
-{JSON.stringify($components.length)}
 
 <div class="grid grid-cols-[fit-content(20ch),minmax(min(50vw,30ch),1fr)]">
     <div class="outline outline-green-500">
