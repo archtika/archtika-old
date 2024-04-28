@@ -76,9 +76,10 @@
                     $components = [...$components, newComponent]
                     break
                 case 'update':
+                case 'update-position':
                     $components = $components.map((component) =>
                         component.id === newComponent.id
-                            ? newComponent
+                            ? { ...component, ...newComponent }
                             : component
                     )
                     break

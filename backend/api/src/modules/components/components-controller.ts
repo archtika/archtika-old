@@ -622,6 +622,12 @@ export async function updateComponentPosition(
     } = req.body
 
     try {
+        const pageId = await req.server.kysely.db
+            .selectFrom('components.component')
+            .select('page_id')
+            .where('id', '=', id)
+            .executeTakeFirst()
+
         const componentPosition = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
@@ -650,11 +656,7 @@ export async function updateComponentPosition(
                                                 .where(
                                                     'id',
                                                     '=',
-                                                    selectFrom(
-                                                        'components.component'
-                                                    )
-                                                        .select('page_id')
-                                                        .where('id', '=', id)
+                                                    pageId?.page_id ?? ''
                                                 ),
                                             user_id: req.user?.id
                                         })
@@ -671,11 +673,7 @@ export async function updateComponentPosition(
                                                 .where(
                                                     'id',
                                                     '=',
-                                                    selectFrom(
-                                                        'components.component'
-                                                    )
-                                                        .select('page_id')
-                                                        .where('id', '=', id)
+                                                    pageId?.page_id ?? ''
                                                 ),
                                             user_id: req.user?.id
                                         })
@@ -687,6 +685,17 @@ export async function updateComponentPosition(
                     .returningAll()
                     .executeTakeFirstOrThrow()
             })
+
+        const { component_id, ...rest } = componentPosition
+
+        await req.server.redis.pub.publish(
+            `components_${pageId?.page_id}`,
+            JSON.stringify({
+                operation_type: 'update-position',
+                data: { id: component_id, ...rest },
+                senderId: req.user?.id
+            })
+        )
 
         return reply.status(200).send(componentPosition)
     } catch (error) {
