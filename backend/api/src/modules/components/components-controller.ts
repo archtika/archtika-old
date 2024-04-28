@@ -107,7 +107,11 @@ export async function createComponent(
 
         await req.server.redis.pub.publish(
             `components_${id}`,
-            JSON.stringify({ operation_type: 'create', data: componentWithUrl })
+            JSON.stringify({
+                operation_type: 'create',
+                data: componentWithUrl,
+                senderId: req.user?.id
+            })
         )
 
         return reply.status(201).send(componentWithUrl)
@@ -236,6 +240,14 @@ export async function getAllComponentsWebsocket(
         await req.server.redis.pub.publish(channelName, message.toString())
     })
 
+    req.server.websocketServer.clients.forEach(
+        (client: WebSocket & { id?: string }) => {
+            if (!client.id) {
+                client.id = req.user?.id
+            }
+        }
+    )
+
     await req.server.redis.sub.subscribe(channelName, (err) => {
         if (err) {
             console.error(`Error subscribing to ${channelName}: ${err.message}`)
@@ -244,9 +256,16 @@ export async function getAllComponentsWebsocket(
 
     req.server.redis.sub.on('message', (channel, message) => {
         if (channel === channelName) {
-            req.server.websocketServer.clients.forEach((client) => {
-                client.send(message)
-            })
+            req.server.websocketServer.clients.forEach(
+                (client: WebSocket & { id?: string }) => {
+                    if (
+                        client.readyState === 1 &&
+                        client.id !== JSON.parse(message).senderId
+                    ) {
+                        client.send(message)
+                    }
+                }
+            )
         }
     })
 }
@@ -400,7 +419,11 @@ export async function updateComponent(
 
         await req.server.redis.pub.publish(
             `components_${pageId}`,
-            JSON.stringify({ operation_type: 'update', data: componentWithUrl })
+            JSON.stringify({
+                operation_type: 'update',
+                data: componentWithUrl,
+                senderId: req.user?.id
+            })
         )
 
         return reply.status(200).send(componentWithUrl)
@@ -479,7 +502,11 @@ export async function deleteComponent(
 
         await req.server.redis.pub.publish(
             `components_${pageId}`,
-            JSON.stringify({ operation_type: 'delete', data: componentWithUrl })
+            JSON.stringify({
+                operation_type: 'delete',
+                data: componentWithUrl,
+                senderId: req.user?.id
+            })
         )
 
         return reply.status(200).send(componentWithUrl)
