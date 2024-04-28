@@ -244,9 +244,9 @@ export async function getAllComponentsWebsocket(
 
     req.server.redis.sub.on('message', (channel, message) => {
         if (channel === channelName) {
-            req.server.websocketServer.clients.forEach((client) =>
+            req.server.websocketServer.clients.forEach((client) => {
                 client.send(message)
-            )
+            })
         }
     })
 }

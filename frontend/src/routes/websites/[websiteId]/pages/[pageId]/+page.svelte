@@ -68,6 +68,26 @@
 
         ws.onmessage = ({ data }) => {
             const { operation_type, data: newComponent } = JSON.parse(data)
+
+            console.log('Websocket event triggered!')
+
+            switch (operation_type) {
+                case 'create':
+                    $components = [...$components, newComponent]
+                    break
+                case 'update':
+                    $components = $components.map((component) =>
+                        component.id === newComponent.id
+                            ? newComponent
+                            : component
+                    )
+                    break
+                case 'delete':
+                    $components = $components.filter((component) => {
+                        return component.id !== newComponent.id
+                    })
+                    break
+            }
         }
 
         ws.onerror = (error) => {
