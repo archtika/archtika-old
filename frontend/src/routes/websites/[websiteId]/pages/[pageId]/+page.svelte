@@ -109,15 +109,25 @@
             >
                 <label>
                     Route:
-                    <input name="route" type="text" value={data.page.route} />
+                    <input
+                        id="update-page-route"
+                        name="route"
+                        type="text"
+                        value={data.page.route}
+                    />
                 </label>
                 <label>
                     Title:
-                    <input name="title" type="text" value={data.page.title} />
+                    <input
+                        id="update-page-title"
+                        name="title"
+                        type="text"
+                        value={data.page.title}
+                    />
                 </label>
                 <label>
                     Description:
-                    <textarea name="description"
+                    <textarea id="update-page-description" name="description"
                         >{data.page.meta_description}</textarea
                     >
                 </label>
@@ -129,10 +139,19 @@
         <div class="outline">
             <h4>Text</h4>
             <form action="?/createComponent" method="post" use:enhance>
-                <input type="hidden" name="type" value="text" />
+                <input
+                    type="hidden"
+                    id="create-component-text-type"
+                    name="type"
+                    value="text"
+                />
                 <label>
                     Content:
-                    <textarea name="content" id="content" cols="30" rows="10"
+                    <textarea
+                        id="create-component-text-content"
+                        name="content"
+                        cols="30"
+                        rows="10"
                     ></textarea>
                 </label>
                 <button type="submit">Add</button>
@@ -149,10 +168,16 @@
                     use:enhance
                     enctype="multipart/form-data"
                 >
-                    <input type="hidden" name="type" value={type} />
+                    <input
+                        type="hidden"
+                        id="create-component-{type}-type"
+                        name="type"
+                        value={type}
+                    />
                     <label>
                         {title}:
                         <input
+                            id="create-component-{type}-file"
                             name="file"
                             type="file"
                             accept={mimes.join(', ')}
@@ -164,6 +189,7 @@
                             {#each getMedia(type) as media}
                                 <label>
                                     <input
+                                        id="create-component-{type}-existing-file-{media.id}"
                                         type="radio"
                                         name="existing-file"
                                         value={media.id}
@@ -175,12 +201,20 @@
                     </fieldset>
                     <label>
                         Alt text:
-                        <input name="alt-text" type="text" />
+                        <input
+                            id="create-component-{type}-alt-text"
+                            name="alt-text"
+                            type="text"
+                        />
                     </label>
                     {#if ['audio', 'video'].includes(type)}
                         <label>
                             Loop:
-                            <input name="is-looped" type="checkbox" />
+                            <input
+                                id="create-component-{type}-is-looped"
+                                name="is-looped"
+                                type="checkbox"
+                            />
                         </label>
                     {/if}
                     <button type="submit">Add</button>

@@ -12,11 +12,12 @@
     <form method="post" action="?/createWebsite" use:enhance>
         <label>
             Title:
-            <input name="title" type="text" />
+            <input id="create-website-title" name="title" type="text" />
         </label>
         <label>
             Description:
-            <textarea name="description"></textarea>
+            <textarea id="create-website-description" name="description"
+            ></textarea>
         </label>
         <button type="submit">Create</button>
     </form>

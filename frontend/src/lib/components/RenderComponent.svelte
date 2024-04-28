@@ -146,13 +146,23 @@
         <details>
             <summary>Update</summary>
             <form action="?/updateComponent" method="post" use:enhance>
-                <input type="hidden" name="id" value={component.id} />
-                <input type="hidden" name="type" value={component.type} />
+                <input
+                    type="hidden"
+                    id="update-component-{component.id}-id"
+                    name="id"
+                    value={component.id}
+                />
+                <input
+                    type="hidden"
+                    id="update-component-{component.id}-type"
+                    name="type"
+                    value={component.type}
+                />
                 <label>
                     Content:
                     <textarea
+                        id="update-component-{component.id}-content"
                         name="updated-content"
-                        id="updated-content"
                         cols="30"
                         rows="10">{component.content.textContent}</textarea
                     >
@@ -196,14 +206,24 @@
                 use:enhance
                 enctype="multipart/form-data"
             >
-                <input type="hidden" name="type" value={component.type} />
-                <input type="hidden" name="id" value={component.id} />
+                <input
+                    type="hidden"
+                    id="update-component-{component.id}-type"
+                    name="type"
+                    value={component.type}
+                />
+                <input
+                    type="hidden"
+                    id="update-component-{component.id}-id"
+                    name="id"
+                    value={component.id}
+                />
 
                 <label>
                     {component.type.charAt(0).toUpperCase() +
                         component.type.slice(1)}:
                     <input
-                        id="file"
+                        id="update-component-{component.id}-file"
                         name="file"
                         type="file"
                         accept={mimeTypes[component.type].join(', ')}
@@ -216,7 +236,7 @@
                             <label>
                                 <input
                                     type="radio"
-                                    id="existing-file"
+                                    id="update-component-{component.id}-existing-file-{media.id}"
                                     name="existing-file"
                                     value={media.id}
                                 />
@@ -227,12 +247,20 @@
                 </fieldset>
                 <label>
                     Alt text:
-                    <input name="alt-text" type="text" />
+                    <input
+                        id="update-component-{component.id}-alt-text"
+                        name="alt-text"
+                        type="text"
+                    />
                 </label>
                 {#if ['audio', 'video'].includes(component.type)}
                     <label>
                         Loop:
-                        <input name="is-looped" type="checkbox" />
+                        <input
+                            id="update-component-{component.id}-is-looped"
+                            name="is-looped"
+                            type="checkbox"
+                        />
                     </label>
                 {/if}
                 <button type="submit">Save</button>
@@ -241,23 +269,55 @@
     {/if}
 
     <form action="?/deleteComponent" method="post" use:enhance>
-        <input type="hidden" name="id" value={component.id} />
+        <input
+            type="hidden"
+            id="delete-component-{component.id}"
+            name="id"
+            value={component.id}
+        />
         <button type="submit">Delete</button>
     </form>
 
     <form action="?/updateComponentPosition" method="post" use:enhance>
-        <input type="hidden" name="component-id" value={component.id} />
-        <input type="hidden" name="row-start" value={component.row_start} />
-        <input type="hidden" name="col-start" value={component.col_start} />
-        <input type="hidden" name="row-end" value={component.row_end} />
-        <input type="hidden" name="col-end" value={component.col_end} />
         <input
             type="hidden"
+            id="update-component-position-{component.id}-component-id"
+            name="component-id"
+            value={component.id}
+        />
+        <input
+            type="hidden"
+            id="update-component-position-{component.id}-row-start"
+            name="row-start"
+            value={component.row_start}
+        />
+        <input
+            type="hidden"
+            id="update-component-position-{component.id}-col-start"
+            name="col-start"
+            value={component.col_start}
+        />
+        <input
+            type="hidden"
+            id="update-component-position-{component.id}-row-end"
+            name="row-end"
+            value={component.row_end}
+        />
+        <input
+            type="hidden"
+            id="update-component-position-{component.id}-col-end"
+            name="col-end"
+            value={component.col_end}
+        />
+        <input
+            type="hidden"
+            id="update-component-position-{component.id}-row-end-span"
             name="row-end-span"
             value={component.row_end_span}
         />
         <input
             type="hidden"
+            id="update-component-position-{component.id}-col-end-span"
             name="col-end-span"
             value={component.col_end_span}
         />

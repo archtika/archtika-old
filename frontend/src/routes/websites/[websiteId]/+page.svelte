@@ -21,11 +21,18 @@
 >
     <label>
         Title:
-        <input type="text" name="title" value={data.website.title} />
+        <input
+            type="text"
+            id="update-website-title"
+            name="title"
+            value={data.website.title}
+        />
     </label>
     <label>
         Description:
-        <textarea name="description">{data.website.meta_description}</textarea>
+        <textarea id="update-website-description" name="description"
+            >{data.website.meta_description}</textarea
+        >
     </label>
     <button type="submit">Save</button>
 </form>
@@ -37,11 +44,14 @@
     <form method="post" action="?/addCollaborator" use:enhance>
         <label>
             User id:
-            <input type="text" name="user-id" />
+            <input type="text" id="add-collaborator-user-id" name="user-id" />
         </label>
         <label>
             Permission level:
-            <select name="permission-level">
+            <select
+                id="add-collaborator-permission-level"
+                name="permission-level"
+            >
                 <option value="10">View</option>
                 <option value="20">Edit</option>
                 <option value="30">Manage</option>
@@ -61,10 +71,18 @@
             <details>
                 <summary>Change permissions</summary>
                 <form method="post" action="?/updateCollaborator" use:enhance>
-                    <input type="hidden" name="user-id" value={user_id} />
+                    <input
+                        type="hidden"
+                        id="update-collaborator-user-id"
+                        name="user-id"
+                        value={user_id}
+                    />
                     <label>
                         Permission level:
-                        <select name="permission-level">
+                        <select
+                            id="update-collaborator-permission-level"
+                            name="permission-level"
+                        >
                             <option value="10">View</option>
                             <option value="20">Edit</option>
                             <option value="30">Manage</option>
@@ -74,7 +92,12 @@
                 </form>
             </details>
             <form method="post" action="?/removeCollaborator" use:enhance>
-                <input type="hidden" name="user-id" value={user_id} />
+                <input
+                    type="hidden"
+                    id="remove-collaborator-user-id"
+                    name="user-id"
+                    value={user_id}
+                />
                 <button type="submit">Remove</button>
             </form>
         </article>
@@ -98,15 +121,16 @@
     <form method="post" action="?/createPage" use:enhance>
         <label>
             Route:
-            <input name="route" type="text" />
+            <input id="create-page-route" name="route" type="text" />
         </label>
         <label>
             Title:
-            <input name="title" type="text" />
+            <input id="create-page-title" name="title" type="text" />
         </label>
         <label>
             Description:
-            <textarea name="description"></textarea>
+            <textarea id="create-page-description" name="description"
+            ></textarea>
         </label>
         <button type="submit">Create</button>
     </form>
