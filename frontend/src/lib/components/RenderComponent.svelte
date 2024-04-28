@@ -17,13 +17,9 @@
         return text
     }
 
-    let purifiedTextContent: string
-
-    if (component.type === 'text') {
-        purifiedTextContent = DOMPurify.sanitize(
-            parse(component.content.textContent ?? '', { renderer }) as string
-        )
-    }
+    $: purifiedTextContent = DOMPurify.sanitize(
+        parse(component.content.textContent ?? '', { renderer }) as string
+    )
 
     function handleResize(event: MouseEvent) {
         const target = event.target as HTMLElement
@@ -207,6 +203,7 @@
                     {component.type.charAt(0).toUpperCase() +
                         component.type.slice(1)}:
                     <input
+                        id="file"
                         name="file"
                         type="file"
                         accept={mimeTypes[component.type].join(', ')}
@@ -219,6 +216,7 @@
                             <label>
                                 <input
                                     type="radio"
+                                    id="existing-file"
                                     name="existing-file"
                                     value={media.id}
                                 />
@@ -237,7 +235,7 @@
                         <input name="is-looped" type="checkbox" />
                     </label>
                 {/if}
-                <button type="submit">Add</button>
+                <button type="submit">Save</button>
             </form>
         </details>
     {/if}

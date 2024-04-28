@@ -68,18 +68,6 @@
 
         ws.onmessage = ({ data }) => {
             const { operation_type, data: newComponent } = JSON.parse(data)
-
-            switch (operation_type) {
-                case 'create':
-                    $components = [...$components, newComponent]
-                    break
-                case 'update':
-                case 'delete':
-                    $components = $components.filter((component) => {
-                        return component.id !== newComponent.id
-                    })
-                    break
-            }
         }
 
         ws.onerror = (error) => {
