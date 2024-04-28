@@ -40,6 +40,8 @@
         rowEnd: number,
         colEnd: number
     ) {
+        event.preventDefault()
+
         const componentId = event.dataTransfer?.getData('text/plain')
 
         const index = $components.findIndex((component: Component) => {
@@ -254,9 +256,8 @@
             <div
                 class="outline outline-blue-500"
                 style="grid-area: {row} / {col} / {row} / {col}"
-                on:dragover|preventDefault
-                on:drop|preventDefault={(event) =>
-                    handleDrop(event, row, col, row, col)}
+                on:dragover={(event) => event.preventDefault()}
+                on:drop={(event) => handleDrop(event, row, col, row, col)}
                 role="presentation"
             />
         {/each}

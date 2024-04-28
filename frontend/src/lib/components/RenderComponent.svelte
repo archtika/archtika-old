@@ -4,6 +4,7 @@
     import type { Component } from '$lib/types'
     import { enhance } from '$app/forms'
     import { components } from '$lib/stores'
+    import Resizer from './Resizer.svelte'
 
     export let component: Component
     export let mimeTypes: Record<string, string[]>
@@ -22,99 +23,72 @@
     )
 
     function handleResize(event: MouseEvent) {
+        event.preventDefault()
+
         const target = event.target as HTMLElement
+        const resizer = target.getAttribute('data-resizer')
 
-        switch (target.getAttribute('data-resizer')) {
+        if (!target.parentElement) return
+
+        const gridArea = getComputedStyle(
+            target.parentElement
+        ).getPropertyValue('grid-area')
+        const currentComponentIndex = $components.findIndex(
+            (component) =>
+                component.id ===
+                target.parentElement?.getAttribute('data-component-id')
+        )
+
+        let [rowStart, colStart, rowEnd, colEnd] = gridArea
+            .split(' / ')
+            .map(Number)
+
+        switch (resizer) {
             case 'right':
-                {
-                    console.log('Right!')
-
-                    if (!target.parentElement) return
-
-                    const gridArea = getComputedStyle(
-                        target.parentElement
-                    ).getPropertyValue('grid-area')
-
-                    const currentComponentIndex = $components.findIndex(
-                        (component) => {
-                            return (
-                                component.id ===
-                                target.parentElement?.getAttribute(
-                                    'data-component-id'
-                                )
-                            )
-                        }
-                    )
-
-                    let [rowStart, colStart, rowEnd, colEnd] = gridArea
-                        .split(' / ')
-                        .map(Number)
-
-                    if (colEnd === colStart) {
-                        colEnd += 2
-                        $components[currentComponentIndex].col_end_span =
-                            ($components[currentComponentIndex].col_end_span ??
-                                0) + 2
-                    } else {
-                        colEnd += 1
-                        $components[currentComponentIndex].col_end_span =
-                            ($components[currentComponentIndex].col_end_span ??
-                                0) + 1
-                    }
-
-                    $components[currentComponentIndex].row_start = rowStart
-                    $components[currentComponentIndex].col_start = colStart
-                    $components[currentComponentIndex].row_end = rowEnd
-                    $components[currentComponentIndex].col_end = colEnd
-
-                    target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
-                }
+                updateDimensions(1, 'col')
+                break
+            case 'left':
+                updateDimensions(-1, 'col')
                 break
             case 'bottom':
-                {
-                    console.log('Bottom!')
-
-                    if (!target.parentElement) return
-
-                    const gridArea = getComputedStyle(
-                        target.parentElement
-                    ).getPropertyValue('grid-area')
-
-                    const currentComponentIndex = $components.findIndex(
-                        (component) => {
-                            return (
-                                component.id ===
-                                target.parentElement?.getAttribute(
-                                    'data-component-id'
-                                )
-                            )
-                        }
-                    )
-
-                    let [rowStart, colStart, rowEnd, colEnd] = gridArea
-                        .split(' / ')
-                        .map(Number)
-
-                    if (rowEnd === rowStart) {
-                        rowEnd += 2
-                        $components[currentComponentIndex].row_end_span =
-                            ($components[currentComponentIndex].row_end_span ??
-                                0) + 2
-                    } else {
-                        rowEnd += 1
-                        $components[currentComponentIndex].row_end_span =
-                            ($components[currentComponentIndex].row_end_span ??
-                                0) + 1
-                    }
-
-                    $components[currentComponentIndex].row_start = rowStart
-                    $components[currentComponentIndex].col_start = colStart
-                    $components[currentComponentIndex].row_end = rowEnd
-                    $components[currentComponentIndex].col_end = colEnd
-
-                    target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
-                }
+                updateDimensions(1, 'row')
                 break
+            case 'top':
+                updateDimensions(-1, 'row')
+                break
+        }
+
+        function updateDimensions(delta: number, type: 'row' | 'col') {
+            if (type === 'col') {
+                colEnd = adjustEnd(colStart, colEnd, delta)
+                $components[currentComponentIndex].col_end_span = adjustSpan(
+                    $components[currentComponentIndex].col_end_span,
+                    delta
+                )
+            } else {
+                rowEnd = adjustEnd(rowStart, rowEnd, delta)
+                $components[currentComponentIndex].row_end_span = adjustSpan(
+                    $components[currentComponentIndex].row_end_span,
+                    delta
+                )
+            }
+
+            $components[currentComponentIndex].row_start = rowStart
+            $components[currentComponentIndex].col_start = colStart
+            $components[currentComponentIndex].row_end = rowEnd
+            $components[currentComponentIndex].col_end = colEnd
+
+            if (!target.parentElement) return
+
+            target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
+        }
+
+        function adjustEnd(start: number, end: number, delta: number) {
+            return start === end ? end + 2 * delta : end + delta
+        }
+
+        function adjustSpan(span: number | undefined, delta: number) {
+            return (span ?? 0) + delta
         }
     }
 </script>
@@ -127,17 +101,25 @@
     style={styles}
     data-component-id={component.id}
 >
-    <div
-        class="w-4 h-4 rounded-full outline outline-black bg-white absolute top-1/2 -end-2 -translate-y-1/2 cursor-e-resize"
-        data-resizer="right"
-        on:mousedown|preventDefault={handleResize}
-        role="presentation"
+    <Resizer
+        direction="right"
+        className="bottom-1/2 -end-2 -translate-y-1/2 cursor-e-resize"
+        on:mousedown={handleResize}
     />
-    <div
-        class="w-4 h-4 rounded-full outline outline-black bg-white absolute -bottom-2 end-1/2 translate-x-1/2 cursor-s-resize"
-        data-resizer="bottom"
-        on:mousedown|preventDefault={handleResize}
-        role="presentation"
+    <Resizer
+        direction="left"
+        className="top-1/2 -end-2 translate-y-1/2 cursor-w-resize"
+        on:mousedown={handleResize}
+    />
+    <Resizer
+        direction="top"
+        className="-bottom-2 end-1/2 -translate-x-1/2 cursor-n-resize"
+        on:mousedown={handleResize}
+    />
+    <Resizer
+        direction="bottom"
+        className="-bottom-2 start-1/2 translate-x-1/2 cursor-s-resize"
+        on:mousedown={handleResize}
     />
 
     {#if component.type === 'text'}
