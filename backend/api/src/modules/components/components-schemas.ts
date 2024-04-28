@@ -148,10 +148,12 @@ export const updateComponentSchema = Type.Union(
 export type UpdateComponentSchemaType = Static<typeof updateComponentSchema>
 
 export const componentPositionSchema = Type.Object({
-    grid_x: Type.Integer({ minimum: 0 }),
-    grid_y: Type.Integer({ minimum: 0 }),
-    grid_width: Type.Integer({ minimum: 1 }),
-    grid_height: Type.Integer({ minimum: 1 })
+    row_start: Type.Integer({ minimum: 0 }),
+    col_start: Type.Integer({ minimum: 0 }),
+    row_end: Type.Integer({ minimum: 0 }),
+    col_end: Type.Integer({ minimum: 0 }),
+    row_end_span: Type.Integer({ minimum: 0 }),
+    col_end_span: Type.Integer({ minimum: 0 })
 })
 
 export type ComponentPositionSchemaType = Static<typeof componentPositionSchema>

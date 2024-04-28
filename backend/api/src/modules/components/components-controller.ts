@@ -91,10 +91,14 @@ export async function createComponent(
                     .executeTakeFirstOrThrow()
             })
 
-        const presignedUrl = await req.server.minio.client.presignedGetObject(
-            'archtika',
-            `${component.asset_id}`
-        )
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
 
         const componentWithUrl = {
             ...component,
@@ -103,10 +107,14 @@ export async function createComponent(
 
         await req.server.redis.pub.publish(
             `components_${id}`,
-            JSON.stringify(componentWithUrl)
+            JSON.stringify({
+                operation_type: 'create',
+                data: componentWithUrl,
+                senderId: req.user?.id
+            })
         )
 
-        return reply.status(201).send(component)
+        return reply.status(201).send(componentWithUrl)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }
@@ -120,7 +128,20 @@ export async function getAllComponents(
 
     const allComponents = await req.server.kysely.db
         .selectFrom('components.component')
-        .selectAll()
+        .innerJoin(
+            'components.component_position',
+            'components.component.id',
+            'components.component_position.component_id'
+        )
+        .selectAll('components.component')
+        .select([
+            'components.component_position.row_start',
+            'components.component_position.col_start',
+            'components.component_position.row_end',
+            'components.component_position.col_end',
+            'components.component_position.row_end_span',
+            'components.component_position.col_end_span'
+        ])
         .where('page_id', '=', id)
         .where(({ or, exists, selectFrom }) =>
             or([
@@ -188,11 +209,15 @@ export async function getAllComponents(
 
     const componentsWithUrls = await Promise.all(
         allComponents.map(async (component) => {
-            const presignedUrl =
-                await req.server.minio.client.presignedGetObject(
+            let presignedUrl = null
+
+            if (component.asset_id) {
+                presignedUrl = await req.server.minio.client.presignedGetObject(
                     'archtika',
                     `${component.asset_id}`
                 )
+            }
+
             return {
                 ...component,
                 url: presignedUrl
@@ -215,6 +240,14 @@ export async function getAllComponentsWebsocket(
         await req.server.redis.pub.publish(channelName, message.toString())
     })
 
+    req.server.websocketServer.clients.forEach(
+        (client: WebSocket & { id?: string }) => {
+            if (!client.id) {
+                client.id = req.user?.id
+            }
+        }
+    )
+
     await req.server.redis.sub.subscribe(channelName, (err) => {
         if (err) {
             console.error(`Error subscribing to ${channelName}: ${err.message}`)
@@ -223,8 +256,15 @@ export async function getAllComponentsWebsocket(
 
     req.server.redis.sub.on('message', (channel, message) => {
         if (channel === channelName) {
-            req.server.websocketServer.clients.forEach((client) =>
-                client.send(message)
+            req.server.websocketServer.clients.forEach(
+                (client: WebSocket & { id?: string }) => {
+                    if (
+                        client.readyState === 1 &&
+                        client.id !== JSON.parse(message).senderId
+                    ) {
+                        client.send(message)
+                    }
+                }
             )
         }
     })
@@ -274,7 +314,21 @@ export async function getComponent(
             )
             .executeTakeFirstOrThrow()
 
-        return reply.status(200).send(component)
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
+
+        const componentWithUrl = {
+            ...component,
+            url: presignedUrl
+        }
+
+        return reply.status(200).send(componentWithUrl)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }
@@ -349,10 +403,14 @@ export async function updateComponent(
                     .executeTakeFirstOrThrow()
             })
 
-        const presignedUrl = await req.server.minio.client.presignedGetObject(
-            'archtika',
-            `${component.asset_id}`
-        )
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
 
         const componentWithUrl = {
             ...component,
@@ -361,10 +419,14 @@ export async function updateComponent(
 
         await req.server.redis.pub.publish(
             `components_${pageId}`,
-            JSON.stringify(componentWithUrl)
+            JSON.stringify({
+                operation_type: 'update',
+                data: componentWithUrl,
+                senderId: req.user?.id
+            })
         )
 
-        return reply.status(200).send(component)
+        return reply.status(200).send(componentWithUrl)
     } catch (error) {
         return reply.notFound(
             'Page not found or not allowed or invalid component type'
@@ -424,10 +486,14 @@ export async function deleteComponent(
                     .executeTakeFirstOrThrow()
             })
 
-        const presignedUrl = await req.server.minio.client.presignedGetObject(
-            'archtika',
-            `${component.asset_id}`
-        )
+        let presignedUrl = null
+
+        if (component.asset_id) {
+            presignedUrl = await req.server.minio.client.presignedGetObject(
+                'archtika',
+                `${component.asset_id}`
+            )
+        }
 
         const componentWithUrl = {
             ...component,
@@ -436,10 +502,14 @@ export async function deleteComponent(
 
         await req.server.redis.pub.publish(
             `components_${pageId}`,
-            JSON.stringify(componentWithUrl)
+            JSON.stringify({
+                operation_type: 'delete',
+                data: componentWithUrl,
+                senderId: req.user?.id
+            })
         )
 
-        return reply.status(200).send(component)
+        return reply.status(200).send(componentWithUrl)
     } catch (error) {
         return reply.notFound('Page not found or not allowed')
     }
@@ -453,7 +523,14 @@ export async function setComponentPosition(
     reply: FastifyReply
 ) {
     const { id } = req.params
-    const { grid_x, grid_y, grid_width, grid_height } = req.body
+    const {
+        row_start,
+        col_start,
+        row_end,
+        col_end,
+        row_end_span,
+        col_end_span
+    } = req.body
 
     try {
         const componentPositon = await req.server.kysely.db
@@ -510,10 +587,12 @@ export async function setComponentPosition(
                                     )
                                 ])
                             ),
-                        grid_x,
-                        grid_y,
-                        grid_width,
-                        grid_height
+                        row_start,
+                        col_start,
+                        row_end,
+                        col_end,
+                        row_end_span,
+                        col_end_span
                     }))
                     .returningAll()
                     .executeTakeFirstOrThrow()
@@ -533,9 +612,22 @@ export async function updateComponentPosition(
     reply: FastifyReply
 ) {
     const { id } = req.params
-    const { grid_x, grid_y, grid_width, grid_height } = req.body
+    const {
+        row_start,
+        col_start,
+        row_end,
+        col_end,
+        row_end_span,
+        col_end_span
+    } = req.body
 
     try {
+        const pageId = await req.server.kysely.db
+            .selectFrom('components.component')
+            .select('page_id')
+            .where('id', '=', id)
+            .executeTakeFirst()
+
         const componentPosition = await req.server.kysely.db
             .transaction()
             .execute(async (trx) => {
@@ -545,10 +637,12 @@ export async function updateComponentPosition(
                     .updateTable('components.component_position')
                     .set({
                         component_id: id,
-                        grid_x,
-                        grid_y,
-                        grid_width,
-                        grid_height
+                        row_start,
+                        col_start,
+                        row_end,
+                        col_end,
+                        row_end_span,
+                        col_end_span
                     })
                     .where('component_id', '=', id)
                     .where(({ or, exists, selectFrom }) =>
@@ -562,11 +656,7 @@ export async function updateComponentPosition(
                                                 .where(
                                                     'id',
                                                     '=',
-                                                    selectFrom(
-                                                        'components.component'
-                                                    )
-                                                        .select('page_id')
-                                                        .where('id', '=', id)
+                                                    pageId?.page_id ?? ''
                                                 ),
                                             user_id: req.user?.id
                                         })
@@ -583,11 +673,7 @@ export async function updateComponentPosition(
                                                 .where(
                                                     'id',
                                                     '=',
-                                                    selectFrom(
-                                                        'components.component'
-                                                    )
-                                                        .select('page_id')
-                                                        .where('id', '=', id)
+                                                    pageId?.page_id ?? ''
                                                 ),
                                             user_id: req.user?.id
                                         })
@@ -599,6 +685,17 @@ export async function updateComponentPosition(
                     .returningAll()
                     .executeTakeFirstOrThrow()
             })
+
+        const { component_id, ...rest } = componentPosition
+
+        await req.server.redis.pub.publish(
+            `components_${pageId?.page_id}`,
+            JSON.stringify({
+                operation_type: 'update-position',
+                data: { id: component_id, ...rest },
+                senderId: req.user?.id
+            })
+        )
 
         return reply.status(200).send(componentPosition)
     } catch (error) {

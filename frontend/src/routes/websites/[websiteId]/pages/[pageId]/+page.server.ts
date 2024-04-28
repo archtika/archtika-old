@@ -111,12 +111,29 @@ export const actions: Actions = {
                 break
         }
 
-        await fetch(
+        const createdComponentRes = await fetch(
             `http://localhost:3000/api/v1/pages/${params.pageId}/components`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
+            }
+        )
+        const createdComponent = await createdComponentRes.json()
+
+        await fetch(
+            `http://localhost:3000/api/v1/components/${createdComponent.id}/position`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    row_start: 1,
+                    col_start: 1,
+                    row_end: 1,
+                    col_end: 1,
+                    row_end_span: 0,
+                    col_end_span: 0
+                })
             }
         )
     },
@@ -190,6 +207,25 @@ export const actions: Actions = {
             `http://localhost:3000/api/v1/pages/${params.pageId}/components/${data.get('id')}`,
             {
                 method: 'DELETE'
+            }
+        )
+    },
+    updateComponentPosition: async ({ request, fetch }) => {
+        const data = await request.formData()
+
+        await fetch(
+            `http://localhost:3000/api/v1/components/${data.get('component-id')}/position`,
+            {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    row_start: data.get('row-start'),
+                    col_start: data.get('col-start'),
+                    row_end: data.get('row-end'),
+                    col_end: data.get('col-end'),
+                    row_end_span: data.get('row-end-span'),
+                    col_end_span: data.get('col-end-span')
+                })
             }
         )
     }

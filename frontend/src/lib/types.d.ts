@@ -11,6 +11,12 @@ export interface Component {
     created_at: string
     updated_at: string | null
     url: sring | null
+    row_start: number
+    col_start: number
+    row_end: number
+    col_end: number
+    row_end_span: number
+    col_end_span: number
 }
 
 export interface ComponentApiPayload {

@@ -5,6 +5,7 @@
     import { page } from '$app/stores'
     import { browser } from '$app/environment'
     import type { Component } from '$lib/types'
+    import { components } from '$lib/stores'
 
     export let data: PageServerData
 
@@ -14,12 +15,60 @@
         video: ['video/mp4', 'video/webm', 'video/ogg']
     }
 
-    $: components = data.components
+    $: $components = data.components
 
     $: getMedia = (type: string) => {
         if (!data.media[type]) return []
 
         return data.media[type]
+    }
+
+    function handleDragStart(event: DragEvent) {
+        const componentId = (event.target as HTMLElement).getAttribute(
+            'data-component-id'
+        )
+
+        if (componentId) {
+            event.dataTransfer?.setData('text/plain', componentId)
+        }
+    }
+
+    async function handleDrop(
+        event: DragEvent,
+        rowStart: number,
+        colStart: number,
+        rowEnd: number,
+        colEnd: number
+    ) {
+        event.preventDefault()
+
+        const componentId = event.dataTransfer?.getData('text/plain')
+
+        const index = $components.findIndex((component: Component) => {
+            return component.id === componentId
+        })
+
+        $components[index] = {
+            ...$components[index],
+            row_start: rowStart,
+            col_start: colStart,
+            row_end: rowEnd + ($components[index].row_end_span ?? 0),
+            col_end: colEnd + ($components[index].col_end_span ?? 0)
+        }
+
+        const formData = new FormData()
+        formData.append('component-id', `${$components[index].id}`)
+        formData.append('row-start', `${$components[index].row_start}`)
+        formData.append('col-start', `${$components[index].col_start}`)
+        formData.append('row-end', `${$components[index].row_end}`)
+        formData.append('col-end', `${$components[index].col_end}`)
+        formData.append('row-end-span', `${$components[index].row_end_span}`)
+        formData.append('col-end-span', `${$components[index].col_end_span}`)
+
+        await fetch('?/updateComponentPosition', {
+            method: 'POST',
+            body: formData
+        })
     }
 
     let ws: WebSocket
@@ -34,19 +83,27 @@
         }
 
         ws.onmessage = ({ data }) => {
-            let newComponent = JSON.parse(data)
+            const { operation_type, data: newComponent } = JSON.parse(data)
 
-            const index = components.findIndex((component: Component) => {
-                return component.id === newComponent.id
-            })
+            console.log('Websocket event triggered!')
 
-            if (index !== -1) {
-                components = [
-                    ...components.slice(0, index),
-                    ...components.slice(index + 1)
-                ]
-            } else {
-                components = [...components, newComponent]
+            switch (operation_type) {
+                case 'create':
+                    $components = [...$components, newComponent]
+                    break
+                case 'update':
+                case 'update-position':
+                    $components = $components.map((component) =>
+                        component.id === newComponent.id
+                            ? { ...component, ...newComponent }
+                            : component
+                    )
+                    break
+                case 'delete':
+                    $components = $components.filter((component) => {
+                        return component.id !== newComponent.id
+                    })
+                    break
             }
         }
 
@@ -60,8 +117,8 @@
     }
 </script>
 
-<div class="grid grid-cols-8">
-    <div class="col-span-1 outline outline-neutral-500">
+<div class="grid grid-cols-[fit-content(20ch),minmax(min(50vw,30ch),1fr)]">
+    <div class="outline outline-green-500">
         <h1>{data.website.title}</h1>
         <details open>
             <summary>Pages</summary>
@@ -89,15 +146,25 @@
             >
                 <label>
                     Route:
-                    <input name="route" type="text" value={data.page.route} />
+                    <input
+                        id="update-page-route"
+                        name="route"
+                        type="text"
+                        value={data.page.route}
+                    />
                 </label>
                 <label>
                     Title:
-                    <input name="title" type="text" value={data.page.title} />
+                    <input
+                        id="update-page-title"
+                        name="title"
+                        type="text"
+                        value={data.page.title}
+                    />
                 </label>
                 <label>
                     Description:
-                    <textarea name="description"
+                    <textarea id="update-page-description" name="description"
                         >{data.page.meta_description}</textarea
                     >
                 </label>
@@ -109,10 +176,19 @@
         <div class="outline">
             <h4>Text</h4>
             <form action="?/createComponent" method="post" use:enhance>
-                <input type="hidden" name="type" value="text" />
+                <input
+                    type="hidden"
+                    id="create-component-text-type"
+                    name="type"
+                    value="text"
+                />
                 <label>
                     Content:
-                    <textarea name="content" id="content" cols="30" rows="10"
+                    <textarea
+                        id="create-component-text-content"
+                        name="content"
+                        cols="30"
+                        rows="10"
                     ></textarea>
                 </label>
                 <button type="submit">Add</button>
@@ -129,10 +205,16 @@
                     use:enhance
                     enctype="multipart/form-data"
                 >
-                    <input type="hidden" name="type" value={type} />
+                    <input
+                        type="hidden"
+                        id="create-component-{type}-type"
+                        name="type"
+                        value={type}
+                    />
                     <label>
                         {title}:
                         <input
+                            id="create-component-{type}-file"
                             name="file"
                             type="file"
                             accept={mimes.join(', ')}
@@ -144,6 +226,7 @@
                             {#each getMedia(type) as media}
                                 <label>
                                     <input
+                                        id="create-component-{type}-existing-file-{media.id}"
                                         type="radio"
                                         name="existing-file"
                                         value={media.id}
@@ -155,12 +238,20 @@
                     </fieldset>
                     <label>
                         Alt text:
-                        <input name="alt-text" type="text" />
+                        <input
+                            id="create-component-{type}-alt-text"
+                            name="alt-text"
+                            type="text"
+                        />
                     </label>
                     {#if ['audio', 'video'].includes(type)}
                         <label>
                             Loop:
-                            <input name="is-looped" type="checkbox" />
+                            <input
+                                id="create-component-{type}-is-looped"
+                                name="is-looped"
+                                type="checkbox"
+                            />
                         </label>
                     {/if}
                     <button type="submit">Add</button>
@@ -170,10 +261,31 @@
     </div>
 
     <div
-        class="outline outline-red-500 col-span-7 grid grid-cols-6 grid-rows-12 gap-2"
+        class="outline outline-red-500 grid grid-cols-12 grid-rows-[repeat(12,10rem)]"
     >
-        {#each components as component (component.id)}
-            <RenderComponent {component} {mimeTypes} {getMedia} />
+        {#each Array(144) as _, i}
+            {@const row = Math.floor(i / 12) + 1}
+            {@const col = (i % 12) + 1}
+
+            <div
+                class="outline outline-blue-500"
+                style="grid-area: {row} / {col} / {row} / {col}"
+                on:dragover={(event) => event.preventDefault()}
+                on:drop={(event) => handleDrop(event, row, col, row, col)}
+                role="presentation"
+            />
+        {/each}
+        {#each $components as component, i (i)}
+            <RenderComponent
+                {component}
+                {mimeTypes}
+                {getMedia}
+                className="bg-pink-200 outline outline-black"
+                styles="grid-area: {component.row_start ??
+                    1} / {component.col_start ?? 1} / {component.row_end ??
+                    1} / {component.col_end ?? 1}"
+                on:dragstart={handleDragStart}
+            />
         {/each}
     </div>
 </div>
