@@ -33,7 +33,7 @@
         }
     }
 
-    function handleDrop(
+    async function handleDrop(
         event: DragEvent,
         rowStart: number,
         colStart: number,
@@ -55,6 +55,20 @@
             row_end: rowEnd + ($components[index].row_end_span ?? 0),
             col_end: colEnd + ($components[index].col_end_span ?? 0)
         }
+
+        const formData = new FormData()
+        formData.append('component-id', `${$components[index].id}`)
+        formData.append('row-start', `${$components[index].row_start}`)
+        formData.append('col-start', `${$components[index].col_start}`)
+        formData.append('row-end', `${$components[index].row_end}`)
+        formData.append('col-end', `${$components[index].col_end}`)
+        formData.append('row-end-span', `${$components[index].row_end_span}`)
+        formData.append('col-end-span', `${$components[index].col_end_span}`)
+
+        await fetch('?/updateComponentPosition', {
+            method: 'POST',
+            body: formData
+        })
     }
 
     let ws: WebSocket

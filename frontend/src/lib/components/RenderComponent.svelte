@@ -58,25 +58,47 @@
                 break
         }
 
-        function updateDimensions(delta: number, type: 'row' | 'col') {
+        async function updateDimensions(delta: number, type: 'row' | 'col') {
             if (type === 'col') {
-                colEnd = adjustEnd(colStart, colEnd, delta)
                 $components[currentComponentIndex].col_end_span = adjustSpan(
+                    colStart,
+                    colEnd,
                     $components[currentComponentIndex].col_end_span,
                     delta
                 )
+                colEnd = adjustEnd(colStart, colEnd, delta)
             } else {
-                rowEnd = adjustEnd(rowStart, rowEnd, delta)
                 $components[currentComponentIndex].row_end_span = adjustSpan(
+                    rowStart,
+                    rowEnd,
                     $components[currentComponentIndex].row_end_span,
                     delta
                 )
+                rowEnd = adjustEnd(rowStart, rowEnd, delta)
             }
 
-            $components[currentComponentIndex].row_start = rowStart
-            $components[currentComponentIndex].col_start = colStart
-            $components[currentComponentIndex].row_end = rowEnd
-            $components[currentComponentIndex].col_end = colEnd
+            const formData = new FormData()
+            formData.append(
+                'component-id',
+                `${$components[currentComponentIndex].id}`
+            )
+            formData.append('row-start', `${rowStart}`)
+            formData.append('col-start', `${colStart}`)
+            formData.append('row-end', `${rowEnd}`)
+            formData.append('col-end', `${colEnd}`)
+            formData.append(
+                'row-end-span',
+                `${$components[currentComponentIndex].row_end_span}`
+            )
+            formData.append(
+                'col-end-span',
+                `${$components[currentComponentIndex].col_end_span}`
+            )
+
+            await fetch('?/updateComponentPosition', {
+                method: 'POST',
+                body: formData
+            })
 
             if (!target.parentElement) return
 
@@ -87,8 +109,13 @@
             return start === end ? end + 2 * delta : end + delta
         }
 
-        function adjustSpan(span: number | undefined, delta: number) {
-            return (span ?? 0) + delta
+        function adjustSpan(
+            start: number,
+            end: number,
+            span: number | undefined,
+            delta: number
+        ) {
+            return start === end ? (span ?? 0) + delta * 2 : (span ?? 0) + delta
         }
     }
 </script>
@@ -258,51 +285,5 @@
             value={component.id}
         />
         <button type="submit">Delete</button>
-    </form>
-
-    <form action="?/updateComponentPosition" method="post" use:enhance>
-        <input
-            type="hidden"
-            id="update-component-position-{component.id}-component-id"
-            name="component-id"
-            value={component.id}
-        />
-        <input
-            type="hidden"
-            id="update-component-position-{component.id}-row-start"
-            name="row-start"
-            value={component.row_start}
-        />
-        <input
-            type="hidden"
-            id="update-component-position-{component.id}-col-start"
-            name="col-start"
-            value={component.col_start}
-        />
-        <input
-            type="hidden"
-            id="update-component-position-{component.id}-row-end"
-            name="row-end"
-            value={component.row_end}
-        />
-        <input
-            type="hidden"
-            id="update-component-position-{component.id}-col-end"
-            name="col-end"
-            value={component.col_end}
-        />
-        <input
-            type="hidden"
-            id="update-component-position-{component.id}-row-end-span"
-            name="row-end-span"
-            value={component.row_end_span}
-        />
-        <input
-            type="hidden"
-            id="update-component-position-{component.id}-col-end-span"
-            name="col-end-span"
-            value={component.col_end_span}
-        />
-        <button type="submit">Update component position</button>
     </form>
 </div>
