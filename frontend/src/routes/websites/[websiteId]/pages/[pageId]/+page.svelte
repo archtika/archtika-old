@@ -1,120 +1,122 @@
 <script lang="ts">
-    import type { PageServerData } from './$types'
-    import RenderComponent from '$lib/components/RenderComponent.svelte'
-    import { enhance } from '$app/forms'
-    import { page } from '$app/stores'
-    import { browser } from '$app/environment'
-    import type { Component } from '$lib/types'
-    import { components } from '$lib/stores'
+import { browser } from "$app/environment";
+import { enhance } from "$app/forms";
+import { page } from "$app/stores";
+import RenderComponent from "$lib/components/RenderComponent.svelte";
+import { components } from "$lib/stores";
+import type { Component } from "$lib/types";
+import type { PageServerData } from "./$types";
 
-    export let data: PageServerData
+export let data: PageServerData;
 
-    const mimeTypes = {
-        image: ['image/jpeg', 'image/png', 'image/svg+xml'],
-        audio: ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg'],
-        video: ['video/mp4', 'video/webm', 'video/ogg']
-    }
+const mimeTypes = {
+	image: ["image/jpeg", "image/png", "image/svg+xml"],
+	audio: ["audio/mpeg", "audio/wav", "audio/aac", "audio/ogg"],
+	video: ["video/mp4", "video/webm", "video/ogg"],
+};
 
-    $: $components = data.components
+// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
+$: $components = data.components;
 
-    $: getMedia = (type: string) => {
-        if (!data.media[type]) return []
+// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
+$: getMedia = (type: string) => {
+	if (!data.media[type]) return [];
 
-        return data.media[type]
-    }
+	return data.media[type];
+};
 
-    function handleDragStart(event: DragEvent) {
-        const componentId = (event.target as HTMLElement).getAttribute(
-            'data-component-id'
-        )
+function handleDragStart(event: DragEvent) {
+	const componentId = (event.target as HTMLElement).getAttribute(
+		"data-component-id",
+	);
 
-        if (componentId) {
-            event.dataTransfer?.setData('text/plain', componentId)
-        }
-    }
+	if (componentId) {
+		event.dataTransfer?.setData("text/plain", componentId);
+	}
+}
 
-    async function handleDrop(
-        event: DragEvent,
-        rowStart: number,
-        colStart: number,
-        rowEnd: number,
-        colEnd: number
-    ) {
-        event.preventDefault()
+async function handleDrop(
+	event: DragEvent,
+	rowStart: number,
+	colStart: number,
+	rowEnd: number,
+	colEnd: number,
+) {
+	event.preventDefault();
 
-        const componentId = event.dataTransfer?.getData('text/plain')
+	const componentId = event.dataTransfer?.getData("text/plain");
 
-        const index = $components.findIndex((component: Component) => {
-            return component.id === componentId
-        })
+	const index = $components.findIndex((component: Component) => {
+		return component.id === componentId;
+	});
 
-        $components[index] = {
-            ...$components[index],
-            row_start: rowStart,
-            col_start: colStart,
-            row_end: rowEnd + ($components[index].row_end_span ?? 0),
-            col_end: colEnd + ($components[index].col_end_span ?? 0)
-        }
+	$components[index] = {
+		...$components[index],
+		row_start: rowStart,
+		col_start: colStart,
+		row_end: rowEnd + ($components[index].row_end_span ?? 0),
+		col_end: colEnd + ($components[index].col_end_span ?? 0),
+	};
 
-        const formData = new FormData()
-        formData.append('component-id', `${$components[index].id}`)
-        formData.append('row-start', `${$components[index].row_start}`)
-        formData.append('col-start', `${$components[index].col_start}`)
-        formData.append('row-end', `${$components[index].row_end}`)
-        formData.append('col-end', `${$components[index].col_end}`)
-        formData.append('row-end-span', `${$components[index].row_end_span}`)
-        formData.append('col-end-span', `${$components[index].col_end_span}`)
+	const formData = new FormData();
+	formData.append("component-id", `${$components[index].id}`);
+	formData.append("row-start", `${$components[index].row_start}`);
+	formData.append("col-start", `${$components[index].col_start}`);
+	formData.append("row-end", `${$components[index].row_end}`);
+	formData.append("col-end", `${$components[index].col_end}`);
+	formData.append("row-end-span", `${$components[index].row_end_span}`);
+	formData.append("col-end-span", `${$components[index].col_end_span}`);
 
-        await fetch('?/updateComponentPosition', {
-            method: 'POST',
-            body: formData
-        })
-    }
+	await fetch("?/updateComponentPosition", {
+		method: "POST",
+		body: formData,
+	});
+}
 
-    let ws: WebSocket
+let ws: WebSocket;
 
-    if (browser) {
-        ws = new WebSocket(
-            `ws://localhost:3000/api/v1/pages/${$page.params.pageId}/components`
-        )
+if (browser) {
+	ws = new WebSocket(
+		`ws://localhost:3000/api/v1/pages/${$page.params.pageId}/components`,
+	);
 
-        ws.onopen = () => {
-            console.log('Websocket connected')
-        }
+	ws.onopen = () => {
+		console.log("Websocket connected");
+	};
 
-        ws.onmessage = ({ data }) => {
-            const { operation_type, data: newComponent } = JSON.parse(data)
+	ws.onmessage = ({ data }) => {
+		const { operation_type, data: newComponent } = JSON.parse(data);
 
-            console.log('Websocket event triggered!')
+		console.log("Websocket event triggered!");
 
-            switch (operation_type) {
-                case 'create':
-                    $components = [...$components, newComponent]
-                    break
-                case 'update':
-                case 'update-position':
-                    $components = $components.map((component) =>
-                        component.id === newComponent.id
-                            ? { ...component, ...newComponent }
-                            : component
-                    )
-                    break
-                case 'delete':
-                    $components = $components.filter((component) => {
-                        return component.id !== newComponent.id
-                    })
-                    break
-            }
-        }
+		switch (operation_type) {
+			case "create":
+				$components = [...$components, newComponent];
+				break;
+			case "update":
+			case "update-position":
+				$components = $components.map((component) =>
+					component.id === newComponent.id
+						? { ...component, ...newComponent }
+						: component,
+				);
+				break;
+			case "delete":
+				$components = $components.filter((component) => {
+					return component.id !== newComponent.id;
+				});
+				break;
+		}
+	};
 
-        ws.onerror = (error) => {
-            console.error('WebSocket error: ', error)
-        }
+	ws.onerror = (error) => {
+		console.error("WebSocket error: ", error);
+	};
 
-        ws.onclose = () => {
-            console.log('Websocket connection closed')
-        }
-    }
+	ws.onclose = () => {
+		console.log("Websocket connection closed");
+	};
+}
 </script>
 
 <div class="grid grid-cols-[fit-content(20ch),minmax(min(50vw,30ch),1fr)]">

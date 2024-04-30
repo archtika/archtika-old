@@ -1,9 +1,9 @@
 <script lang="ts">
-    import type { PageServerData } from './$types'
-    import { page } from '$app/stores'
-    import { enhance } from '$app/forms'
+import { enhance } from "$app/forms";
+import { page } from "$app/stores";
+import type { PageServerData } from "./$types";
 
-    export let data: PageServerData
+export let data: PageServerData;
 </script>
 
 <h1>Overview for {data.website.title}</h1>

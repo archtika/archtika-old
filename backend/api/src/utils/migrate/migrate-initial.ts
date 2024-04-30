@@ -1,3 +1,3 @@
-import { migrateToInitial } from './migrate.js'
+import { migrateToInitial } from "./migrate.js";
 
-migrateToInitial()
+migrateToInitial();

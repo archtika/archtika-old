@@ -1,123 +1,118 @@
 <script lang="ts">
-    import { Renderer, parse } from 'marked'
-    import DOMPurify from 'isomorphic-dompurify'
-    import type { Component } from '$lib/types'
-    import { enhance } from '$app/forms'
-    import { components } from '$lib/stores'
-    import Resizer from './Resizer.svelte'
+import { enhance } from "$app/forms";
+import { components } from "$lib/stores";
+import type { Component } from "$lib/types";
+import DOMPurify from "isomorphic-dompurify";
+import { Renderer, parse } from "marked";
+import Resizer from "./Resizer.svelte";
 
-    export let component: Component
-    export let mimeTypes: Record<string, string[]>
-    export let getMedia: (type: string) => { id: string; name: string }[]
-    export let className = ''
-    export let styles: string
+export let component: Component;
+export let mimeTypes: Record<string, string[]>;
+export let getMedia: (type: string) => { id: string; name: string }[];
+export let styles: string;
 
-    const renderer = new Renderer()
+// biome-ignore lint: This has to be declared with let, because it is a prop
+export let className = "";
 
-    renderer.image = function (text) {
-        return text
-    }
+const renderer = new Renderer();
 
-    $: purifiedTextContent = DOMPurify.sanitize(
-        parse(component.content.textContent ?? '', { renderer }) as string
-    )
+renderer.image = (text) => text;
 
-    function handleResize(event: MouseEvent) {
-        event.preventDefault()
+// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
+$: purifiedTextContent = DOMPurify.sanitize(
+	parse(component.content.textContent ?? "", { renderer }) as string,
+);
 
-        const target = event.target as HTMLElement
-        const resizer = target.getAttribute('data-resizer')
+function handleResize(event: MouseEvent) {
+	event.preventDefault();
 
-        if (!target.parentElement) return
+	const target = event.target as HTMLElement;
+	const resizer = target.getAttribute("data-resizer");
 
-        const gridArea = getComputedStyle(
-            target.parentElement
-        ).getPropertyValue('grid-area')
-        const currentComponentIndex = $components.findIndex(
-            (component) =>
-                component.id ===
-                target.parentElement?.getAttribute('data-component-id')
-        )
+	if (!target.parentElement) return;
 
-        let [rowStart, colStart, rowEnd, colEnd] = gridArea
-            .split(' / ')
-            .map(Number)
+	const gridArea = getComputedStyle(target.parentElement).getPropertyValue(
+		"grid-area",
+	);
+	const currentComponentIndex = $components.findIndex(
+		(component) =>
+			component.id === target.parentElement?.getAttribute("data-component-id"),
+	);
 
-        switch (resizer) {
-            case 'right':
-                updateDimensions(1, 'col')
-                break
-            case 'left':
-                updateDimensions(-1, 'col')
-                break
-            case 'bottom':
-                updateDimensions(1, 'row')
-                break
-            case 'top':
-                updateDimensions(-1, 'row')
-                break
-        }
+	let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
 
-        async function updateDimensions(delta: number, type: 'row' | 'col') {
-            if (type === 'col') {
-                $components[currentComponentIndex].col_end_span = adjustSpan(
-                    colStart,
-                    colEnd,
-                    $components[currentComponentIndex].col_end_span,
-                    delta
-                )
-                colEnd = adjustEnd(colStart, colEnd, delta)
-            } else {
-                $components[currentComponentIndex].row_end_span = adjustSpan(
-                    rowStart,
-                    rowEnd,
-                    $components[currentComponentIndex].row_end_span,
-                    delta
-                )
-                rowEnd = adjustEnd(rowStart, rowEnd, delta)
-            }
+	switch (resizer) {
+		case "right":
+			updateDimensions(1, "col");
+			break;
+		case "left":
+			updateDimensions(-1, "col");
+			break;
+		case "bottom":
+			updateDimensions(1, "row");
+			break;
+		case "top":
+			updateDimensions(-1, "row");
+			break;
+	}
 
-            const formData = new FormData()
-            formData.append(
-                'component-id',
-                `${$components[currentComponentIndex].id}`
-            )
-            formData.append('row-start', `${rowStart}`)
-            formData.append('col-start', `${colStart}`)
-            formData.append('row-end', `${rowEnd}`)
-            formData.append('col-end', `${colEnd}`)
-            formData.append(
-                'row-end-span',
-                `${$components[currentComponentIndex].row_end_span}`
-            )
-            formData.append(
-                'col-end-span',
-                `${$components[currentComponentIndex].col_end_span}`
-            )
+	async function updateDimensions(delta: number, type: "row" | "col") {
+		if (type === "col") {
+			$components[currentComponentIndex].col_end_span = adjustSpan(
+				colStart,
+				colEnd,
+				$components[currentComponentIndex].col_end_span,
+				delta,
+			);
+			colEnd = adjustEnd(colStart, colEnd, delta);
+		} else {
+			$components[currentComponentIndex].row_end_span = adjustSpan(
+				rowStart,
+				rowEnd,
+				$components[currentComponentIndex].row_end_span,
+				delta,
+			);
+			rowEnd = adjustEnd(rowStart, rowEnd, delta);
+		}
 
-            await fetch('?/updateComponentPosition', {
-                method: 'POST',
-                body: formData
-            })
+		const formData = new FormData();
+		formData.append("component-id", `${$components[currentComponentIndex].id}`);
+		formData.append("row-start", `${rowStart}`);
+		formData.append("col-start", `${colStart}`);
+		formData.append("row-end", `${rowEnd}`);
+		formData.append("col-end", `${colEnd}`);
+		formData.append(
+			"row-end-span",
+			`${$components[currentComponentIndex].row_end_span}`,
+		);
+		formData.append(
+			"col-end-span",
+			`${$components[currentComponentIndex].col_end_span}`,
+		);
 
-            if (!target.parentElement) return
+		await fetch("?/updateComponentPosition", {
+			method: "POST",
+			body: formData,
+		});
 
-            target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`
-        }
+		if (!target.parentElement) return;
 
-        function adjustEnd(start: number, end: number, delta: number) {
-            return start === end ? end + 2 * delta : end + delta
-        }
+		target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`;
+	}
 
-        function adjustSpan(
-            start: number,
-            end: number,
-            span: number | undefined,
-            delta: number
-        ) {
-            return start === end ? (span ?? 0) + delta * 2 : (span ?? 0) + delta
-        }
-    }
+	function adjustEnd(start: number, end: number, delta: number) {
+		return start === end ? end + 2 * delta : end + delta;
+	}
+
+	function adjustSpan(
+		start: number,
+		end: number,
+		span: number | undefined,
+		delta: number,
+	) {
+		return start === end ? (span ?? 0) + delta * 2 : (span ?? 0) + delta;
+	}
+}
 </script>
 
 <div

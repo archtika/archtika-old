@@ -1,3 +1,3 @@
-import { migrateToPrevious } from './migrate.js'
+import { migrateToPrevious } from "./migrate.js";
 
-migrateToPrevious()
+migrateToPrevious();

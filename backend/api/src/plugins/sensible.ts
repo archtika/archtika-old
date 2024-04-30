@@ -1,9 +1,9 @@
-import fastifySensible from '@fastify/sensible'
-import { FastifyInstance } from 'fastify'
-import fastifyPlugin from 'fastify-plugin'
+import fastifySensible from "@fastify/sensible";
+import type { FastifyInstance } from "fastify";
+import fastifyPlugin from "fastify-plugin";
 
 async function cookie(fastify: FastifyInstance) {
-    fastify.register(fastifySensible)
+	fastify.register(fastifySensible);
 }
 
-export default fastifyPlugin(cookie)
+export default fastifyPlugin(cookie);

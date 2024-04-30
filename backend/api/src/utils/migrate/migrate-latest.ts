@@ -1,3 +1,3 @@
-import { migrateToLatest } from './migrate.js'
+import { migrateToLatest } from "./migrate.js";
 
-migrateToLatest()
+migrateToLatest();
