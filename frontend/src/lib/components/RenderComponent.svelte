@@ -81,11 +81,6 @@ function doDrag(event: MouseEvent) {
 	newHeight =
 		Math.max(1, Math.round(newHeight / gridCellHeight)) * gridCellHeight;
 
-	const componentElem = document.querySelector(
-		`[data-component-id="${component.id}"]`,
-	) as HTMLElement;
-	if (!componentElem) return;
-
 	cols = newWidth / gridCellWidth;
 	rows = newHeight / gridCellHeight;
 
