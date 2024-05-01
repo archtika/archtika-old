@@ -132,7 +132,7 @@ function updateComponentGridArea() {
     on:dragstart
     on:click={handleComponentClick}
     role="presentation"
-    class="{className} relative"
+    class="{className} relative prose prose-neutral max-w-none"
     style={styles}
     data-component-id={component.id}
 >

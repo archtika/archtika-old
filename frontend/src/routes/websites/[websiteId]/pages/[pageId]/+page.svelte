@@ -30,6 +30,17 @@ $: getMedia = (type: string) => {
 	return data.media[type];
 };
 
+function handleWindowClick(event: MouseEvent) {
+	const target = event.target as HTMLElement;
+
+	if (
+		!target.hasAttribute("data-component-id") &&
+		!target.closest("[data-sidebar]")
+	) {
+		$selectedComponent = null;
+	}
+}
+
 function handleDragStart(event: DragEvent) {
 	const componentId = (event.target as HTMLElement).getAttribute(
 		"data-component-id",
@@ -132,8 +143,10 @@ if (browser) {
 }
 </script>
 
-<div class="grid grid-cols-[fit-content(20ch),minmax(min(50vw,30ch),1fr)]">
-    <div class="outline outline-green-500">
+<svelte:window on:click={handleWindowClick} />
+
+<div class="grid grid-cols-[30ch,minmax(min(50vw,30ch),1fr)]">
+    <div class="outline outline-green-500 max-h-screen overflow-y-auto" data-sidebar>
         <h1>{data.website.title}</h1>
         <details open>
             <summary>Pages</summary>
@@ -171,9 +184,8 @@ if (browser) {
                         Content:
                         <textarea
                             id="update-component-{$selectedComponent}-content"
-                            name="updated-content"
-                            rows="10">{componentData?.content.textContent}</textarea
-                        >
+                            name="updated-content">{componentData?.content.textContent}
+                        </textarea>
                     </label>
                     <button type="submit">Update</button>
                 </form>
@@ -311,8 +323,6 @@ if (browser) {
                         <textarea
                             id="create-component-text-content"
                             name="content"
-                            cols="30"
-                            rows="10"
                         ></textarea>
                     </label>
                     <button type="submit">Add</button>
@@ -386,10 +396,10 @@ if (browser) {
     </div>
 
     <div
-        class="outline outline-red-500 grid grid-cols-12"
+        class="outline outline-red-500 grid grid-cols-12 max-h-screen overflow-y-auto"
         style="grid-template-rows: repeat({($components.length || 1) * 48}, 2.5rem"
     >
-        {#each Array(1152) as _, i}
+        {#each Array(($components.length || 1) * 12 * 48) as _, i}
             {@const row = Math.floor(i / 12) + 1}
             {@const col = (i % 12) + 1}
 
@@ -405,7 +415,7 @@ if (browser) {
         {#each $components as component, i (i)}
             <RenderComponent
                 {component}
-                className="bg-pink-200 outline outline-black"
+                className="bg-white outline outline-black"
                 styles="grid-area: {component.row_start ??
                     1} / {component.col_start ?? 1} / {component.row_end ??
                     1} / {component.col_end ?? 1}"
