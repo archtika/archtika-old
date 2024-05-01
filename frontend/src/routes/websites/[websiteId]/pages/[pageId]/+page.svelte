@@ -4,13 +4,17 @@ import { applyAction, deserialize, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
 import { page } from "$app/stores";
 import RenderComponent from "$lib/components/RenderComponent.svelte";
-import { components } from "$lib/stores";
+import { components, selectedComponent } from "$lib/stores";
 import type { Component } from "$lib/types";
 import type { PageServerData } from "./$types";
 
 export let data: PageServerData;
 
-const mimeTypes = {
+interface MimeTypes {
+	[key: string]: string[];
+}
+
+const mimeTypes: MimeTypes = {
 	image: ["image/jpeg", "image/png", "image/svg+xml"],
 	audio: ["audio/mpeg", "audio/wav", "audio/aac", "audio/ogg"],
 	video: ["video/mp4", "video/webm", "video/ogg"],
@@ -144,101 +148,75 @@ if (browser) {
 
         <h2>{data.page.title}</h2>
 
-        <details open>
-            <summary>Update page</summary>
-            <form
-                method="post"
-                action="?/updatePage"
-                use:enhance={() => {
-                    return async ({ update }) => {
-                        await update({ reset: false })
-                    }
-                }}
-            >
-                <label>
-                    Route:
-                    <input
-                        id="update-page-route"
-                        name="route"
-                        type="text"
-                        value={data.page.route}
-                    />
-                </label>
-                <label>
-                    Title:
-                    <input
-                        id="update-page-title"
-                        name="title"
-                        type="text"
-                        value={data.page.title}
-                    />
-                </label>
-                <label>
-                    Description:
-                    <textarea id="update-page-description" name="description"
-                        >{data.page.meta_description}</textarea
-                    >
-                </label>
-                <button type="submit">Update</button>
-            </form>
-        </details>
+        {#if $selectedComponent}
+            {@const componentData = $components.find(component => component.id === $selectedComponent)}
 
-        <h3>Components</h3>
-        <div class="outline">
-            <h4>Text</h4>
-            <form action="?/createComponent" method="post" use:enhance>
-                <input
-                    type="hidden"
-                    id="create-component-text-type"
-                    name="type"
-                    value="text"
-                />
-                <label>
-                    Content:
-                    <textarea
-                        id="create-component-text-content"
-                        name="content"
-                        cols="30"
-                        rows="10"
-                    ></textarea>
-                </label>
-                <button type="submit">Add</button>
-            </form>
-        </div>
-        {#each Object.entries(mimeTypes) as [type, mimes]}
-            {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
+            <p>Selected component: <strong>{$selectedComponent}</strong></p>
 
-            <div class="outline">
-                <h4>{title}</h4>
+            {#if componentData?.type === 'text'}
+                <form action="?/updateComponent" method="post" use:enhance>
+                    <input
+                        type="hidden"
+                        id="update-component-{componentData?.id}-id"
+                        name="id"
+                        value={componentData?.id}
+                    />
+                    <input
+                        type="hidden"
+                        id="update-component-{componentData?.type}-type"
+                        name="type"
+                        value={componentData?.type}
+                    />
+                    <label>
+                        Content:
+                        <textarea
+                            id="update-component-{$selectedComponent}-content"
+                            name="updated-content"
+                            rows="10">{componentData?.content.textContent}</textarea
+                        >
+                    </label>
+                    <button type="submit">Update</button>
+                </form>
+            {/if}
+
+            {#if ['image', 'video', 'audio'].includes(componentData?.type ?? '')}
                 <form
-                    action="?/createComponent"
+                    action="?/updateComponent"
                     method="post"
                     use:enhance
                     enctype="multipart/form-data"
                 >
                     <input
                         type="hidden"
-                        id="create-component-{type}-type"
+                        id="update-component-{componentData?.id}-type"
                         name="type"
-                        value={type}
+                        value={componentData?.type}
                     />
+                    <input
+                        type="hidden"
+                        id="update-component-{componentData?.id}-id"
+                        name="id"
+                        value={componentData?.id}
+                    />
+
                     <label>
-                        {title}:
+                        {componentData?.type.charAt(0).toUpperCase() +
+                            (componentData?.type.slice(1) ?? '')}:
                         <input
-                            id="create-component-{type}-file"
+                            id="update-component-{componentData?.id}-file"
                             name="file"
                             type="file"
-                            accept={mimes.join(', ')}
+                            accept={mimeTypes[componentData?.type || 'image'].join(', ')}
                         />
                     </label>
                     <fieldset>
-                        <legend>Select existing {type}:</legend>
+                        <legend>Select existing {componentData?.type}:</legend>
                         <div>
-                            {#each getMedia(type) as media}
+                            {#each getMedia(componentData?.type ?? '') as media}
                                 <label>
                                     <input
-                                        id="create-component-{type}-existing-file-{media.id}"
                                         type="radio"
+                                        id="update-component-{componentData?.id}-existing-file-{media.id}"
                                         name="existing-file"
                                         value={media.id}
                                     />
@@ -250,31 +228,168 @@ if (browser) {
                     <label>
                         Alt text:
                         <input
-                            id="create-component-{type}-alt-text"
+                            id="update-component-{componentData?.id}-alt-text"
                             name="alt-text"
                             type="text"
                         />
                     </label>
-                    {#if ['audio', 'video'].includes(type)}
+                    {#if ['audio', 'video'].includes(componentData?.type ?? '')}
                         <label>
                             Loop:
                             <input
-                                id="create-component-{type}-is-looped"
+                                id="update-component-{componentData?.id}-is-looped"
                                 name="is-looped"
                                 type="checkbox"
                             />
                         </label>
                     {/if}
+                    <button type="submit">Save</button>
+                </form>
+            {/if}
+
+            <form action="?/deleteComponent" method="post" use:enhance>
+                <input
+                    type="hidden"
+                    id="delete-component-{$selectedComponent}"
+                    name="id"
+                    value={$selectedComponent}
+                />
+                <button type="submit">Delete</button>
+            </form>
+        {:else}
+            <details open>
+                <summary>Update page</summary>
+                <form
+                    method="post"
+                    action="?/updatePage"
+                    use:enhance={() => {
+                        return async ({ update }) => {
+                            await update({ reset: false })
+                        }
+                    }}
+                >
+                    <label>
+                        Route:
+                        <input
+                            id="update-page-route"
+                            name="route"
+                            type="text"
+                            value={data.page.route}
+                        />
+                    </label>
+                    <label>
+                        Title:
+                        <input
+                            id="update-page-title"
+                            name="title"
+                            type="text"
+                            value={data.page.title}
+                        />
+                    </label>
+                    <label>
+                        Description:
+                        <textarea id="update-page-description" name="description"
+                            >{data.page.meta_description}</textarea
+                        >
+                    </label>
+                    <button type="submit">Update</button>
+                </form>
+            </details>
+
+            <h3>Components</h3>
+            <div class="outline">
+                <h4>Text</h4>
+                <form action="?/createComponent" method="post" use:enhance>
+                    <input
+                        type="hidden"
+                        id="create-component-text-type"
+                        name="type"
+                        value="text"
+                    />
+                    <label>
+                        Content:
+                        <textarea
+                            id="create-component-text-content"
+                            name="content"
+                            cols="30"
+                            rows="10"
+                        ></textarea>
+                    </label>
                     <button type="submit">Add</button>
                 </form>
             </div>
-        {/each}
+            {#each Object.entries(mimeTypes) as [type, mimes]}
+                {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
+
+                <div class="outline">
+                    <h4>{title}</h4>
+                    <form
+                        action="?/createComponent"
+                        method="post"
+                        use:enhance
+                        enctype="multipart/form-data"
+                    >
+                        <input
+                            type="hidden"
+                            id="create-component-{type}-type"
+                            name="type"
+                            value={type}
+                        />
+                        <label>
+                            {title}:
+                            <input
+                                id="create-component-{type}-file"
+                                name="file"
+                                type="file"
+                                accept={mimes.join(', ')}
+                            />
+                        </label>
+                        <fieldset>
+                            <legend>Select existing {type}:</legend>
+                            <div>
+                                {#each getMedia(type) as media}
+                                    <label>
+                                        <input
+                                            id="create-component-{type}-existing-file-{media.id}"
+                                            type="radio"
+                                            name="existing-file"
+                                            value={media.id}
+                                        />
+                                        {media.name}
+                                    </label>
+                                {/each}
+                            </div>
+                        </fieldset>
+                        <label>
+                            Alt text:
+                            <input
+                                id="create-component-{type}-alt-text"
+                                name="alt-text"
+                                type="text"
+                            />
+                        </label>
+                        {#if ['audio', 'video'].includes(type)}
+                            <label>
+                                Loop:
+                                <input
+                                    id="create-component-{type}-is-looped"
+                                    name="is-looped"
+                                    type="checkbox"
+                                />
+                            </label>
+                        {/if}
+                        <button type="submit">Add</button>
+                    </form>
+                </div>
+            {/each}
+        {/if}
     </div>
 
     <div
-        class="outline outline-red-500 grid grid-cols-12 grid-rows-[repeat(12,10rem)]"
+        class="outline outline-red-500 grid grid-cols-12"
+        style="grid-template-rows: repeat({($components.length || 1) * 48}, 2.5rem"
     >
-        {#each Array(144) as _, i}
+        {#each Array(1152) as _, i}
             {@const row = Math.floor(i / 12) + 1}
             {@const col = (i % 12) + 1}
 
@@ -289,8 +404,6 @@ if (browser) {
         {#each $components as component, i (i)}
             <RenderComponent
                 {component}
-                {mimeTypes}
-                {getMedia}
                 className="bg-pink-200 outline outline-black"
                 styles="grid-area: {component.row_start ??
                     1} / {component.col_start ?? 1} / {component.row_end ??

@@ -1,15 +1,13 @@
 <script lang="ts">
 import { applyAction, deserialize, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
-import { components } from "$lib/stores";
+import { components, selectedComponent } from "$lib/stores";
 import type { Component } from "$lib/types";
 import DOMPurify from "isomorphic-dompurify";
 import { Renderer, parse } from "marked";
 import Resizer from "./Resizer.svelte";
 
 export let component: Component;
-export let mimeTypes: Record<string, string[]>;
-export let getMedia: (type: string) => { id: string; name: string }[];
 export let styles: string;
 
 // biome-ignore lint: This has to be declared with let, because it is a prop
@@ -23,6 +21,18 @@ renderer.image = (text) => text;
 $: purifiedTextContent = DOMPurify.sanitize(
 	parse(component.content.textContent ?? "", { renderer }) as string,
 );
+
+function handleComponentClick(event: MouseEvent) {
+	let target = event.target as HTMLElement;
+
+	while (target && !target.getAttribute("data-component-id")) {
+		if (!target.parentElement) return;
+
+		target = target.parentElement;
+	}
+
+	$selectedComponent = target.getAttribute("data-component-id");
+}
 
 function handleResize(event: MouseEvent) {
 	event.preventDefault();
@@ -127,6 +137,7 @@ function handleResize(event: MouseEvent) {
 <div
     draggable="true"
     on:dragstart
+    on:click={handleComponentClick}
     role="presentation"
     class="{className} relative"
     style={styles}
@@ -155,34 +166,6 @@ function handleResize(event: MouseEvent) {
 
     {#if component.type === 'text'}
         {@html purifiedTextContent}
-
-        <details>
-            <summary>Update</summary>
-            <form action="?/updateComponent" method="post" use:enhance>
-                <input
-                    type="hidden"
-                    id="update-component-{component.id}-id"
-                    name="id"
-                    value={component.id}
-                />
-                <input
-                    type="hidden"
-                    id="update-component-{component.id}-type"
-                    name="type"
-                    value={component.type}
-                />
-                <label>
-                    Content:
-                    <textarea
-                        id="update-component-{component.id}-content"
-                        name="updated-content"
-                        cols="30"
-                        rows="10">{component.content.textContent}</textarea
-                    >
-                </label>
-                <button type="submit">Update</button>
-            </form>
-        </details>
     {/if}
 
     {#if component.type === 'image'}
@@ -209,85 +192,4 @@ function handleResize(event: MouseEvent) {
             <track default kind="captions" srclang="en" />
         </video>
     {/if}
-
-    {#if ['image', 'video', 'audio'].includes(component.type)}
-        <details>
-            <summary>Update</summary>
-            <form
-                action="?/updateComponent"
-                method="post"
-                use:enhance
-                enctype="multipart/form-data"
-            >
-                <input
-                    type="hidden"
-                    id="update-component-{component.id}-type"
-                    name="type"
-                    value={component.type}
-                />
-                <input
-                    type="hidden"
-                    id="update-component-{component.id}-id"
-                    name="id"
-                    value={component.id}
-                />
-
-                <label>
-                    {component.type.charAt(0).toUpperCase() +
-                        component.type.slice(1)}:
-                    <input
-                        id="update-component-{component.id}-file"
-                        name="file"
-                        type="file"
-                        accept={mimeTypes[component.type].join(', ')}
-                    />
-                </label>
-                <fieldset>
-                    <legend>Select existing {component.type}:</legend>
-                    <div>
-                        {#each getMedia(component.type) as media}
-                            <label>
-                                <input
-                                    type="radio"
-                                    id="update-component-{component.id}-existing-file-{media.id}"
-                                    name="existing-file"
-                                    value={media.id}
-                                />
-                                {media.name}
-                            </label>
-                        {/each}
-                    </div>
-                </fieldset>
-                <label>
-                    Alt text:
-                    <input
-                        id="update-component-{component.id}-alt-text"
-                        name="alt-text"
-                        type="text"
-                    />
-                </label>
-                {#if ['audio', 'video'].includes(component.type)}
-                    <label>
-                        Loop:
-                        <input
-                            id="update-component-{component.id}-is-looped"
-                            name="is-looped"
-                            type="checkbox"
-                        />
-                    </label>
-                {/if}
-                <button type="submit">Save</button>
-            </form>
-        </details>
-    {/if}
-
-    <form action="?/deleteComponent" method="post" use:enhance>
-        <input
-            type="hidden"
-            id="delete-component-{component.id}"
-            name="id"
-            value={component.id}
-        />
-        <button type="submit">Delete</button>
-    </form>
 </div>
