@@ -4,7 +4,7 @@ import fastifyPlugin from "fastify-plugin";
 
 async function rateLimit(fastify: FastifyInstance) {
 	await fastify.register(fastifyRateLimit, {
-		max: 100,
+		max: 1000,
 		timeWindow: 5 * 60 * 1000,
 		keyGenerator: (req) => {
 			return req.user ? req.user.id || req.ip : req.ip;

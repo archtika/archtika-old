@@ -34,103 +34,101 @@ function handleComponentClick(event: MouseEvent) {
 	$selectedComponent = target.getAttribute("data-component-id");
 }
 
+let resizing = false;
+let startWidth: number;
+let startHeight: number;
+let startX: number;
+let startY: number;
+let cols: number;
+let rows: number;
+
 function handleResize(event: MouseEvent) {
 	event.preventDefault();
 
-	const target = event.target as HTMLElement;
-	const resizer = target.getAttribute("data-resizer");
+	const element = event.target as HTMLElement;
 
-	if (!target.parentElement) return;
+	if (!element.parentElement) return;
 
-	const gridArea = getComputedStyle(target.parentElement).getPropertyValue(
-		"grid-area",
-	);
-	const currentComponentIndex = $components.findIndex(
-		(component) =>
-			component.id === target.parentElement?.getAttribute("data-component-id"),
-	);
+	resizing = true;
+	startX = event.clientX;
+	startY = event.clientY;
 
-	let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
+	const rect = element.parentElement.getBoundingClientRect();
+	startWidth = rect.width;
+	startHeight = rect.height;
 
-	switch (resizer) {
-		case "right":
-			updateDimensions(1, "col");
-			break;
-		case "left":
-			updateDimensions(-1, "col");
-			break;
-		case "bottom":
-			updateDimensions(1, "row");
-			break;
-		case "top":
-			updateDimensions(-1, "row");
-			break;
+	window.addEventListener("mousemove", doDrag);
+	window.addEventListener("mouseup", stopDrag);
+}
+
+function doDrag(event: MouseEvent) {
+	if (!resizing) return;
+
+	const dx = event.clientX - startX;
+	const dy = event.clientY - startY;
+
+	const gridCellSize = document.querySelector(`[data-zone="1"]`);
+	if (!gridCellSize) return;
+
+	const rect = gridCellSize.getBoundingClientRect();
+	const gridCellWidth = rect.width;
+	const gridCellHeight = rect.height;
+
+	let newWidth = startWidth + dx;
+	let newHeight = startHeight + dy;
+
+	newWidth = Math.max(1, Math.round(newWidth / gridCellWidth)) * gridCellWidth;
+	newHeight =
+		Math.max(1, Math.round(newHeight / gridCellHeight)) * gridCellHeight;
+
+	const componentElem = document.querySelector(
+		`[data-component-id="${component.id}"]`,
+	) as HTMLElement;
+	if (!componentElem) return;
+
+	cols = newWidth / gridCellWidth;
+	rows = newHeight / gridCellHeight;
+
+	updateComponentGridArea();
+}
+
+async function stopDrag() {
+	resizing = false;
+	window.removeEventListener("mousemove", doDrag);
+	window.removeEventListener("mouseup", stopDrag);
+
+	const index = $components.findIndex((c) => c.id === component.id);
+
+	const formData = new FormData();
+	formData.append("component-id", `${$components[index].id}`);
+	formData.append("row-start", `${$components[index].row_start}`);
+	formData.append("col-start", `${$components[index].col_start}`);
+	formData.append("row-end", `${$components[index].row_end}`);
+	formData.append("col-end", `${$components[index].col_end}`);
+	formData.append("row-end-span", `${$components[index].row_end_span}`);
+	formData.append("col-end-span", `${$components[index].col_end_span}`);
+
+	const response = await fetch("?/updateComponentPosition", {
+		method: "POST",
+		body: formData,
+	});
+
+	const result = deserialize(await response.text());
+
+	if (result.type === "success") {
+		await invalidateAll();
 	}
 
-	async function updateDimensions(delta: number, type: "row" | "col") {
-		if (type === "col") {
-			$components[currentComponentIndex].col_end_span = adjustSpan(
-				colStart,
-				colEnd,
-				$components[currentComponentIndex].col_end_span,
-				delta,
-			);
-			colEnd = adjustEnd(colStart, colEnd, delta);
-		} else {
-			$components[currentComponentIndex].row_end_span = adjustSpan(
-				rowStart,
-				rowEnd,
-				$components[currentComponentIndex].row_end_span,
-				delta,
-			);
-			rowEnd = adjustEnd(rowStart, rowEnd, delta);
-		}
+	applyAction(result);
+}
 
-		const formData = new FormData();
-		formData.append("component-id", `${$components[currentComponentIndex].id}`);
-		formData.append("row-start", `${rowStart}`);
-		formData.append("col-start", `${colStart}`);
-		formData.append("row-end", `${rowEnd}`);
-		formData.append("col-end", `${colEnd}`);
-		formData.append(
-			"row-end-span",
-			`${$components[currentComponentIndex].row_end_span}`,
-		);
-		formData.append(
-			"col-end-span",
-			`${$components[currentComponentIndex].col_end_span}`,
-		);
+function updateComponentGridArea() {
+	const index = $components.findIndex((c) => c.id === component.id);
 
-		const response = await fetch("?/updateComponentPosition", {
-			method: "POST",
-			body: formData,
-		});
-
-		const result = deserialize(await response.text());
-
-		if (result.type === "success") {
-			await invalidateAll();
-		}
-
-		applyAction(result);
-
-		if (!target.parentElement) return;
-
-		target.parentElement.style.gridArea = `${rowStart} / ${colStart} / ${rowEnd} / ${colEnd}`;
-	}
-
-	function adjustEnd(start: number, end: number, delta: number) {
-		return start === end ? end + 2 * delta : end + delta;
-	}
-
-	function adjustSpan(
-		start: number,
-		end: number,
-		span: number | undefined,
-		delta: number,
-	) {
-		return start === end ? (span ?? 0) + delta * 2 : (span ?? 0) + delta;
-	}
+	$components[index].col_end = $components[index].col_start + cols;
+	$components[index].row_end = $components[index].row_start + rows;
+	$components[index].col_end_span = cols;
+	$components[index].row_end_span = rows;
 }
 </script>
 
@@ -144,23 +142,8 @@ function handleResize(event: MouseEvent) {
     data-component-id={component.id}
 >
     <Resizer
-        direction="right"
-        className="bottom-1/2 -end-2 -translate-y-1/2 cursor-e-resize"
-        on:mousedown={handleResize}
-    />
-    <Resizer
-        direction="left"
-        className="top-1/2 -end-2 translate-y-1/2 cursor-w-resize"
-        on:mousedown={handleResize}
-    />
-    <Resizer
-        direction="top"
-        className="-bottom-2 end-1/2 -translate-x-1/2 cursor-n-resize"
-        on:mousedown={handleResize}
-    />
-    <Resizer
-        direction="bottom"
-        className="-bottom-2 start-1/2 translate-x-1/2 cursor-s-resize"
+        direction="bottom-right"
+        className="bottom-0 end-0 cursor-se-resize"
         on:mousedown={handleResize}
     />
 

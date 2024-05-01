@@ -1,5 +1,5 @@
 <script lang="ts">
-export let direction: "left" | "top" | "right" | "bottom";
+export let direction: "bottom-right";
 
 // biome-ignore lint: This has to be declared with let, because it is a prop
 export let className = "";

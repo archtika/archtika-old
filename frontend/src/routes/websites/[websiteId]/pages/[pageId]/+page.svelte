@@ -396,6 +396,7 @@ if (browser) {
             <div
                 class="outline outline-blue-500"
                 style="grid-area: {row} / {col} / {row} / {col}"
+                data-zone={++i}
                 on:dragover={(event) => event.preventDefault()}
                 on:drop={(event) => handleDrop(event, row, col, row, col)}
                 role="presentation"
