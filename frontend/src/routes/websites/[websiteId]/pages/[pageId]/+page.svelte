@@ -1,6 +1,7 @@
 <script lang="ts">
 import { browser } from "$app/environment";
-import { enhance } from "$app/forms";
+import { applyAction, deserialize, enhance } from "$app/forms";
+import { invalidateAll } from "$app/navigation";
 import { page } from "$app/stores";
 import RenderComponent from "$lib/components/RenderComponent.svelte";
 import { components } from "$lib/stores";
@@ -67,10 +68,18 @@ async function handleDrop(
 	formData.append("row-end-span", `${$components[index].row_end_span}`);
 	formData.append("col-end-span", `${$components[index].col_end_span}`);
 
-	await fetch("?/updateComponentPosition", {
+	const response = await fetch("?/updateComponentPosition", {
 		method: "POST",
 		body: formData,
 	});
+
+	const result = deserialize(await response.text());
+
+	if (result.type === "success") {
+		await invalidateAll();
+	}
+
+	applyAction(result);
 }
 
 let ws: WebSocket;

@@ -60,11 +60,17 @@ export async function createMedia(
 	const objectName = randomId;
 
 	try {
-		await req.server.minio.client.putObject(bucketName, objectName, buffer, {
-			"Content-Type": media.mimetype,
-			"X-Amz-Meta-Original-Name": media.name,
-			"X-Amz-Meta-File-Hash": media.file_hash,
-		});
+		await req.server.minio.client.putObject(
+			bucketName,
+			objectName,
+			buffer,
+			undefined,
+			{
+				"Content-Type": media.mimetype,
+				"X-Amz-Meta-Original-Name": media.name,
+				"X-Amz-Meta-File-Hash": media.file_hash,
+			},
+		);
 
 		console.log("File uploaded successfully");
 	} catch (err) {

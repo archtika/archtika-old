@@ -1,5 +1,6 @@
 <script lang="ts">
-import { enhance } from "$app/forms";
+import { applyAction, deserialize, enhance } from "$app/forms";
+import { invalidateAll } from "$app/navigation";
 import { components } from "$lib/stores";
 import type { Component } from "$lib/types";
 import DOMPurify from "isomorphic-dompurify";
@@ -90,10 +91,18 @@ function handleResize(event: MouseEvent) {
 			`${$components[currentComponentIndex].col_end_span}`,
 		);
 
-		await fetch("?/updateComponentPosition", {
+		const response = await fetch("?/updateComponentPosition", {
 			method: "POST",
 			body: formData,
 		});
+
+		const result = deserialize(await response.text());
+
+		if (result.type === "success") {
+			await invalidateAll();
+		}
+
+		applyAction(result);
 
 		if (!target.parentElement) return;
 
