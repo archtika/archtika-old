@@ -23,15 +23,11 @@ $: purifiedTextContent = DOMPurify.sanitize(
 );
 
 function handleComponentClick(event: MouseEvent) {
-	let target = event.target as HTMLElement;
+	const target = (event.target as HTMLElement).closest("[data-component-id]");
 
-	while (target && !target.getAttribute("data-component-id")) {
-		if (!target.parentElement) return;
-
-		target = target.parentElement;
+	if (target) {
+		$selectedComponent = target.getAttribute("data-component-id");
 	}
-
-	$selectedComponent = target.getAttribute("data-component-id");
 }
 
 let resizing = false;
@@ -132,7 +128,9 @@ function updateComponentGridArea() {
     on:dragstart
     on:click={handleComponentClick}
     role="presentation"
-    class="{className} relative prose prose-neutral max-w-none"
+    class="{className} relative prose prose-neutral max-w-none
+			{$selectedComponent === component.id ? "outline outline-blue-200" : ""}
+		"
     style={styles}
     data-component-id={component.id}
 >
@@ -147,7 +145,7 @@ function updateComponentGridArea() {
     {/if}
 
     {#if component.type === 'image'}
-        <img src={component.url} alt={component.content.altText} />
+        <img src={component.url} alt={component.content.altText} draggable="false" />
     {/if}
 
     {#if component.type === 'audio'}

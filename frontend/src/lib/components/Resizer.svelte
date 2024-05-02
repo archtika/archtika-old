@@ -6,7 +6,7 @@ export let className = "";
 </script>
 
 <div
-    class="w-4 h-4 outline outline-black bg-white absolute {className}"
+    class="w-5 h-5 border border-neutral-900 bg-white absolute {className}"
     data-resizer={direction}
     on:mousedown
     role="presentation"

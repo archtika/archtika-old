@@ -4,7 +4,7 @@ import { applyAction, deserialize, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
 import { page } from "$app/stores";
 import RenderComponent from "$lib/components/RenderComponent.svelte";
-import { components, selectedComponent } from "$lib/stores";
+import { components, initialPosition, selectedComponent } from "$lib/stores";
 import type { Component } from "$lib/types";
 import type { PageServerData } from "./$types";
 
@@ -34,7 +34,7 @@ function handleWindowClick(event: MouseEvent) {
 	const target = event.target as HTMLElement;
 
 	if (
-		!target.hasAttribute("data-component-id") &&
+		!target.closest("[data-component-id]") &&
 		!target.closest("[data-sidebar]")
 	) {
 		$selectedComponent = null;
@@ -51,6 +51,20 @@ function handleDragStart(event: DragEvent) {
 	}
 }
 
+function handleDragOver(event: DragEvent) {
+	event.preventDefault();
+
+	const target = event.target as HTMLElement;
+
+	target.classList.add("bg-red-500");
+}
+
+function handleDragLeave(event: DragEvent) {
+	const target = event.target as HTMLElement;
+
+	target.classList.remove("bg-red-500");
+}
+
 async function handleDrop(
 	event: DragEvent,
 	rowStart: number,
@@ -59,6 +73,10 @@ async function handleDrop(
 	colEnd: number,
 ) {
 	event.preventDefault();
+
+	const target = event.target as HTMLElement;
+
+	target.classList.remove("bg-red-500");
 
 	const componentId = event.dataTransfer?.getData("text/plain");
 
@@ -143,10 +161,12 @@ if (browser) {
 }
 </script>
 
+{JSON.stringify($initialPosition)}
+
 <svelte:window on:click={handleWindowClick} />
 
 <div class="grid grid-cols-[30ch,minmax(min(50vw,30ch),1fr)]">
-    <div class="outline outline-green-500 max-h-screen overflow-y-auto" data-sidebar>
+    <div class="border border-neutral-900 max-h-screen overflow-y-auto" data-sidebar>
         <h1>{data.website.title}</h1>
         <details open>
             <summary>Pages</summary>
@@ -259,7 +279,12 @@ if (browser) {
                 </form>
             {/if}
 
-            <form action="?/deleteComponent" method="post" use:enhance>
+            <form action="?/deleteComponent" method="post" use:enhance={() => {
+                return async ({ update }) => {
+                    await update()
+                    $selectedComponent = null
+                }
+            }}>
                 <input
                     type="hidden"
                     id="delete-component-{$selectedComponent}"
@@ -309,9 +334,38 @@ if (browser) {
             </details>
 
             <h3>Components</h3>
-            <div class="outline">
+            <div>
                 <h4>Text</h4>
-                <form action="?/createComponent" method="post" use:enhance>
+                <form action="?/createComponent" method="post" use:enhance={() => {
+                    const gridCellSize = document.querySelector(`[data-zone="1"]`);
+
+                    if (!gridCellSize) return;
+
+                    const rect = gridCellSize.getBoundingClientRect();
+                    const gridCellHeight = rect.height;
+                    const contentContainer = document.querySelector('[data-content-container]')
+
+                    if (!contentContainer) return
+
+                    const zone = contentContainer.scrollTop / gridCellHeight * 12 + 1
+                    const zoneElement = document.querySelector(`[data-zone="${zone}"]`)
+
+                    if (!zoneElement) return
+
+                    const gridArea = getComputedStyle(zoneElement).getPropertyValue("grid-area")
+                    let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
+
+                    $initialPosition = {
+                        rowStart,
+                        colStart,
+                        rowEnd,
+                        colEnd
+                    }
+
+                    return async ({ update }) => {
+                        await update()
+                    }
+                }}>
                     <input
                         type="hidden"
                         id="create-component-text-type"
@@ -331,7 +385,7 @@ if (browser) {
             {#each Object.entries(mimeTypes) as [type, mimes]}
                 {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
 
-                <div class="outline">
+                <div>
                     <h4>{title}</h4>
                     <form
                         action="?/createComponent"
@@ -396,18 +450,19 @@ if (browser) {
     </div>
 
     <div
-        class="outline outline-red-500 grid grid-cols-12 max-h-screen overflow-y-auto"
+        class="grid grid-cols-12 max-h-screen overflow-y-auto"
         style="grid-template-rows: repeat({($components.length || 1) * 48}, 2.5rem"
+        data-content-container
     >
         {#each Array(($components.length || 1) * 12 * 48) as _, i}
             {@const row = Math.floor(i / 12) + 1}
             {@const col = (i % 12) + 1}
 
             <div
-                class="outline outline-blue-500"
                 style="grid-area: {row} / {col} / {row} / {col}"
-                data-zone={++i}
-                on:dragover={(event) => event.preventDefault()}
+                data-zone={i + 1}
+                on:dragover={handleDragOver}
+                on:dragleave={handleDragLeave}
                 on:drop={(event) => handleDrop(event, row, col, row, col)}
                 role="presentation"
             />
@@ -415,7 +470,7 @@ if (browser) {
         {#each $components as component, i (i)}
             <RenderComponent
                 {component}
-                className="bg-white outline outline-black"
+                className="bg-white border border-neutral-900 px-2"
                 styles="grid-area: {component.row_start ??
                     1} / {component.col_start ?? 1} / {component.row_end ??
                     1} / {component.col_end ?? 1}"

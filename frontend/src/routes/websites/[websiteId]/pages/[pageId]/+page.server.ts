@@ -1,3 +1,4 @@
+import { initialPosition } from "$lib/stores";
 import type { ComponentApiPayload } from "$lib/types";
 import { error } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
@@ -59,6 +60,17 @@ export const actions: Actions = {
 	},
 	createComponent: async ({ request, fetch, params }) => {
 		const data = await request.formData();
+
+		let currentInitialPosition: {
+			rowStart: number;
+			colStart: number;
+			rowEnd: number;
+			colEnd: number;
+		};
+
+		initialPosition.subscribe((value) => {
+			currentInitialPosition = value;
+		});
 
 		let body: ComponentApiPayload = {
 			type: "",

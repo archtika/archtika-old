@@ -2,7 +2,7 @@
 import "../app.css";
 </script>
 
-<header>
+<header class="border border-neutral-900 p-2">
     <a href="/">archtika</a>
     <a href="/account">Account</a>
 </header>
@@ -11,6 +11,6 @@ import "../app.css";
     <slot />
 </main>
 
-<footer>
+<footer class="border border-neutral-900 p-2">
     <p>© 2024 archtika</p>
 </footer>
