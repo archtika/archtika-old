@@ -4,9 +4,10 @@ import { applyAction, deserialize, enhance } from "$app/forms";
 import { invalidateAll } from "$app/navigation";
 import { page } from "$app/stores";
 import RenderComponent from "$lib/components/RenderComponent.svelte";
-import { components, initialPosition, selectedComponent } from "$lib/stores";
+import { components, selectedComponent } from "$lib/stores";
 import type { Component } from "$lib/types";
 import type { PageServerData } from "./$types";
+import type { SubmitFunction } from "./$types";
 
 export let data: PageServerData;
 
@@ -115,6 +116,37 @@ async function handleDrop(
 	applyAction(result);
 }
 
+const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
+	const gridCellSize = document.querySelector(`[data-zone="1"]`);
+
+	if (!gridCellSize) return;
+
+	const rect = gridCellSize.getBoundingClientRect();
+	const gridCellHeight = rect.height;
+	const contentContainer = document.querySelector("[data-content-container]");
+
+	if (!contentContainer) return;
+
+	const zone = (contentContainer.scrollTop / gridCellHeight) * 12 + 1;
+	const zoneElement = document.querySelector(`[data-zone="${zone}"]`);
+
+	if (!zoneElement) return;
+
+	const gridArea = getComputedStyle(zoneElement).getPropertyValue("grid-area");
+	const [rowStart, colStart, rowEnd, colEnd] = gridArea
+		.split(" / ")
+		.map(Number);
+
+	const initialPosition = JSON.stringify({
+		rowStart,
+		colStart,
+		rowEnd,
+		colEnd,
+	});
+
+	formData.append("initial-position", initialPosition);
+};
+
 let ws: WebSocket;
 
 if (browser) {
@@ -160,8 +192,6 @@ if (browser) {
 	};
 }
 </script>
-
-{JSON.stringify($initialPosition)}
 
 <svelte:window on:click={handleWindowClick} />
 
@@ -336,36 +366,7 @@ if (browser) {
             <h3>Components</h3>
             <div>
                 <h4>Text</h4>
-                <form action="?/createComponent" method="post" use:enhance={() => {
-                    const gridCellSize = document.querySelector(`[data-zone="1"]`);
-
-                    if (!gridCellSize) return;
-
-                    const rect = gridCellSize.getBoundingClientRect();
-                    const gridCellHeight = rect.height;
-                    const contentContainer = document.querySelector('[data-content-container]')
-
-                    if (!contentContainer) return
-
-                    const zone = contentContainer.scrollTop / gridCellHeight * 12 + 1
-                    const zoneElement = document.querySelector(`[data-zone="${zone}"]`)
-
-                    if (!zoneElement) return
-
-                    const gridArea = getComputedStyle(zoneElement).getPropertyValue("grid-area")
-                    let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
-
-                    $initialPosition = {
-                        rowStart,
-                        colStart,
-                        rowEnd,
-                        colEnd
-                    }
-
-                    return async ({ update }) => {
-                        await update()
-                    }
-                }}>
+                <form action="?/createComponent" method="post" use:enhance={enhanceCreateComponentForm}>
                     <input
                         type="hidden"
                         id="create-component-text-type"
@@ -390,7 +391,7 @@ if (browser) {
                     <form
                         action="?/createComponent"
                         method="post"
-                        use:enhance
+                        use:enhance={enhanceCreateComponentForm}
                         enctype="multipart/form-data"
                     >
                         <input

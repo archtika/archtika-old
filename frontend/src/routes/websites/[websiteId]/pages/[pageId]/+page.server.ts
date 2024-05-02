@@ -1,4 +1,3 @@
-import { initialPosition } from "$lib/stores";
 import type { ComponentApiPayload } from "$lib/types";
 import { error } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
@@ -60,17 +59,7 @@ export const actions: Actions = {
 	},
 	createComponent: async ({ request, fetch, params }) => {
 		const data = await request.formData();
-
-		let currentInitialPosition: {
-			rowStart: number;
-			colStart: number;
-			rowEnd: number;
-			colEnd: number;
-		};
-
-		initialPosition.subscribe((value) => {
-			currentInitialPosition = value;
-		});
+		const intitialPosition = JSON.parse(data.get("initial-position") as string);
 
 		let body: ComponentApiPayload = {
 			type: "",
@@ -142,10 +131,10 @@ export const actions: Actions = {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					row_start: 1,
-					col_start: 1,
-					row_end: 1,
-					col_end: 1,
+					row_start: intitialPosition.rowStart,
+					col_start: intitialPosition.colStart,
+					row_end: intitialPosition.rowEnd,
+					col_end: intitialPosition.colEnd,
 					row_end_span: 0,
 					col_end_span: 0,
 				}),
