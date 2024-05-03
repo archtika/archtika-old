@@ -20,6 +20,7 @@ export async function viewChangeLog(
 				),
 			]),
 		)
+		.orderBy("created_at")
 		.execute();
 
 	if (!log.length) {

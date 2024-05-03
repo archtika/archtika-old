@@ -117,9 +117,9 @@ export let data: PageServerData;
     </form>
 </details>
 
-<a href={`http://localhost:3000/api/v1/websites/${$page.params.websiteId}/generate`} download>
-    Download Website
-</a>
+<form method="post" action="?/generateWebsite" use:enhance>
+    <button type="submit">Generate website</button>
+</form>
 
 <h2>Pages</h2>
 
