@@ -58,11 +58,11 @@ export async function up(db: Kysely<DB>) {
         CASE TG_TABLE_NAME
           WHEN 'website' THEN
             entity_type_val := 'website';
-            website_id_val := NEW.id;
-            last_modified_by_val := NEW.last_modified_by;
+            website_id_val := COALESCE(NEW.id, OLD.id);
+            last_modified_by_val := COALESCE(NEW.last_modified_by, OLD.last_modified_by);
           WHEN 'page' THEN
             entity_type_val := 'page';
-            website_id_val := NEW.website_id;
+            website_id_val := COALESCE(NEW.website_id, OLD.website_id);
             SELECT website.last_modified_by INTO last_modified_by_val
             FROM structure.website
             WHERE website.id = website_id_val;
@@ -70,7 +70,7 @@ export async function up(db: Kysely<DB>) {
             entity_type_val := 'component';
             SELECT page.website_id INTO website_id_val
             FROM structure.page
-            WHERE page.id = NEW.page_id;
+            WHERE page.id = COALESCE(NEW.page_id, OLD.page_id);
             SELECT website.last_modified_by INTO last_modified_by_val
             FROM structure.website
             WHERE website.id = website_id_val;
@@ -81,14 +81,14 @@ export async function up(db: Kysely<DB>) {
             WHERE page.id = (
               SELECT component.page_id
               FROM components.component
-              WHERE component.id = NEW.component_id
+              WHERE component.id = COALESCE(NEW.component_id, OLD.component_id)
             );
             SELECT website.last_modified_by INTO last_modified_by_val
             FROM structure.website
             WHERE website.id = website_id_val;
           WHEN 'collaborator' THEN
             entity_type_val := 'collaborator';
-            website_id_val := NEW.website_id;
+            website_id_val := COALESCE(NEW.website_id, OLD.website_id);
             SELECT website.last_modified_by INTO last_modified_by_val
             FROM structure.website
             WHERE website.id = website_id_val;
