@@ -22,4 +22,12 @@
     button[type='submit'] {
         @apply px-2 py-1 border border-neutral-900 bg-neutral-100;
     }
+
+    del {
+        @apply bg-red-100;
+    }
+
+    ins {
+        @apply bg-green-100
+    }
 }

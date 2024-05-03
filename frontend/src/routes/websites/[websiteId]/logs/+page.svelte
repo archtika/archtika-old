@@ -2,6 +2,57 @@
 import type { PageServerData } from "./$types";
 
 export let data: PageServerData;
+
+interface DiffObject {
+	[key: string]: string;
+}
+
+function generateDiffHtml(
+	previous: DiffObject,
+	current: DiffObject,
+	indent = 0,
+) {
+	let diffHtml = "";
+	const indentString = "\t".repeat(indent);
+	let innerHtml = "";
+
+	if (!previous || !current) {
+		const validObject = previous || current;
+
+		return JSON.stringify(validObject, null, 4);
+	}
+
+	const allKeys = new Set([...Object.keys(previous), ...Object.keys(current)]);
+
+	for (const key of allKeys) {
+		let prevValue = previous[key];
+		let currValue = current[key];
+
+		if (
+			prevValue &&
+			currValue &&
+			typeof prevValue === "object" &&
+			typeof currValue === "object"
+		) {
+			innerHtml += `${indentString}\t"${key}": ${generateDiffHtml(
+				prevValue,
+				currValue,
+				indent + 1,
+			)}`;
+		} else if (prevValue !== currValue) {
+			prevValue = String(prevValue).trim();
+			currValue = String(currValue).trim();
+
+			innerHtml += `${indentString}\t<del>"${key}": "${prevValue}"</del>\n`;
+			innerHtml += `${indentString}\t<ins>"${key}": "${currValue}"</ins>\n`;
+		} else {
+			innerHtml += `${indentString}\t"${key}": "${currValue}",\n`;
+		}
+	}
+
+	diffHtml += `{\n${innerHtml}${indentString}}\n`;
+	return diffHtml;
+}
 </script>
 
 <h1>Logs for {data.website.title}</h1>
@@ -15,10 +66,7 @@ export let data: PageServerData;
             <p><strong>Date and time:</strong> {created_at}</p>
             <p><strong>User:</strong> {user_id}</p>
             <p><strong>Change summary:</strong> {change_summary}</p>
-            <p><strong>Previous value:</strong></p>
-            <pre>{JSON.stringify(previous_value, null, 4)}</pre>
-            <p><strong>New value:</strong></p>
-            <pre>{JSON.stringify(new_value, null, 4)}</pre>
+            <pre>{@html generateDiffHtml(previous_value, new_value)}</pre>
         </article>
     {/each}
 {/if}
