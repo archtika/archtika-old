@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import {
 	createWebsite,
 	deleteWebsite,
+	generateWebsite,
 	getAllWebsites,
 	getWebsite,
 	updateWebsite,
@@ -51,6 +52,17 @@ export default async function (fastify: FastifyInstance) {
 			},
 		},
 		getWebsite,
+	);
+
+	fastify.get(
+		"/:id/generate",
+		{
+			schema: {
+				params: websiteParamsSchema,
+				tags: commonSchema.schema.tags,
+			},
+		},
+		generateWebsite,
 	);
 
 	fastify.patch(

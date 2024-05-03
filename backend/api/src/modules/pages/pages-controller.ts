@@ -44,7 +44,7 @@ export async function createPage(
 									),
 								]),
 							),
-						route: `/${route}`,
+						route,
 						title,
 						meta_description: metaDescription,
 					}))
@@ -175,7 +175,7 @@ export async function updatePage(
 				return await trx
 					.updateTable("structure.page")
 					.set({
-						...(route ? { route: `/${route}` } : {}),
+						...(route ? { route } : {}),
 						title,
 						meta_description: metaDescription,
 						updated_at: sql`now()`,

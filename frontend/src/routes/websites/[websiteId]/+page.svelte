@@ -110,9 +110,16 @@ export let data: PageServerData;
 
 <h3>Delete</h3>
 
-<form method="post" action="?/deleteWebsite" use:enhance>
-    <button type="submit">Delete website</button>
-</form>
+<details>
+    <summary>Delete</summary>
+    <form method="post" action="?/deleteWebsite" use:enhance>
+        <button type="submit">Delete website</button>
+    </form>
+</details>
+
+<a href={`http://localhost:3000/api/v1/websites/${$page.params.websiteId}/generate`} download>
+    Download Website
+</a>
 
 <h2>Pages</h2>
 

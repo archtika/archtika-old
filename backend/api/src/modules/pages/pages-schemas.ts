@@ -15,9 +15,9 @@ export type PageParamsSchemaType = Static<typeof pageParamsSchema>;
 
 export const createPageSchema = Type.Object({
 	route: Type.String({
-		minLength: 5,
+		minLength: 1,
 		maxLength: 200,
-		pattern: "^(?!.*--)[a-z0-9\\-/]*[^-/]$",
+		pattern: "^(/|(?!.*--)[a-z0-9\\-/]*[^-/])$",
 	}),
 	title: Type.Optional(Type.String({ minLength: 5, maxLength: 50 })),
 	metaDescription: Type.Optional(
@@ -30,9 +30,9 @@ export type CreatePageSchemaType = Static<typeof createPageSchema>;
 export const updatePageSchema = Type.Object({
 	route: Type.Optional(
 		Type.String({
-			minLength: 5,
+			minLength: 1,
 			maxLength: 200,
-			pattern: "^(?!.*--)[a-z0-9\\-/]*[^-/]$",
+			pattern: "^(/|(?!.*--)[a-z0-9\\-/]*[^-/])$",
 		}),
 	),
 	title: Type.Optional(Type.String({ minLength: 5, maxLength: 50 })),

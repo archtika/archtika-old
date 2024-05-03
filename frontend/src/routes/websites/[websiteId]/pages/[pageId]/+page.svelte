@@ -16,7 +16,7 @@ interface MimeTypes {
 }
 
 const mimeTypes: MimeTypes = {
-	image: ["image/jpeg", "image/png", "image/svg+xml"],
+	image: ["image/jpeg", "image/png", "image/svg+xml", "image/webp"],
 	audio: ["audio/mpeg", "audio/wav", "audio/aac", "audio/ogg"],
 	video: ["video/mp4", "video/webm", "video/ogg"],
 };
@@ -196,7 +196,7 @@ if (browser) {
 <svelte:window on:click={handleWindowClick} />
 
 <div class="grid grid-cols-[30ch,minmax(min(50vw,30ch),1fr)]">
-    <div class="border border-neutral-900 max-h-screen overflow-y-auto" data-sidebar>
+    <div class="border border-neutral-900 max-h-screen overflow-y-auto p-2" data-sidebar>
         <h1>{data.website.title}</h1>
         <details open>
             <summary>Pages</summary>
@@ -234,7 +234,7 @@ if (browser) {
                         Content:
                         <textarea
                             id="update-component-{$selectedComponent}-content"
-                            name="updated-content">{componentData?.content.textContent}
+                            name="updated-content" class="w-full">{componentData?.content.textContent}
                         </textarea>
                     </label>
                     <button type="submit">Update</button>
@@ -378,6 +378,7 @@ if (browser) {
                         <textarea
                             id="create-component-text-content"
                             name="content"
+                            class="w-full"
                         ></textarea>
                     </label>
                     <button type="submit">Add</button>

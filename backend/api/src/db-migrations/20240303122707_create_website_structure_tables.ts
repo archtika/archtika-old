@@ -32,7 +32,7 @@ export async function up(db: Kysely<DB>) {
 			col.notNull().references("structure.website.id").onDelete("cascade"),
 		)
 		.addColumn("route", "varchar(200)", (col) =>
-			col.notNull().check(sql`route ~ '^(?!.*--)[a-z0-9\\-/]*[^-/]$'`),
+			col.notNull().check(sql`route ~ '^(/|(?!.*--)[a-z0-9\\-/]*[^-/])$'`),
 		)
 		.addColumn("title", "varchar(50)", (col) => col.notNull())
 		.addColumn("meta_description", "varchar(200)")

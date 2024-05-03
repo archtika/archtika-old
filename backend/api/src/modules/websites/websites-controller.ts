@@ -1,3 +1,5 @@
+import { execSync } from "node:child_process";
+import { readFileSync, unlinkSync } from "node:fs";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import type {
@@ -77,6 +79,36 @@ export async function getWebsite(
 		return reply.status(200).send(website);
 	} catch (error) {
 		return reply.notFound("Website not found or not allowed");
+	}
+}
+
+export async function generateWebsite(
+	req: FastifyRequest<{ Params: WebsiteParamsSchemaType }>,
+	reply: FastifyReply,
+) {
+	const { id } = req.params;
+
+	const zipFileName = `generated-website-${id}.tar.gz`;
+	const cwdPath = "/home/thiloho/Documents/Todos";
+	const fullPath = `${cwdPath}/${zipFileName}`;
+
+	try {
+		execSync(`tar -czf ${zipFileName} *`, { cwd: cwdPath });
+
+		const zipBuffer = readFileSync(fullPath);
+
+		reply.header("Content-Type", "application/gzip");
+		reply.header(
+			"Content-Disposition",
+			`attachment; filename="${zipFileName}"`,
+		);
+
+		return reply.send(zipBuffer);
+	} catch (error) {
+		console.error("Error creating or sending the file", error);
+		return reply.status(500).send("Error generating the website");
+	} finally {
+		unlinkSync(fullPath);
 	}
 }
 

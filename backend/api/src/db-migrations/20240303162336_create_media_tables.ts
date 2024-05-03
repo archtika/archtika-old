@@ -14,7 +14,7 @@ export async function up(db: Kysely<DB>) {
 		.addColumn("mimetype", "varchar", (col) =>
 			col.notNull().check(
 				sql`mimetype IN (
-                        'image/jpeg', 'image/png', 'image/svg+xml',
+                        'image/jpeg', 'image/png', 'image/svg+xml', 'image/webp',
                         'audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg',
                         'video/mp4', 'video/webm', 'video/ogg'
                     )`,
