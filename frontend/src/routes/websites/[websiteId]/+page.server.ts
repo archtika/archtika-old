@@ -47,13 +47,6 @@ export const actions: Actions = {
 
 		throw redirect(303, "/");
 	},
-	generateWebsite: async ({ fetch, params }) => {
-		const data = await fetch(
-			`http://localhost:3000/api/v1/websites/${params.websiteId}/generate`,
-		);
-
-		console.log(await data.json());
-	},
 	addCollaborator: async ({ request, fetch, params }) => {
 		const data = await request.formData();
 

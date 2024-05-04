@@ -1,3 +1,4 @@
+import archiver from "archiver";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import type {
@@ -86,7 +87,73 @@ export async function generateWebsite(
 ) {
 	const { id } = req.params;
 
-	return reply.status(200).send(JSON.stringify(`Generating website ${id}`));
+	const allPages = await req.server.kysely.db
+		.selectFrom("structure.page")
+		.selectAll()
+		.where("website_id", "=", id)
+		.execute();
+
+	const archive = archiver("zip", {
+		zlib: { level: 9 },
+	});
+
+	reply.header("Content-Type", "application/zip");
+	reply.header(
+		"Content-Disposition",
+		`attachment; filename="website-${id}.zip"`,
+	);
+
+	archive.on("error", (err) => {
+		return reply.send(err);
+	});
+
+	for (const page of allPages) {
+		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
+
+		const allComponents = await req.server.kysely.db
+			.selectFrom("components.component")
+			.innerJoin(
+				"components.component_position",
+				"components.component.id",
+				"components.component_position.component_id",
+			)
+			.orderBy("components.component_position.row_start")
+			.selectAll()
+			.where("components.component.page_id", "=", page.id)
+			.execute();
+
+		let components = "";
+
+		for (const component of allComponents) {
+			switch (component.type) {
+				case "text":
+					components += `<p>${component.content.textContent.trim()}</p>\n`;
+					break;
+			}
+		}
+
+		const content = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="${page.meta_description}">
+  <title>${page.title}</title>
+</head>
+<body>
+  <main>
+		${components}
+	</main>
+</body>
+</html>
+    `;
+
+		archive.append(content, { name: fileName });
+	}
+
+	archive.finalize();
+
+	return reply.send(archive);
 }
 
 export async function updateWebsite(
