@@ -234,8 +234,7 @@ if (browser) {
                         Content:
                         <textarea
                             id="update-component-{$selectedComponent}-content"
-                            name="updated-content" class="w-full">{componentData?.content.textContent}
-                        </textarea>
+                            name="updated-content" class="w-full">{componentData?.content.textContent}</textarea>
                     </label>
                     <button type="submit">Update</button>
                 </form>

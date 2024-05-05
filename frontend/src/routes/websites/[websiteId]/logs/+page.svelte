@@ -25,8 +25,8 @@ function generateDiffHtml(
 	const allKeys = new Set([...Object.keys(previous), ...Object.keys(current)]);
 
 	for (const key of allKeys) {
-		let prevValue = previous[key];
-		let currValue = current[key];
+		const prevValue = previous[key];
+		const currValue = current[key];
 
 		if (
 			prevValue &&
@@ -40,9 +40,6 @@ function generateDiffHtml(
 				indent + 1,
 			)}`;
 		} else if (prevValue !== currValue) {
-			prevValue = String(prevValue).trim();
-			currValue = String(currValue).trim();
-
 			innerHtml += `${indentString}\t<del>"${key}": "${prevValue}"</del>\n`;
 			innerHtml += `${indentString}\t<ins>"${key}": "${currValue}"</ins>\n`;
 		} else {
