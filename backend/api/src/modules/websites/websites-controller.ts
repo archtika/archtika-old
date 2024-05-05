@@ -1,6 +1,7 @@
 import archiver from "archiver";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
+import { Renderer, parse } from "marked";
 import type {
 	CreateWebsiteSchemaType,
 	GetWebsitesQuerySchemaType,
@@ -107,6 +108,9 @@ export async function generateWebsite(
 		return reply.send(err);
 	});
 
+	const renderer = new Renderer();
+	renderer.image = (text) => text;
+
 	for (const page of allPages) {
 		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
@@ -124,10 +128,60 @@ export async function generateWebsite(
 
 		let components = "";
 
-		for (const component of allComponents) {
+		for (const component of allComponents as { [key: string]: any }[]) {
 			switch (component.type) {
 				case "text":
-					components += `<p>${component.content.textContent.trim()}</p>\n`;
+					components += parse(component.content.textContent, {
+						renderer,
+					});
+					break;
+				case "image":
+					{
+						const dataStream = await req.server.minio.client.getObject(
+							"archtika",
+							component.asset_id,
+						);
+
+						archive.append(dataStream, {
+							name: `images/${component.asset_id}`,
+						});
+
+						components += `<img src="images/${component.asset_id}" alt="${component.content.altText}" />`;
+					}
+					break;
+				case "video":
+					{
+						const dataStream = await req.server.minio.client.getObject(
+							"archtika",
+							component.asset_id,
+						);
+
+						archive.append(dataStream, {
+							name: `videos/${component.asset_id}`,
+						});
+
+						components += `
+							<video controls loop="${component.content.isLooped}" title="${component.content.altText}" src="videos/${component.asset_id}">
+								<track default kind="captions" srclang="en" />
+							</video>
+						`;
+					}
+					break;
+				case "audio":
+					{
+						const dataStream = await req.server.minio.client.getObject(
+							"archtika",
+							component.asset_id,
+						);
+
+						archive.append(dataStream, { name: `audio/${component.asset_id}` });
+
+						components += `
+							<audio controls title="${component.content.altText}" loop="${component.content.isLooped}">
+            		<source src="audio/${component.asset_id}" />
+        			</audio>
+						`;
+					}
 					break;
 			}
 		}
