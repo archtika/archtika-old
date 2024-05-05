@@ -2,7 +2,10 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import type WebSocket from "ws";
 import { mimeTypes } from "../../utils/mimetypes.js";
-import { updateLastModifiedByColumn } from "../../utils/queries.js";
+import {
+	getExistingPresignedUrl,
+	updateLastModifiedByColumn,
+} from "../../utils/queries.js";
 import type {
 	ComponentPositionSchemaType,
 	CreateComponentSchemaType,
@@ -80,18 +83,9 @@ export async function createComponent(
 					.executeTakeFirstOrThrow();
 			});
 
-		let presignedUrl = null;
-
-		if (component.asset_id) {
-			presignedUrl = await req.server.minio.client.presignedGetObject(
-				"archtika",
-				`${component.asset_id}`,
-			);
-		}
-
 		const componentWithUrl = {
 			...component,
-			url: presignedUrl,
+			url: await getExistingPresignedUrl(req, component.asset_id),
 		};
 
 		await req.server.redis.pub.publish(
@@ -196,18 +190,9 @@ export async function getAllComponents(
 
 	const componentsWithUrls = await Promise.all(
 		allComponents.map(async (component) => {
-			let presignedUrl = null;
-
-			if (component.asset_id) {
-				presignedUrl = await req.server.minio.client.presignedGetObject(
-					"archtika",
-					`${component.asset_id}`,
-				);
-			}
-
 			return {
 				...component,
-				url: presignedUrl,
+				url: await getExistingPresignedUrl(req, component.asset_id),
 			};
 		}),
 	);
@@ -301,18 +286,9 @@ export async function getComponent(
 			)
 			.executeTakeFirstOrThrow();
 
-		let presignedUrl = null;
-
-		if (component.asset_id) {
-			presignedUrl = await req.server.minio.client.presignedGetObject(
-				"archtika",
-				`${component.asset_id}`,
-			);
-		}
-
 		const componentWithUrl = {
 			...component,
-			url: presignedUrl,
+			url: await getExistingPresignedUrl(req, component.asset_id),
 		};
 
 		return reply.status(200).send(componentWithUrl);
@@ -387,18 +363,9 @@ export async function updateComponent(
 					.executeTakeFirstOrThrow();
 			});
 
-		let presignedUrl = null;
-
-		if (component.asset_id) {
-			presignedUrl = await req.server.minio.client.presignedGetObject(
-				"archtika",
-				`${component.asset_id}`,
-			);
-		}
-
 		const componentWithUrl = {
 			...component,
-			url: presignedUrl,
+			url: await getExistingPresignedUrl(req, component.asset_id),
 		};
 
 		await req.server.redis.pub.publish(
@@ -465,18 +432,9 @@ export async function deleteComponent(
 					.executeTakeFirstOrThrow();
 			});
 
-		let presignedUrl = null;
-
-		if (component.asset_id) {
-			presignedUrl = await req.server.minio.client.presignedGetObject(
-				"archtika",
-				`${component.asset_id}`,
-			);
-		}
-
 		const componentWithUrl = {
 			...component,
-			url: presignedUrl,
+			url: await getExistingPresignedUrl(req, component.asset_id),
 		};
 
 		await req.server.redis.pub.publish(

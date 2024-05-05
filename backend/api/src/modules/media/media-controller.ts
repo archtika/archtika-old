@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { mimeTypes } from "../../utils/mimetypes.js";
+import { getExistingPresignedUrl } from "../../utils/queries.js";
 import type {
 	ParamsSchemaType,
 	multipartFileSchemaType,
@@ -13,7 +14,7 @@ interface Asset {
 	name: string;
 	mimetype: string;
 	file_hash: string;
-	url?: string;
+	url?: string | null;
 }
 
 export async function createMedia(
@@ -90,13 +91,9 @@ export async function getAllMedia(req: FastifyRequest, reply: FastifyReply) {
 
 	const assetsWithPresignedUrls = await Promise.all(
 		media.map(async (asset) => {
-			const presignedUrl = await req.server.minio.client.presignedGetObject(
-				"archtika",
-				`${asset.id}`,
-			);
 			return {
 				...asset,
-				url: presignedUrl,
+				url: await getExistingPresignedUrl(req, asset.id),
 			};
 		}),
 	);
@@ -146,14 +143,9 @@ export async function getMedia(
 		return reply.notFound("Media not found or not allowed");
 	}
 
-	const presignedUrl = await req.server.minio.client.presignedGetObject(
-		"archtika",
-		media.id,
-	);
-
 	const assetWithPresignedUrl = {
 		...media,
-		url: presignedUrl,
+		url: await getExistingPresignedUrl(req, media.id),
 	};
 
 	return reply.status(200).send(assetWithPresignedUrl);

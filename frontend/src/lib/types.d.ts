@@ -10,7 +10,7 @@ export interface Component {
 	asset_id?: string;
 	created_at: string;
 	updated_at: string | null;
-	url: sring | null;
+	url: string | null;
 	row_start: number;
 	col_start: number;
 	row_end: number;
