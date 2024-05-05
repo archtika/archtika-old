@@ -125,7 +125,7 @@ function updateComponentGridArea() {
     on:dragstart
     on:click={handleComponentClick}
     role="presentation"
-    style={styles}
+    style="{styles}; {$selectedComponent === component.id ? "outline: 0.25rem solid yellow" : ""}"
     data-component-id={component.id}
 >
     <Resizer on:mousedown={handleResize} />
@@ -161,8 +161,8 @@ function updateComponentGridArea() {
 </div>
 
 <style>
-		div[data-component-id] {
-			position: relative;
-			border: 0.125rem solid black;
-		}
+	div[data-component-id] {
+		position: relative;
+		border: 0.125rem solid black;
+	}
 </style>

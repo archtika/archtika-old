@@ -127,7 +127,9 @@ const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
 
 	if (!contentContainer) return;
 
-	const zone = (contentContainer.scrollTop / gridCellHeight) * 12 + 1;
+	const zone = Math.ceil(
+		(contentContainer.scrollTop / gridCellHeight) * 12 + 1,
+	);
 	const zoneElement = document.querySelector(`[data-zone="${zone}"]`);
 
 	if (!zoneElement) return;
@@ -485,7 +487,7 @@ if (browser) {
     }
 
     div[data-sidebar], div[data-content-container] {
-        max-height: 100vh;
+        max-block-size: 100vh;
         overflow-y: auto;
         border: 0.125rem solid black;
     }
