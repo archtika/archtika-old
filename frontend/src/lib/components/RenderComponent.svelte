@@ -10,9 +10,6 @@ import Resizer from "./Resizer.svelte";
 export let component: Component;
 export let styles: string;
 
-// biome-ignore lint: This has to be declared with let, because it is a prop
-export let className = "";
-
 const renderer = new Renderer();
 
 renderer.image = (text) => text;
@@ -128,17 +125,10 @@ function updateComponentGridArea() {
     on:dragstart
     on:click={handleComponentClick}
     role="presentation"
-    class="{className} relative prose prose-neutral max-w-none
-			{$selectedComponent === component.id ? "outline outline-blue-200" : ""}
-		"
     style={styles}
     data-component-id={component.id}
 >
-    <Resizer
-        direction="bottom-right"
-        className="bottom-0 end-0 cursor-se-resize"
-        on:mousedown={handleResize}
-    />
+    <Resizer on:mousedown={handleResize} />
 
     {#if component.type === 'text'}
         {@html purifiedTextContent}
@@ -169,3 +159,10 @@ function updateComponentGridArea() {
         </video>
     {/if}
 </div>
+
+<style>
+		div[data-component-id] {
+			position: relative;
+			border: 0.125rem solid black;
+		}
+</style>

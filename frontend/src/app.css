@@ -1,33 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+body {
+    line-height: 1.6;
+}
 
-@layer base {
-    h1 {
-        @apply text-2xl;
-    }
-
-    h2 {
-        @apply text-xl;
-    }
-
-    h3 {
-        @apply text-lg;
-    }
-
-    a {
-        @apply text-blue-900 underline;
-    }
-
-    button[type='submit'] {
-        @apply px-2 py-1 border border-neutral-900 bg-neutral-100;
-    }
-
-    del {
-        @apply bg-red-100;
-    }
-
-    ins {
-        @apply bg-green-100
-    }
+img, video {
+    max-width: 100%;
+    object-fit: contain;
 }

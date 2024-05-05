@@ -57,13 +57,13 @@ function handleDragOver(event: DragEvent) {
 
 	const target = event.target as HTMLElement;
 
-	target.classList.add("bg-red-500");
+	target.style.backgroundColor = "red";
 }
 
 function handleDragLeave(event: DragEvent) {
 	const target = event.target as HTMLElement;
 
-	target.classList.remove("bg-red-500");
+	target.style.backgroundColor = "";
 }
 
 async function handleDrop(
@@ -77,7 +77,7 @@ async function handleDrop(
 
 	const target = event.target as HTMLElement;
 
-	target.classList.remove("bg-red-500");
+	target.style.backgroundColor = "";
 
 	const componentId = event.dataTransfer?.getData("text/plain");
 
@@ -195,8 +195,8 @@ if (browser) {
 
 <svelte:window on:click={handleWindowClick} />
 
-<div class="grid grid-cols-[30ch,minmax(min(50vw,30ch),1fr)]">
-    <div class="border border-neutral-900 max-h-screen overflow-y-auto p-2" data-sidebar>
+<div class="editor-wrapper">
+    <div data-sidebar>
         <h1>{data.website.title}</h1>
         <details open>
             <summary>Pages</summary>
@@ -234,7 +234,7 @@ if (browser) {
                         Content:
                         <textarea
                             id="update-component-{$selectedComponent}-content"
-                            name="updated-content" class="w-full">{componentData?.content.textContent}</textarea>
+                            name="updated-content">{componentData?.content.textContent}</textarea>
                     </label>
                     <button type="submit">Update</button>
                 </form>
@@ -377,7 +377,6 @@ if (browser) {
                         <textarea
                             id="create-component-text-content"
                             name="content"
-                            class="w-full"
                         ></textarea>
                     </label>
                     <button type="submit">Add</button>
@@ -451,7 +450,6 @@ if (browser) {
     </div>
 
     <div
-        class="grid grid-cols-12 max-h-screen overflow-y-auto"
         style="grid-template-rows: repeat({($components.length || 1) * 48}, 2.5rem"
         data-content-container
     >
@@ -471,7 +469,6 @@ if (browser) {
         {#each $components as component, i (i)}
             <RenderComponent
                 {component}
-                className="bg-white border border-neutral-900 px-2"
                 styles="grid-area: {component.row_start ??
                     1} / {component.col_start ?? 1} / {component.row_end ??
                     1} / {component.col_end ?? 1}"
@@ -480,3 +477,21 @@ if (browser) {
         {/each}
     </div>
 </div>
+
+<style>
+    .editor-wrapper {
+        display: grid;
+        grid-template-columns: 30ch minmax(min(50vw, 30ch), 1fr);
+    }
+
+    div[data-sidebar], div[data-content-container] {
+        max-height: 100vh;
+        overflow-y: auto;
+        border: 0.125rem solid black;
+    }
+
+    div[data-content-container] {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+</style>
