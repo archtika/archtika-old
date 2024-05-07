@@ -173,10 +173,12 @@ describe("components", async () => {
 					host: "localhost:3000",
 				},
 				payload: {
-					grid_x: 2,
-					grid_y: 2,
-					grid_width: 2,
-					grid_height: 2,
+					row_start: 1,
+					col_start: 1,
+					row_end: 1,
+					col_end: 1,
+					row_end_span: 9,
+					col_end_span: 0,
 				},
 			});
 
@@ -194,10 +196,12 @@ describe("components", async () => {
 					host: "localhost:3000",
 				},
 				payload: {
-					grid_x: 5,
-					grid_y: 4,
-					grid_width: 8,
-					grid_height: 2,
+					row_start: 1,
+					col_start: 4,
+					row_end: 2,
+					col_end: 10,
+					row_end_span: 1,
+					col_end_span: 6,
 				},
 			});
 
