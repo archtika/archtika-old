@@ -207,7 +207,7 @@ export async function generateWebsite(
 
 	archive.finalize();
 
-	return reply.send(archive);
+	return reply.status(200).send(archive);
 }
 
 export async function updateWebsite(

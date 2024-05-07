@@ -122,4 +122,19 @@ describe("websites", async () => {
 			assert.deepStrictEqual(res.statusCode, 200);
 		});
 	});
+
+	describe("GET /api/v1/websites/{id}/generate", () => {
+		it("should return 200 when the website was generated", async () => {
+			const res = await app.inject({
+				method: "GET",
+				url: `/api/v1/websites/${id}/generate`,
+				headers: {
+					origin: "http://localhost:3000",
+					host: "localhost:3000",
+				},
+			});
+
+			assert.deepStrictEqual(res.statusCode, 200);
+		});
+	});
 });
