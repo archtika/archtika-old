@@ -1,4 +1,5 @@
 import cluster from "node:cluster";
+import { watch } from "node:fs";
 import os from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -73,6 +74,18 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
 			console.log(`Forking process number ${i}`);
 			cluster.fork();
 		}
+
+		watch(__dirname, { recursive: true }, (eventType, filename) => {
+			console.log(__dirname);
+
+			console.log(
+				`Detected ${eventType} in ${filename}, restarting workers...`,
+			);
+
+			for (const id in cluster.workers) {
+				cluster.workers[id]?.kill("SIGTERM");
+			}
+		});
 
 		cluster.on("exit", (worker, code, signal) => {
 			console.log(`Worker ${worker.process.pid} died`);

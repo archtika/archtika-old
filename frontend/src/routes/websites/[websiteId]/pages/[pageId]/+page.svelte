@@ -127,17 +127,21 @@ const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
 
 	if (!contentContainer) return;
 
-	const zone = Math.ceil(
-		(contentContainer.scrollTop / gridCellHeight) * 12 + 1,
-	);
+	const scrollTop = contentContainer.scrollTop;
+	const partialOffset = scrollTop % gridCellHeight;
+	const visibleZoneIndex = Math.floor(scrollTop / gridCellHeight);
+	const zone = visibleZoneIndex * 12 + 1;
 	const zoneElement = document.querySelector(`[data-zone="${zone}"]`);
 
 	if (!zoneElement) return;
 
 	const gridArea = getComputedStyle(zoneElement).getPropertyValue("grid-area");
-	const [rowStart, colStart, rowEnd, colEnd] = gridArea
-		.split(" / ")
-		.map(Number);
+	let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
+
+	if (partialOffset > gridCellHeight * 0.5) {
+		rowStart += 1;
+		rowEnd += 1;
+	}
 
 	const initialPosition = JSON.stringify({
 		rowStart,
@@ -495,5 +499,10 @@ if (browser) {
     div[data-content-container] {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
+        scroll-snap-type: y mandatory;
+    }
+
+    div[data-zone] {
+        scroll-snap-align: start;
     }
 </style>
