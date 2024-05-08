@@ -50,7 +50,7 @@ export async function getExistingPresignedUrl(
 				})
 				.onConflict((oc) =>
 					oc.column("asset_id").doUpdateSet(({ ref }) => ({
-						id: ref("excluded.presigned_url"),
+						presigned_url: ref("excluded.presigned_url"),
 						expiry_timestamp: ref("excluded.expiry_timestamp"),
 					})),
 				)

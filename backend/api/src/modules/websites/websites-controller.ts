@@ -1,7 +1,7 @@
 import archiver from "archiver";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { JSDOM } from "jsdom";
 import { sql } from "kysely";
-import { Renderer, parse } from "marked";
 import type {
 	CreateWebsiteSchemaType,
 	GetWebsitesQuerySchemaType,
@@ -108,102 +108,64 @@ export async function generateWebsite(
 		return reply.send(err);
 	});
 
-	const renderer = new Renderer();
-	renderer.image = (text) => text;
-
 	for (const page of allPages) {
-		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
+		const htmlData = await fetch(
+			`http://localhost:5173/websites/${page.website_id}/pages/${page.id}`,
+			{
+				headers: {
+					Cookie: `auth_session=${req.cookies.auth_session}`,
+				},
+			},
+		);
+		const html = await htmlData.text();
 
-		const allComponents = await req.server.kysely.db
-			.selectFrom("components.component")
-			.innerJoin(
-				"components.component_position",
-				"components.component.id",
-				"components.component_position.component_id",
-			)
-			.orderBy("components.component_position.row_start")
-			.selectAll()
-			.where("components.component.page_id", "=", page.id)
-			.execute();
+		const data = new JSDOM(html);
 
-		let components = "";
+		const htmlContainer = data.window.document.querySelector(
+			"[data-content-container]",
+		);
+		let htmlContent = "";
 
-		for (const component of allComponents as { [key: string]: any }[]) {
-			switch (component.type) {
-				case "text":
-					components += parse(component.content.textContent, {
-						renderer,
-					});
-					break;
-				case "image":
-					{
-						const dataStream = await req.server.minio.client.getObject(
-							"archtika",
-							component.asset_id,
-						);
+		const htmlElements = htmlContainer?.querySelectorAll("[data-component-id]");
 
-						archive.append(dataStream, {
-							name: `images/${component.asset_id}`,
-						});
-
-						components += `<img src="images/${component.asset_id}" alt="${component.content.altText}" />`;
-					}
-					break;
-				case "video":
-					{
-						const dataStream = await req.server.minio.client.getObject(
-							"archtika",
-							component.asset_id,
-						);
-
-						archive.append(dataStream, {
-							name: `videos/${component.asset_id}`,
-						});
-
-						components += `
-							<video controls loop="${component.content.isLooped}" title="${component.content.altText}" src="videos/${component.asset_id}">
-								<track default kind="captions" srclang="en" />
-							</video>
-						`;
-					}
-					break;
-				case "audio":
-					{
-						const dataStream = await req.server.minio.client.getObject(
-							"archtika",
-							component.asset_id,
-						);
-
-						archive.append(dataStream, { name: `audio/${component.asset_id}` });
-
-						components += `
-							<audio controls title="${component.content.altText}" loop="${component.content.isLooped}">
-            		<source src="audio/${component.asset_id}" />
-        			</audio>
-						`;
-					}
-					break;
+		for (const element of htmlElements || []) {
+			for (const child of element.children) {
+				if (!child.hasAttribute("data-resizer")) {
+					htmlContent += `${child.outerHTML}\n`;
+				}
 			}
 		}
+
+		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
 		const content = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="description" content="${page.meta_description}">
-  <title>${page.title}</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="styles.css" />
+	<meta name="description" content="${page.meta_description}">
+	<title>${page.title}</title>
 </head>
 <body>
-  <main>
-		${components}
+	<main>
+		${htmlContent}
 	</main>
 </body>
 </html>
-    `;
+		`;
 
 		archive.append(content, { name: fileName });
 	}
+
+	const cssData = await fetch("http://localhost:5173/api/styles", {
+		headers: {
+			Cookie: `auth_session=${req.cookies.auth_session}`,
+		},
+	});
+	const css = await cssData.text();
+
+	archive.append(css, { name: "styles.css" });
 
 	archive.finalize();
 
