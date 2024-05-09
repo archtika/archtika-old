@@ -29,7 +29,7 @@
 		"@lucia-auth/adapter-postgresql": "^3.1.2",
 		"@sinclair/typebox": "^0.32.27",
 		"archiver": "^7.0.1",
-		"arctic": "^1.5.0",
+		"arctic": "^1.8.0",
 		"fastify": "^4.26.2",
 		"fastify-cli": "^6.1.1",
 		"fastify-plugin": "^4.5.1",
