@@ -78,8 +78,8 @@ dependencies:
     specifier: ^3.2.0
     version: 3.2.0
   minio:
-    specifier: ^7.1.4
-    version: 7.1.4
+    specifier: ^8.0.0
+    version: 8.0.0
   pg:
     specifier: ^8.11.5
     version: 8.11.5
@@ -2073,8 +2073,8 @@ packages:
   /minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
-  /minio@7.1.4:
-    resolution: {integrity: sha512-1rjcS8l7QlWsA4EZ1JauInkRkzu2J/qN0U+ee3HZErY84bdcebMhd10wDdfpAjmXyFsvrUPnKjZB2G7OJXrvXw==}
+  /minio@8.0.0:
+    resolution: {integrity: sha512-GkM/lk+Gzwd4fAQvLlB+cy3NV3PRADe0tNXnH9JD5BmdAHKIp+5vypptbjdkU85xWBIQsa2xK35GpXjmYXBBYA==}
     engines: {node: ^16 || ^18 || >=20}
     dependencies:
       async: 3.2.5
