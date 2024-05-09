@@ -1,3 +1,4 @@
+import cluster from "node:cluster";
 import type { FastifyInstance } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { Client } from "minio";
@@ -11,15 +12,17 @@ async function minio(fastify: FastifyInstance) {
 		secretKey: "minioadmin",
 	});
 
-	try {
-		const exists = await minioClient.bucketExists("archtika");
+	if (cluster.worker && cluster.worker.id === 1) {
+		try {
+			const exists = await minioClient.bucketExists("archtika");
 
-		if (!exists) {
-			await minioClient.makeBucket("archtika", "us-east-1");
-			console.log("Bucket created successfully");
+			if (!exists) {
+				await minioClient.makeBucket("archtika", "us-east-1");
+				console.log("Bucket created successfully");
+			}
+		} catch (err) {
+			console.error(err);
 		}
-	} catch (err) {
-		console.error(err);
 	}
 
 	fastify.decorate("minio", {

@@ -59,7 +59,7 @@ export const actions: Actions = {
 	},
 	createComponent: async ({ request, fetch, params }) => {
 		const data = await request.formData();
-		const intitialPosition = JSON.parse(data.get("initial-position") as string);
+		const initialPosition = JSON.parse(data.get("initial-position") as string);
 
 		let body: ComponentApiPayload = {
 			type: "",
@@ -131,10 +131,10 @@ export const actions: Actions = {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					row_start: intitialPosition.rowStart,
-					col_start: intitialPosition.colStart,
-					row_end: intitialPosition.rowEnd,
-					col_end: intitialPosition.colEnd,
+					row_start: initialPosition.rowStart,
+					col_start: initialPosition.colStart,
+					row_end: initialPosition.rowEnd,
+					col_end: initialPosition.colEnd,
 					row_end_span: 0,
 					col_end_span: 0,
 				}),

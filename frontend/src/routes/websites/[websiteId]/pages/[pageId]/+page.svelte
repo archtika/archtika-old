@@ -117,37 +117,23 @@ async function handleDrop(
 }
 
 const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
-	const gridCellSize = document.querySelector(`[data-zone="1"]`);
-
-	if (!gridCellSize) return;
-
-	const rect = gridCellSize.getBoundingClientRect();
-	const gridCellHeight = rect.height;
-	const contentContainer = document.querySelector("[data-content-container]");
-
-	if (!contentContainer) return;
-
-	const scrollTop = contentContainer.scrollTop;
-	const partialOffset = scrollTop % gridCellHeight;
-	const visibleZoneIndex = Math.floor(scrollTop / gridCellHeight);
-	const zone = visibleZoneIndex * 12 + 1;
-	const zoneElement = document.querySelector(`[data-zone="${zone}"]`);
-
-	if (!zoneElement) return;
-
-	const gridArea = getComputedStyle(zoneElement).getPropertyValue("grid-area");
-	let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
-
-	if (partialOffset > gridCellHeight * 0.5) {
-		rowStart += 1;
-		rowEnd += 1;
-	}
+	const maxItem = $components.reduce<{
+		row_start: number;
+		col_start: number;
+		row_end: number;
+		col_end: number;
+	}>(
+		(acc, item) => {
+			return item.row_end > (acc.row_end || 0) ? item : acc;
+		},
+		{ row_start: 0, col_start: 0, row_end: 0, col_end: 0 },
+	);
 
 	const initialPosition = JSON.stringify({
-		rowStart,
-		colStart,
-		rowEnd,
-		colEnd,
+		rowStart: maxItem.row_end,
+		colStart: 1,
+		rowEnd: maxItem.row_end,
+		colEnd: 1,
 	});
 
 	formData.append("initial-position", initialPosition);
@@ -207,7 +193,9 @@ $: totalRows =
 
 <div class="editor-wrapper">
     <div data-sidebar>
-        <h1>{data.website.title}</h1>
+        <h1>
+            <a href="/websites/{data.website.id}">{data.website.title}</a>
+        </h1>
         <details open>
             <summary>Pages</summary>
             <ul>
@@ -507,11 +495,9 @@ $: totalRows =
     div[data-content-container] {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-        scroll-snap-type: y mandatory;
     }
 
     div[data-zone] {
-        scroll-snap-align: start;
         border: 0.0725rem solid hsl(0, 0%, 90%)
     }
 </style>
