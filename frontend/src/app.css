@@ -1,33 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+*, *::before, *::after {
+    box-sizing: border-box;
+}
 
-@layer base {
-    h1 {
-        @apply text-2xl;
-    }
+* {
+    margin: 0;
+}
 
-    h2 {
-        @apply text-xl;
-    }
+body {
+    line-height: 1.5;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
 
-    h3 {
-        @apply text-lg;
-    }
+img, picture, video, canvas, svg {
+    display: block;
+    max-inline-size: 100%;
+}
 
-    a {
-        @apply text-blue-900 underline;
-    }
+input, button, textarea, select {
+    font: inherit;
+}
 
-    button[type='submit'] {
-        @apply px-2 py-1 border border-neutral-900 bg-neutral-100;
-    }
+p, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+}
 
-    del {
-        @apply bg-red-100;
-    }
-
-    ins {
-        @apply bg-green-100
-    }
+#root, #__next {
+    isolation: isolate;
 }

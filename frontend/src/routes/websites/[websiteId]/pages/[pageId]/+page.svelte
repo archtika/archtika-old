@@ -57,13 +57,13 @@ function handleDragOver(event: DragEvent) {
 
 	const target = event.target as HTMLElement;
 
-	target.classList.add("bg-red-500");
+	target.style.backgroundColor = "red";
 }
 
 function handleDragLeave(event: DragEvent) {
 	const target = event.target as HTMLElement;
 
-	target.classList.remove("bg-red-500");
+	target.style.backgroundColor = "";
 }
 
 async function handleDrop(
@@ -77,7 +77,7 @@ async function handleDrop(
 
 	const target = event.target as HTMLElement;
 
-	target.classList.remove("bg-red-500");
+	target.style.backgroundColor = "";
 
 	const componentId = event.dataTransfer?.getData("text/plain");
 
@@ -127,15 +127,21 @@ const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
 
 	if (!contentContainer) return;
 
-	const zone = (contentContainer.scrollTop / gridCellHeight) * 12 + 1;
+	const scrollTop = contentContainer.scrollTop;
+	const partialOffset = scrollTop % gridCellHeight;
+	const visibleZoneIndex = Math.floor(scrollTop / gridCellHeight);
+	const zone = visibleZoneIndex * 12 + 1;
 	const zoneElement = document.querySelector(`[data-zone="${zone}"]`);
 
 	if (!zoneElement) return;
 
 	const gridArea = getComputedStyle(zoneElement).getPropertyValue("grid-area");
-	const [rowStart, colStart, rowEnd, colEnd] = gridArea
-		.split(" / ")
-		.map(Number);
+	let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
+
+	if (partialOffset > gridCellHeight * 0.5) {
+		rowStart += 1;
+		rowEnd += 1;
+	}
 
 	const initialPosition = JSON.stringify({
 		rowStart,
@@ -195,8 +201,8 @@ if (browser) {
 
 <svelte:window on:click={handleWindowClick} />
 
-<div class="grid grid-cols-[30ch,minmax(min(50vw,30ch),1fr)]">
-    <div class="border border-neutral-900 max-h-screen overflow-y-auto p-2" data-sidebar>
+<div class="editor-wrapper">
+    <div data-sidebar>
         <h1>{data.website.title}</h1>
         <details open>
             <summary>Pages</summary>
@@ -217,7 +223,11 @@ if (browser) {
             <p>Selected component: <strong>{$selectedComponent}</strong></p>
 
             {#if componentData?.type === 'text'}
-                <form action="?/updateComponent" method="post" use:enhance>
+                <form action="?/updateComponent" method="post" use:enhance={() => {
+                    return async ({ update }) => {
+                        await update({ reset: false })
+                    }
+                }}>
                     <input
                         type="hidden"
                         id="update-component-{componentData?.id}-id"
@@ -234,7 +244,7 @@ if (browser) {
                         Content:
                         <textarea
                             id="update-component-{$selectedComponent}-content"
-                            name="updated-content" class="w-full">{componentData?.content.textContent}</textarea>
+                            name="updated-content">{componentData?.content.textContent}</textarea>
                     </label>
                     <button type="submit">Update</button>
                 </form>
@@ -377,7 +387,6 @@ if (browser) {
                         <textarea
                             id="create-component-text-content"
                             name="content"
-                            class="w-full"
                         ></textarea>
                     </label>
                     <button type="submit">Add</button>
@@ -451,11 +460,10 @@ if (browser) {
     </div>
 
     <div
-        class="grid grid-cols-12 max-h-screen overflow-y-auto"
-        style="grid-template-rows: repeat({($components.length || 1) * 48}, 2.5rem"
+        style="grid-template-rows: repeat({($components.length || 1) * 24}, 2.5rem"
         data-content-container
     >
-        {#each Array(($components.length || 1) * 12 * 48) as _, i}
+        {#each Array(($components.length || 1) * 12 * 24) as _, i}
             {@const row = Math.floor(i / 12) + 1}
             {@const col = (i % 12) + 1}
 
@@ -471,7 +479,6 @@ if (browser) {
         {#each $components as component, i (i)}
             <RenderComponent
                 {component}
-                className="bg-white border border-neutral-900 px-2"
                 styles="grid-area: {component.row_start ??
                     1} / {component.col_start ?? 1} / {component.row_end ??
                     1} / {component.col_end ?? 1}"
@@ -480,3 +487,27 @@ if (browser) {
         {/each}
     </div>
 </div>
+
+<style>
+    .editor-wrapper {
+        display: grid;
+        grid-template-columns: 30ch minmax(min(50vw, 30ch), 1fr);
+    }
+
+    div[data-sidebar], div[data-content-container] {
+        max-block-size: 100vh;
+        overflow-y: auto;
+        border: 0.125rem solid black;
+    }
+
+    div[data-content-container] {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        scroll-snap-type: y mandatory;
+    }
+
+    div[data-zone] {
+        scroll-snap-align: start;
+        border: 0.0725rem solid hsl(0, 0%, 90%)
+    }
+</style>

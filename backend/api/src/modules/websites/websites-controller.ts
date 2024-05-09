@@ -1,7 +1,7 @@
 import archiver from "archiver";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { JSDOM } from "jsdom";
 import { sql } from "kysely";
-import { Renderer, parse } from "marked";
 import type {
 	CreateWebsiteSchemaType,
 	GetWebsitesQuerySchemaType,
@@ -108,106 +108,102 @@ export async function generateWebsite(
 		return reply.send(err);
 	});
 
-	const renderer = new Renderer();
-	renderer.image = (text) => text;
-
 	for (const page of allPages) {
-		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
+		const htmlData = await fetch(
+			`http://localhost:5173/websites/${page.website_id}/pages/${page.id}`,
+			{
+				headers: {
+					Cookie: `auth_session=${req.cookies.auth_session}`,
+				},
+			},
+		);
+		const html = await htmlData.text();
 
-		const allComponents = await req.server.kysely.db
-			.selectFrom("components.component")
-			.innerJoin(
-				"components.component_position",
-				"components.component.id",
-				"components.component_position.component_id",
-			)
-			.orderBy("components.component_position.row_start")
-			.selectAll()
-			.where("components.component.page_id", "=", page.id)
-			.execute();
+		const data = new JSDOM(html);
 
-		let components = "";
+		const htmlContainer = data.window.document.querySelector(
+			"[data-content-container]",
+		);
+		let htmlContent = "";
 
-		for (const component of allComponents as { [key: string]: any }[]) {
-			switch (component.type) {
-				case "text":
-					components += parse(component.content.textContent, {
-						renderer,
-					});
-					break;
-				case "image":
-					{
-						const dataStream = await req.server.minio.client.getObject(
-							"archtika",
-							component.asset_id,
-						);
+		const htmlElements = htmlContainer?.querySelectorAll("[data-component-id]");
+		const groupedElements = new Map<number, Element[]>();
 
-						archive.append(dataStream, {
-							name: `images/${component.asset_id}`,
-						});
+		for (const element of htmlElements || []) {
+			const componentId = element.getAttribute("data-component-id");
 
-						components += `<img src="images/${component.asset_id}" alt="${component.content.altText}" />`;
-					}
-					break;
-				case "video":
-					{
-						const dataStream = await req.server.minio.client.getObject(
-							"archtika",
-							component.asset_id,
-						);
+			const gridArea = new JSDOM().window
+				.getComputedStyle(element)
+				.getPropertyValue("grid-area");
+			const [rowStart] = gridArea.split(" / ").map(Number);
 
-						archive.append(dataStream, {
-							name: `videos/${component.asset_id}`,
-						});
+			for (const child of element.children) {
+				if (child.hasAttribute("data-resizer")) continue;
 
-						components += `
-							<video controls loop="${component.content.isLooped}" title="${component.content.altText}" src="videos/${component.asset_id}">
-								<track default kind="captions" srclang="en" />
-							</video>
-						`;
-					}
-					break;
-				case "audio":
-					{
-						const dataStream = await req.server.minio.client.getObject(
-							"archtika",
-							component.asset_id,
-						);
-
-						archive.append(dataStream, { name: `audio/${component.asset_id}` });
-
-						components += `
-							<audio controls title="${component.content.altText}" loop="${component.content.isLooped}">
-            		<source src="audio/${component.asset_id}" />
-        			</audio>
-						`;
-					}
-					break;
+				if (!groupedElements.has(rowStart)) {
+					groupedElements.set(rowStart, []);
+				}
+				groupedElements.get(rowStart)?.push(child);
 			}
 		}
+
+		for (const [rowStart, elements] of groupedElements) {
+			if (elements.length > 1) {
+				htmlContent += `<div class="grid">\n`;
+				for (const element of elements) {
+					htmlContent += `${element.outerHTML}\n`;
+				}
+				htmlContent += "</div>\n";
+			} else {
+				htmlContent += `${elements[0].outerHTML}\n`;
+			}
+		}
+
+		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
 		const content = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="description" content="${page.meta_description}">
-  <title>${page.title}</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="styles.css" />
+	<meta name="description" content="${page.meta_description}">
+	<title>${page.title}</title>
 </head>
 <body>
-  <main>
-		${components}
+	<main>
+		${htmlContent}
 	</main>
 </body>
 </html>
-    `;
+		`;
 
 		archive.append(content, { name: fileName });
 	}
 
+	const cssData = await fetch("http://localhost:5173/api/styles", {
+		headers: {
+			Cookie: `auth_session=${req.cookies.auth_session}`,
+		},
+	});
+	const css = `
+		${await cssData.text()}
+
+.grid {
+	--min: 15ch;
+	--gap: 1rem;
+
+	display: grid;
+	grid-gap: var(--gap);
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min)), 1fr));
+}
+	`;
+
+	archive.append(css, { name: "styles.css" });
+
 	archive.finalize();
 
-	return reply.send(archive);
+	return reply.status(200).send(archive);
 }
 
 export async function updateWebsite(
