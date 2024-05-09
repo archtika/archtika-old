@@ -200,7 +200,7 @@ if (browser) {
 
 // biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
 $: totalRows =
-	$components.reduce((max, item) => Math.max(max, item.row_end), 0) * 2 || 24;
+	Math.max(0, ...$components.map((item) => item.row_end)) * 2 || 24;
 </script>
 
 <svelte:window on:click={handleWindowClick} />
