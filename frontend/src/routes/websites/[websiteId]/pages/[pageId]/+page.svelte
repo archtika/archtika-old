@@ -223,7 +223,11 @@ if (browser) {
             <p>Selected component: <strong>{$selectedComponent}</strong></p>
 
             {#if componentData?.type === 'text'}
-                <form action="?/updateComponent" method="post" use:enhance>
+                <form action="?/updateComponent" method="post" use:enhance={() => {
+                    return async ({ update }) => {
+                        await update({ reset: false })
+                    }
+                }}>
                     <input
                         type="hidden"
                         id="update-component-{componentData?.id}-id"
@@ -456,10 +460,10 @@ if (browser) {
     </div>
 
     <div
-        style="grid-template-rows: repeat({($components.length || 1) * 48}, 2.5rem"
+        style="grid-template-rows: repeat({($components.length || 1) * 24}, 2.5rem"
         data-content-container
     >
-        {#each Array(($components.length || 1) * 12 * 48) as _, i}
+        {#each Array(($components.length || 1) * 12 * 24) as _, i}
             {@const row = Math.floor(i / 12) + 1}
             {@const col = (i % 12) + 1}
 
@@ -504,5 +508,6 @@ if (browser) {
 
     div[data-zone] {
         scroll-snap-align: start;
+        border: 0.0725rem solid hsl(0, 0%, 90%)
     }
 </style>

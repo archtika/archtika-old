@@ -130,9 +130,9 @@ export async function generateWebsite(
 
 		for (const element of htmlElements || []) {
 			for (const child of element.children) {
-				if (!child.hasAttribute("data-resizer")) {
-					htmlContent += `${child.outerHTML}\n`;
-				}
+				if (child.hasAttribute("data-resizer")) continue;
+
+				htmlContent += `${child.outerHTML}\n`;
 			}
 		}
 
