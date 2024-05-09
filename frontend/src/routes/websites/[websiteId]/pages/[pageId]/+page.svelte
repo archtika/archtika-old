@@ -197,6 +197,10 @@ if (browser) {
 		console.log("Websocket connection closed");
 	};
 }
+
+// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
+$: totalRows =
+	$components.reduce((max, item) => Math.max(max, item.row_end), 0) * 2 || 24;
 </script>
 
 <svelte:window on:click={handleWindowClick} />
@@ -460,10 +464,10 @@ if (browser) {
     </div>
 
     <div
-        style="grid-template-rows: repeat({($components.length || 1) * 24}, 2.5rem"
+        style="grid-template-rows: repeat({totalRows}, 2.5rem"
         data-content-container
     >
-        {#each Array(($components.length || 1) * 12 * 24) as _, i}
+        {#each Array(totalRows * 12) as _, i}
             {@const row = Math.floor(i / 12) + 1}
             {@const col = (i % 12) + 1}
 
