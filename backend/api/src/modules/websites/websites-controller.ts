@@ -127,12 +127,35 @@ export async function generateWebsite(
 		let htmlContent = "";
 
 		const htmlElements = htmlContainer?.querySelectorAll("[data-component-id]");
+		const groupedElements = new Map<number, Element[]>();
 
 		for (const element of htmlElements || []) {
+			const componentId = element.getAttribute("data-component-id");
+
+			const gridArea = new JSDOM().window
+				.getComputedStyle(element)
+				.getPropertyValue("grid-area");
+			const [rowStart] = gridArea.split(" / ").map(Number);
+
 			for (const child of element.children) {
 				if (child.hasAttribute("data-resizer")) continue;
 
-				htmlContent += `${child.outerHTML}\n`;
+				if (!groupedElements.has(rowStart)) {
+					groupedElements.set(rowStart, []);
+				}
+				groupedElements.get(rowStart)?.push(child);
+			}
+		}
+
+		for (const [rowStart, elements] of groupedElements) {
+			if (elements.length > 1) {
+				htmlContent += `<div class="grid">\n`;
+				for (const element of elements) {
+					htmlContent += `${element.outerHTML}\n`;
+				}
+				htmlContent += "</div>\n";
+			} else {
+				htmlContent += `${elements[0].outerHTML}\n`;
 			}
 		}
 
@@ -163,7 +186,18 @@ export async function generateWebsite(
 			Cookie: `auth_session=${req.cookies.auth_session}`,
 		},
 	});
-	const css = await cssData.text();
+	const css = `
+		${await cssData.text()}
+
+.grid {
+	--min: 15ch;
+	--gap: 1rem;
+
+	display: grid;
+	grid-gap: var(--gap);
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min)), 1fr));
+}
+	`;
 
 	archive.append(css, { name: "styles.css" });
 
