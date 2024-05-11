@@ -67,6 +67,17 @@ export const actions: Actions = {
 		};
 
 		switch (data.get("type")) {
+			case "header":
+			case "footer":
+				{
+					body = {
+						type: data.get("type") as string,
+						is_public: true,
+						content: null,
+						parent_id: null,
+					};
+				}
+				break;
 			case "text":
 				body = {
 					type: data.get("type") as string,
@@ -109,6 +120,8 @@ export const actions: Actions = {
 					};
 
 					if (["audio", "video"].includes(data.get("type") as string)) {
+						if (!body.content) return;
+
 						body.content.isLooped = Boolean(data.get("is-looped"));
 					}
 				}
@@ -192,6 +205,8 @@ export const actions: Actions = {
 					};
 
 					if (["audio", "video"].includes(data.get("type") as string)) {
+						if (!body.content) return;
+
 						body.content.isLooped = Boolean(data.get("is-looped"));
 					}
 				}

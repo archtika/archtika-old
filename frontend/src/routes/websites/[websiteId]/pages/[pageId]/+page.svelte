@@ -117,23 +117,37 @@ async function handleDrop(
 }
 
 const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
-	const maxItem = $components.reduce<{
-		row_start: number;
-		col_start: number;
-		row_end: number;
-		col_end: number;
-	}>(
-		(acc, item) => {
-			return item.row_end > (acc.row_end || 0) ? item : acc;
-		},
-		{ row_start: 0, col_start: 0, row_end: 0, col_end: 0 },
-	);
+	const gridCellSize = document.querySelector(`[data-zone="1"]`);
+
+	if (!gridCellSize) return;
+
+	const rect = gridCellSize.getBoundingClientRect();
+	const gridCellHeight = rect.height;
+	const contentContainer = document.querySelector("[data-content-container]");
+
+	if (!contentContainer) return;
+
+	const scrollTop = contentContainer.scrollTop;
+	const partialOffset = scrollTop % gridCellHeight;
+	const visibleZoneIndex = Math.floor(scrollTop / gridCellHeight);
+	const zone = visibleZoneIndex * 12 + 1;
+	const zoneElement = document.querySelector(`[data-zone="${zone}"]`);
+
+	if (!zoneElement) return;
+
+	const gridArea = getComputedStyle(zoneElement).getPropertyValue("grid-area");
+	let [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
+
+	if (partialOffset > gridCellHeight * 0.5) {
+		rowStart += 1;
+		rowEnd += 1;
+	}
 
 	const initialPosition = JSON.stringify({
-		rowStart: maxItem.row_end,
-		colStart: 1,
-		rowEnd: maxItem.row_end,
-		colEnd: 1,
+		rowStart,
+		colStart,
+		rowEnd,
+		colEnd,
 	});
 
 	formData.append("initial-position", initialPosition);
@@ -365,6 +379,26 @@ $: totalRows =
             </details>
 
             <h3>Components</h3>
+
+            <form action="?/createComponent" method="post" use:enhance={enhanceCreateComponentForm}>
+                <input
+                    type="hidden"
+                    id="create-component-header-type"
+                    name="type"
+                    value="header"
+                />
+                <button type="submit">Add header</button>
+            </form>
+            <form action="?/createComponent" method="post" use:enhance={enhanceCreateComponentForm}>
+                <input
+                    type="hidden"
+                    id="create-component-footer-type"
+                    name="type"
+                    value="footer"
+                />
+                <button type="submit">Add footer</button>
+            </form>
+
             <div>
                 <h4>Text</h4>
                 <form action="?/createComponent" method="post" use:enhance={enhanceCreateComponentForm}>

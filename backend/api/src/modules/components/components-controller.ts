@@ -25,9 +25,14 @@ export async function createComponent(
 	const { id } = req.params;
 
 	let assetId: string;
+	let isPublic = false;
 
 	if (type === "image" || type === "video" || type === "audio") {
 		assetId = req.body.assetId;
+	}
+
+	if (type === "header" || type === "footer") {
+		isPublic = true;
 	}
 
 	try {
@@ -78,6 +83,8 @@ export async function createComponent(
 										),
 								}
 							: {}),
+						is_public: isPublic,
+						parent_id: req.body.parent_id,
 					}))
 					.returningAll()
 					.executeTakeFirstOrThrow();

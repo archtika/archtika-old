@@ -17,7 +17,7 @@ export async function up(db: Kysely<DB>) {
 		.addColumn("page_id", "uuid", (col) =>
 			col.notNull().references("structure.page.id").onDelete("cascade"),
 		)
-		.addColumn("content", "jsonb", (col) => col.notNull())
+		.addColumn("content", "jsonb")
 		.addColumn("asset_id", "uuid", (col) =>
 			col
 				.references("media.media_asset.id")

@@ -21,10 +21,12 @@ export interface Component {
 
 export interface ComponentApiPayload {
 	type: string;
-	content: {
+	content?: {
 		altText?: string;
 		textContent?: string;
 		isLooped?: boolean;
-	};
-	assetId?: string;
+	} | null;
+	assetId?: string | null;
+	parent_id?: string | null;
+	is_public?: boolean;
 }
