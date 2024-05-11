@@ -14,10 +14,14 @@ const renderer = new Renderer();
 
 renderer.image = (text) => text;
 
+let purifiedTextContent = "";
+
 // biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
-$: purifiedTextContent = DOMPurify.sanitize(
-	parse(component.content.textContent ?? "", { renderer }) as string,
-);
+$: if (component.type === "text") {
+	purifiedTextContent = DOMPurify.sanitize(
+		parse(component.content.textContent ?? "", { renderer }) as string,
+	);
+}
 
 function handleComponentClick(event: MouseEvent) {
 	const target = (event.target as HTMLElement).closest("[data-component-id]");
@@ -129,6 +133,14 @@ function updateComponentGridArea() {
     data-component-id={component.id}
 >
     <Resizer on:mousedown={handleResize} />
+
+		{#if component.type === 'header'}
+			<header></header>
+		{/if}
+
+		{#if component.type === 'footer'}
+			<footer></footer>
+		{/if}
 
     {#if component.type === 'text'}
         {@html purifiedTextContent}

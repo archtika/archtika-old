@@ -132,7 +132,12 @@ export async function getAllComponents(
 			"components.component_position.row_end_span",
 			"components.component_position.col_end_span",
 		])
-		.where("page_id", "=", id)
+		.where(({ or }) =>
+			or({
+				page_id: id,
+				is_public: true,
+			}),
+		)
 		.where(({ or, exists, selectFrom }) =>
 			or([
 				exists(
