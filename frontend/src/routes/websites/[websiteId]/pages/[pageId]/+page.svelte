@@ -54,7 +54,9 @@ function handleDragStart(event: DragEvent) {
 
 function handleDragOver(event: DragEvent) {
 	event.preventDefault();
+}
 
+function handleDragEnter(event: DragEvent) {
 	const target = event.target as HTMLElement;
 
 	target.style.backgroundColor = "red";
@@ -497,8 +499,10 @@ $: totalRows =
                 style="grid-area: {row} / {col} / {row} / {col}"
                 data-zone={i + 1}
                 on:dragover={handleDragOver}
+                on:dragenter={handleDragEnter}
                 on:dragleave={handleDragLeave}
                 on:drop={(event) => handleDrop(event, row, col, row, col)}
+                on:drag
                 role="presentation"
             />
         {/each}
