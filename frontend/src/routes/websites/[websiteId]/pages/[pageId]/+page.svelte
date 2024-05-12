@@ -70,18 +70,17 @@ let currentComponentDropArea: HTMLElement;
 
 function handleComponentDragEnter(event: DragEvent) {
 	const target = event.target as HTMLElement;
-	currentComponentDropArea = target;
-
-	const componentId = event.dataTransfer?.getData("text/plain");
 
 	if (
-		componentId !== target.getAttribute("data-component-id") &&
-		["header", "footer"].includes(
+		!["header", "footer"].includes(
 			target.getAttribute("data-component-type") ?? "",
 		)
 	) {
-		target.style.zIndex = "-10";
+		return;
 	}
+
+	currentComponentDropArea = target;
+	target.style.zIndex = "-10";
 }
 
 async function handleDrop(
@@ -111,7 +110,7 @@ async function handleDrop(
 		row_start: isFooterDropArea ? -1 : rowStart,
 		col_start: colStart,
 		row_end: isFooterDropArea
-			? -2 - ($components[index].row_end_span ?? 0)
+			? -2
 			: rowEnd + ($components[index].row_end_span ?? 0),
 		col_end: colEnd + ($components[index].col_end_span ?? 0),
 	};
