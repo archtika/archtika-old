@@ -21,10 +21,8 @@ const mimeTypes: MimeTypes = {
 	video: ["video/mp4", "video/webm", "video/ogg"],
 };
 
-// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
 $: $components = data.components;
 
-// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
 $: getMedia = (type: string) => {
 	if (!data.media[type]) return [];
 
@@ -66,6 +64,24 @@ function handleDragLeave(event: DragEvent) {
 	const target = event.target as HTMLElement;
 
 	target.style.backgroundColor = "";
+}
+
+let currentComponentDropArea: HTMLElement;
+
+function handleComponentDragEnter(event: DragEvent) {
+	const target = event.target as HTMLElement;
+	currentComponentDropArea = target;
+
+	const componentId = event.dataTransfer?.getData("text/plain");
+
+	if (
+		componentId !== target.getAttribute("data-component-id") &&
+		["header", "footer"].includes(
+			target.getAttribute("data-component-type") ?? "",
+		)
+	) {
+		target.style.zIndex = "-10";
+	}
 }
 
 async function handleDrop(
@@ -200,7 +216,6 @@ if (browser) {
 	};
 }
 
-// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
 $: totalRows =
 	Math.max(0, ...$components.map((item) => item.row_end)) * 2 || 24;
 </script>
@@ -513,6 +528,7 @@ $: totalRows =
                     1} / {component.col_start ?? 1} / {component.row_end ??
                     1} / {component.col_end ?? 1}"
                 on:dragstart={handleDragStart}
+                on:dragenter={handleComponentDragEnter}
             />
         {/each}
     </div>

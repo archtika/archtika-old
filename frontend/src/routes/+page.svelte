@@ -31,12 +31,6 @@ export let data: PageServerData;
     {#each data.websites as { id, title, created_at, updated_at, last_modified_by }}
         <article>
             <h3>{title}</h3>
-            <img
-                src="https://picsum.photos/id/1/200/100"
-                alt=""
-                width="200"
-                height="100"
-            />
             <p>
                 {@html updated_at
                     ? `Last modified at: <time datetime="${new Date(updated_at).toLocaleString('sv').replace(' ', 'T')}">${new Date(updated_at).toLocaleString()}</time>`
@@ -57,12 +51,6 @@ export let data: PageServerData;
     {#each data.sharedWebsites as { id, title, created_at, updated_at }}
         <article>
             <h3>{title}</h3>
-            <img
-                src="https://picsum.photos/id/1/200/100"
-                alt=""
-                width="200"
-                height="100"
-            />
             <p>
                 {@html updated_at
                     ? `Last modified at: <time datetime="${new Date(updated_at).toLocaleString('sv').replace(' ', 'T')}">${new Date(updated_at).toLocaleString()}</time>`

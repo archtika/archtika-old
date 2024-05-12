@@ -16,7 +16,6 @@ renderer.image = (text) => text;
 
 let purifiedTextContent = "";
 
-// biome-ignore lint: This is a Svelte reactive value which automatically recomputes on dependency change
 $: if (component.type === "text") {
 	purifiedTextContent = DOMPurify.sanitize(
 		parse(component.content.textContent ?? "", { renderer }) as string,
@@ -127,6 +126,7 @@ function updateComponentGridArea() {
 <div
     draggable="true"
     on:dragstart
+		on:dragenter
     on:click={handleComponentClick}
     role="presentation"
     style="{styles}{$selectedComponent === component.id ? "; outline: 0.25rem solid yellow" : ""}"
