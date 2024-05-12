@@ -96,6 +96,7 @@ async function handleDrop(
 	const target = event.target as HTMLElement;
 
 	target.style.backgroundColor = "";
+	currentComponentDropArea.style.zIndex = "";
 
 	const componentId = event.dataTransfer?.getData("text/plain");
 
@@ -526,7 +527,7 @@ $: totalRows =
                 {component}
                 styles="grid-area: {component.row_start ??
                     1} / {component.col_start ?? 1} / {component.row_end ??
-                    1} / {component.col_end ?? 1}"
+                    1} / {component.col_end ?? 1}{!["header", "footer"].includes(component.type) ? "; z-index: 10" : ""}"
                 on:dragstart={handleDragStart}
                 on:dragenter={handleComponentDragEnter}
             />
