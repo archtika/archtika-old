@@ -81,6 +81,8 @@ function handleComponentDragEnter(event: DragEvent) {
 
 	currentComponentDropArea = target;
 	target.style.zIndex = "-10";
+
+	console.log(currentComponentDropArea);
 }
 
 async function handleDrop(
@@ -95,9 +97,15 @@ async function handleDrop(
 	const target = event.target as HTMLElement;
 
 	target.style.backgroundColor = "";
-	currentComponentDropArea.style.zIndex = "";
+
+	if (currentComponentDropArea) {
+		currentComponentDropArea.style.zIndex = "";
+	}
+
 	const isFooterDropArea =
-		currentComponentDropArea.getAttribute("data-component-type") === "footer";
+		currentComponentDropArea?.getAttribute("data-component-type") === "footer";
+
+	console.log(isFooterDropArea);
 
 	const componentId = event.dataTransfer?.getData("text/plain");
 
