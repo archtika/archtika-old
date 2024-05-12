@@ -97,6 +97,8 @@ async function handleDrop(
 
 	target.style.backgroundColor = "";
 	currentComponentDropArea.style.zIndex = "";
+	const isFooterDropArea =
+		currentComponentDropArea.getAttribute("data-component-type") === "footer";
 
 	const componentId = event.dataTransfer?.getData("text/plain");
 
@@ -106,9 +108,11 @@ async function handleDrop(
 
 	$components[index] = {
 		...$components[index],
-		row_start: rowStart,
+		row_start: isFooterDropArea ? -1 : rowStart,
 		col_start: colStart,
-		row_end: rowEnd + ($components[index].row_end_span ?? 0),
+		row_end: isFooterDropArea
+			? -2 - ($components[index].row_end_span ?? 0)
+			: rowEnd + ($components[index].row_end_span ?? 0),
 		col_end: colEnd + ($components[index].col_end_span ?? 0),
 	};
 
@@ -160,6 +164,11 @@ const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
 	if (partialOffset > gridCellHeight * 0.5) {
 		rowStart += 1;
 		rowEnd += 1;
+	}
+
+	if (formData.get("type") === "footer") {
+		rowStart = -1;
+		rowEnd = -2;
 	}
 
 	const initialPosition = JSON.stringify({
@@ -218,7 +227,7 @@ if (browser) {
 }
 
 $: totalRows =
-	Math.max(0, ...$components.map((item) => item.row_end)) * 2 || 24;
+	Math.max(12, ...$components.map((item) => item.row_end)) * 2 || 24;
 </script>
 
 <svelte:window on:click={handleWindowClick} />
@@ -228,7 +237,7 @@ $: totalRows =
         <h1>
             <a href="/websites/{data.website.id}">{data.website.title}</a>
         </h1>
-        <details open>
+        <details>
             <summary>Pages</summary>
             <ul>
                 {#each data.pages as { id, title }}
@@ -244,7 +253,15 @@ $: totalRows =
         {#if $selectedComponent}
             {@const componentData = $components.find(component => component.id === $selectedComponent)}
 
-            <p>Selected component: <strong>{$selectedComponent}</strong></p>
+            <p>Selected component:</p>
+            <ul>
+                <li>
+                    Type: <strong>{componentData?.type}</strong>
+                </li>
+                <li>
+                    Unique id: <code>{componentData?.id}</code>
+                </li>
+            </ul>
 
             {#if componentData?.type === 'text'}
                 <form action="?/updateComponent" method="post" use:enhance={() => {
@@ -357,7 +374,7 @@ $: totalRows =
                 <button type="submit">Delete</button>
             </form>
         {:else}
-            <details open>
+            <details>
                 <summary>Update page</summary>
                 <form
                     method="post"
@@ -393,6 +410,12 @@ $: totalRows =
                         >
                     </label>
                     <button type="submit">Update</button>
+                </form>
+            </details>
+            <details>
+                <summary>Delete</summary>
+                <form method="post" action="?/deletePage" use:enhance>
+                    <button type="submit">Delete page</button>
                 </form>
             </details>
 

@@ -7,7 +7,7 @@ export let data: PageServerData;
 
 <h1>Websites</h1>
 
-<details open>
+<details>
     <summary>Create website</summary>
     <form method="post" action="?/createWebsite" use:enhance>
         <label>

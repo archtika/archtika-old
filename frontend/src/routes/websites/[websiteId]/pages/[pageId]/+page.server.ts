@@ -1,5 +1,5 @@
 import type { ComponentApiPayload } from "$lib/types";
-import { error } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({
@@ -56,6 +56,20 @@ export const actions: Actions = {
 				}),
 			},
 		);
+	},
+	deletePage: async ({ fetch, params }) => {
+		const deletionRequest = await fetch(
+			`http://localhost:3000/api/v1/websites/${params.websiteId}/pages/${params.pageId}`,
+			{
+				method: "DELETE",
+			},
+		);
+
+		if (!deletionRequest.ok) {
+			throw error(403, "Not allowed");
+		}
+
+		throw redirect(303, `/websites/${params.websiteId}`);
 	},
 	createComponent: async ({ request, fetch, params }) => {
 		const data = await request.formData();

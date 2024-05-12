@@ -39,7 +39,7 @@ export let data: PageServerData;
 
 <h3>Collaborators</h3>
 
-<details open>
+<details>
     <summary>Add collaborator</summary>
     <form method="post" action="?/addCollaborator" use:enhance>
         <label>
@@ -121,7 +121,7 @@ export let data: PageServerData;
 
 <h2>Pages</h2>
 
-<details open>
+<details>
     <summary>Create new page</summary>
     <form method="post" action="?/createPage" use:enhance>
         <label>

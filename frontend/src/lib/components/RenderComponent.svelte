@@ -71,7 +71,15 @@ function doDrag(event: MouseEvent) {
 	const gridCellHeight = rect.height;
 
 	let newWidth = startWidth + dx;
-	let newHeight = startHeight + dy;
+	let newHeight: number;
+
+	const index = $components.findIndex((c) => c.id === component.id);
+
+	if ($components[index].row_start < 0) {
+		newHeight = startHeight - dy;
+	} else {
+		newHeight = startHeight + dy;
+	}
 
 	newWidth = Math.max(1, Math.round(newWidth / gridCellWidth)) * gridCellWidth;
 	newHeight =
@@ -117,7 +125,11 @@ function updateComponentGridArea() {
 	const index = $components.findIndex((c) => c.id === component.id);
 
 	$components[index].col_end = $components[index].col_start + cols;
-	$components[index].row_end = $components[index].row_start + rows;
+	if ($components[index].row_start < 0) {
+		$components[index].row_end = $components[index].row_start - rows;
+	} else {
+		$components[index].row_end = $components[index].row_start + rows;
+	}
 	$components[index].col_end_span = cols;
 	$components[index].row_end_span = rows;
 }
@@ -177,5 +189,6 @@ function updateComponentGridArea() {
 	div[data-component-id] {
 		position: relative;
 		border: 0.125rem solid black;
+		background-color: white;
 	}
 </style>

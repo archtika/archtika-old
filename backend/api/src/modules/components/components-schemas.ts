@@ -188,9 +188,9 @@ export const updateComponentSchema = Type.Union(
 export type UpdateComponentSchemaType = Static<typeof updateComponentSchema>;
 
 export const componentPositionSchema = Type.Object({
-	row_start: Type.Integer({ minimum: 0 }),
+	row_start: Type.Integer(),
 	col_start: Type.Integer({ minimum: 0 }),
-	row_end: Type.Integer({ minimum: 0 }),
+	row_end: Type.Integer(),
 	col_end: Type.Integer({ minimum: 0 }),
 	row_end_span: Type.Integer({ minimum: 0 }),
 	col_end_span: Type.Integer({ minimum: 0 }),
