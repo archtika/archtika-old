@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@fastify/autoload':
-    specifier: ^5.8.0
-    version: 5.8.0
+    specifier: ^5.8.2
+    version: 5.8.2
   '@fastify/cookie':
     specifier: ^9.3.1
     version: 9.3.1
@@ -235,8 +235,8 @@ packages:
       fast-uri: 2.3.0
     dev: false
 
-  /@fastify/autoload@5.8.0:
-    resolution: {integrity: sha512-bF86vl+1Kk91S41WIL9NrKhcugGQg/cQ959aTaombkCjA+9YAbgVCKKu2lRqtMsosDZ0CNRfVnaLYoHQIDUI2A==}
+  /@fastify/autoload@5.8.2:
+    resolution: {integrity: sha512-AX555mbAvtYPWZhOJG73y8zV39wH+wEnOcgg13xfGoHJ46rdsfx0Rs8Yfi5exE4bBqdzcM72iIZdhTbLbEqScA==}
     dev: false
 
   /@fastify/busboy@2.1.1:
