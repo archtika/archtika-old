@@ -119,6 +119,11 @@ export async function getAllComponents(
 			"components.component.id",
 			"components.component_position.component_id",
 		)
+		.innerJoin(
+			"structure.page",
+			"components.component.page_id",
+			"structure.page.id",
+		)
 		.selectAll("components.component")
 		.select([
 			"components.component_position.row_start",
@@ -160,6 +165,13 @@ export async function getAllComponents(
 						.where("permission_level", ">=", 10),
 				),
 			]),
+		)
+		.where(({ eb, selectFrom }) =>
+			eb(
+				"structure.page.website_id",
+				"=",
+				selectFrom("structure.page").select("website_id").where("id", "=", id),
+			),
 		)
 		.execute();
 
