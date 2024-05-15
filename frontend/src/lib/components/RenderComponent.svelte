@@ -145,7 +145,7 @@ function updateComponentGridArea() {
     data-component-id={component.id}
 		data-component-type={component.type}
 >
-    <Resizer on:mousedown={handleResize} />
+    <Resizer on:mousedown={handleResize} isNegativeRow={component.row_start < 0} />
 
 		{#if component.type === 'header'}
 			<header></header>

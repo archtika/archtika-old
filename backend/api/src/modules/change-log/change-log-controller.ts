@@ -23,17 +23,5 @@ export async function viewChangeLog(
 		.orderBy("created_at")
 		.execute();
 
-	if (!log.length) {
-		try {
-			await req.server.kysely.db
-				.selectFrom("structure.website")
-				.select("id")
-				.where(({ and }) => and({ id, user_id: req.user?.id }))
-				.executeTakeFirstOrThrow();
-		} catch (error) {
-			return reply.notFound("Website not found or not allowed");
-		}
-	}
-
 	return reply.status(200).send(log);
 }

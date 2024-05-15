@@ -38,46 +38,35 @@ export async function createMedia(
 
 	const randomId = randomUUID();
 
-	let media: Asset;
-
-	try {
-		media = await req.server.kysely.db
-			.insertInto("media.media_asset")
-			.values({
-				id: randomId,
-				user_id: req.user?.id ?? "",
-				name: path.parse(data.filename).name,
-				mimetype: data.mimetype,
-				file_hash: createHash("sha256").update(buffer).digest("hex"),
-			})
-			.onConflict((oc) => oc.constraint("uniqueFileHash").doNothing())
-			.returningAll()
-			.executeTakeFirstOrThrow();
-	} catch (error) {
-		return reply.conflict("File already exists");
-	}
+	const media = await req.server.kysely.db
+		.insertInto("media.media_asset")
+		.values({
+			id: randomId,
+			user_id: req.user?.id ?? "",
+			name: path.parse(data.filename).name,
+			mimetype: data.mimetype,
+			file_hash: createHash("sha256").update(buffer).digest("hex"),
+		})
+		.onConflict((oc) => oc.constraint("uniqueFileHash").doNothing())
+		.returningAll()
+		.executeTakeFirstOrThrow();
 
 	const bucketName = "archtika";
 	const objectName = randomId;
 
-	try {
-		await req.server.minio.client.putObject(
-			bucketName,
-			objectName,
-			buffer,
-			undefined,
-			{
-				"Content-Type": media.mimetype,
-				"X-Amz-Meta-Original-Name": media.name,
-				"X-Amz-Meta-File-Hash": media.file_hash,
-			},
-		);
+	await req.server.minio.client.putObject(
+		bucketName,
+		objectName,
+		buffer,
+		undefined,
+		{
+			"Content-Type": media.mimetype,
+			"X-Amz-Meta-Original-Name": media.name,
+			"X-Amz-Meta-File-Hash": media.file_hash,
+		},
+	);
 
-		console.log("File uploaded successfully");
-	} catch (err) {
-		console.log(err);
-		return reply.internalServerError("Error uploading file");
-	}
+	console.log("File uploaded successfully");
 
 	return reply.status(201).send(media);
 }
@@ -129,19 +118,13 @@ export async function getMedia(
 	req: FastifyRequest<{ Params: ParamsSchemaType }>,
 	reply: FastifyReply,
 ) {
-	let media: Asset;
-
 	const { id } = req.params;
 
-	try {
-		media = await req.server.kysely.db
-			.selectFrom("media.media_asset")
-			.selectAll()
-			.where(({ and }) => and({ id, user_id: req.user?.id }))
-			.executeTakeFirstOrThrow();
-	} catch (error) {
-		return reply.notFound("Media not found or not allowed");
-	}
+	const media = await req.server.kysely.db
+		.selectFrom("media.media_asset")
+		.selectAll()
+		.where(({ and }) => and({ id, user_id: req.user?.id }))
+		.executeTakeFirstOrThrow();
 
 	const assetWithPresignedUrl = {
 		...media,
@@ -155,26 +138,15 @@ export async function deleteMedia(
 	req: FastifyRequest<{ Params: ParamsSchemaType }>,
 	reply: FastifyReply,
 ) {
-	let media: Asset;
-
 	const { id } = req.params;
 
-	try {
-		media = await req.server.kysely.db
-			.deleteFrom("media.media_asset")
-			.where(({ and }) => and({ id, user_id: req.user?.id }))
-			.returningAll()
-			.executeTakeFirstOrThrow();
-	} catch (error) {
-		return reply.notFound("Media not found or not allowed");
-	}
+	const media = await req.server.kysely.db
+		.deleteFrom("media.media_asset")
+		.where(({ and }) => and({ id, user_id: req.user?.id }))
+		.returningAll()
+		.executeTakeFirstOrThrow();
 
-	try {
-		await req.server.minio.client.removeObject("archtika", media.id);
-	} catch (err) {
-		console.error(err);
-		return reply.internalServerError("Error deleting file");
-	}
+	await req.server.minio.client.removeObject("archtika", media.id);
 
 	return reply.status(200).send(media);
 }

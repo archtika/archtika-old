@@ -34,18 +34,6 @@ export async function getAllCollaborators(
 		)
 		.execute();
 
-	if (!collaborators.length) {
-		try {
-			await req.server.kysely.db
-				.selectFrom("structure.website")
-				.select("id")
-				.where(({ and }) => and({ id, user_id: req.user?.id }))
-				.executeTakeFirstOrThrow();
-		} catch (error) {
-			return reply.notFound("Website not found or not allowed");
-		}
-	}
-
 	return reply.status(200).send(collaborators);
 }
 
@@ -59,30 +47,26 @@ export async function addCollaborator(
 	const { websiteId, userId } = req.params;
 	const { permissionLevel } = req.body;
 
-	try {
-		const collaborator = await req.server.kysely.db
-			.transaction()
-			.execute(async (trx) => {
-				updateLastModifiedByColumn(req, trx);
+	const collaborator = await req.server.kysely.db
+		.transaction()
+		.execute(async (trx) => {
+			updateLastModifiedByColumn(req, trx);
 
-				return await trx
-					.insertInto("collaboration.collaborator")
-					.values(({ selectFrom, and }) => ({
-						website_id: selectFrom("structure.website")
-							.select("id")
-							.where(and({ id: websiteId, user_id: req.user?.id }))
-							.where("user_id", "!=", userId),
-						user_id: userId,
-						permission_level: permissionLevel,
-					}))
-					.returningAll()
-					.executeTakeFirstOrThrow();
-			});
+			return await trx
+				.insertInto("collaboration.collaborator")
+				.values(({ selectFrom, and }) => ({
+					website_id: selectFrom("structure.website")
+						.select("id")
+						.where(and({ id: websiteId, user_id: req.user?.id }))
+						.where("user_id", "!=", userId),
+					user_id: userId,
+					permission_level: permissionLevel,
+				}))
+				.returningAll()
+				.executeTakeFirstOrThrow();
+		});
 
-		return reply.status(201).send(collaborator);
-	} catch (error) {
-		return reply.notFound("Website not found or not allowed");
-	}
+	return reply.status(201).send(collaborator);
 }
 
 export async function updateCollaborator(
@@ -95,40 +79,36 @@ export async function updateCollaborator(
 	const { websiteId, userId } = req.params;
 	const { permissionLevel } = req.body;
 
-	try {
-		const collaborator = await req.server.kysely.db
-			.transaction()
-			.execute(async (trx) => {
-				updateLastModifiedByColumn(req, trx);
+	const collaborator = await req.server.kysely.db
+		.transaction()
+		.execute(async (trx) => {
+			updateLastModifiedByColumn(req, trx);
 
-				return await trx
-					.updateTable("collaboration.collaborator")
-					.set({
-						website_id: websiteId,
-						user_id: userId,
-						permission_level: permissionLevel,
-					})
-					.where(({ selectFrom, exists, and }) =>
-						and([
-							and({ website_id: websiteId, user_id: userId }),
-							exists(
-								selectFrom("structure.website").where(
-									and({
-										id: websiteId,
-										user_id: req.user?.id,
-									}),
-								),
+			return await trx
+				.updateTable("collaboration.collaborator")
+				.set({
+					website_id: websiteId,
+					user_id: userId,
+					permission_level: permissionLevel,
+				})
+				.where(({ selectFrom, exists, and }) =>
+					and([
+						and({ website_id: websiteId, user_id: userId }),
+						exists(
+							selectFrom("structure.website").where(
+								and({
+									id: websiteId,
+									user_id: req.user?.id,
+								}),
 							),
-						]),
-					)
-					.returningAll()
-					.executeTakeFirstOrThrow();
-			});
+						),
+					]),
+				)
+				.returningAll()
+				.executeTakeFirstOrThrow();
+		});
 
-		return reply.status(200).send(collaborator);
-	} catch (error) {
-		return reply.notFound("Website not found or not allowed");
-	}
+	return reply.status(200).send(collaborator);
 }
 
 export async function removeCollaborator(
@@ -137,33 +117,29 @@ export async function removeCollaborator(
 ) {
 	const { websiteId, userId } = req.params;
 
-	try {
-		const collaborator = await req.server.kysely.db
-			.transaction()
-			.execute(async (trx) => {
-				updateLastModifiedByColumn(req, trx);
+	const collaborator = await req.server.kysely.db
+		.transaction()
+		.execute(async (trx) => {
+			updateLastModifiedByColumn(req, trx);
 
-				return await trx
-					.deleteFrom("collaboration.collaborator")
-					.where(({ exists, selectFrom, and }) =>
-						and([
-							and({ website_id: websiteId, user_id: userId }),
-							exists(
-								selectFrom("structure.website").where(
-									and({
-										id: websiteId,
-										user_id: req.user?.id,
-									}),
-								),
+			return await trx
+				.deleteFrom("collaboration.collaborator")
+				.where(({ exists, selectFrom, and }) =>
+					and([
+						and({ website_id: websiteId, user_id: userId }),
+						exists(
+							selectFrom("structure.website").where(
+								and({
+									id: websiteId,
+									user_id: req.user?.id,
+								}),
 							),
-						]),
-					)
-					.returningAll()
-					.executeTakeFirstOrThrow();
-			});
+						),
+					]),
+				)
+				.returningAll()
+				.executeTakeFirstOrThrow();
+		});
 
-		return reply.status(200).send(collaborator);
-	} catch (error) {
-		return reply.notFound("Website not found or not allowed");
-	}
+	return reply.status(200).send(collaborator);
 }

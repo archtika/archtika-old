@@ -32,15 +32,21 @@ const createComponentTextSchema = Type.Object({
 	content: Type.Object({
 		textContent: Type.String({ minLength: 1 }),
 	}),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 const updateComponentTextSchema = Type.Object({
 	type: Type.Literal("text"),
-	content: Type.Object({
-		textContent: Type.Optional(Type.String({ minLength: 1 })),
-	}),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	content: Type.Optional(
+		Type.Object({
+			textContent: Type.Optional(Type.String({ minLength: 1 })),
+		}),
+	),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 const createComponentImageSchema = Type.Object({
@@ -49,16 +55,22 @@ const createComponentImageSchema = Type.Object({
 		altText: Type.Optional(Type.String({ minLength: 1 })),
 	}),
 	assetId: Type.String({ format: "uuid" }),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 const updateComponentImageSchema = Type.Object({
 	type: Type.Literal("image"),
-	content: Type.Object({
-		altText: Type.Optional(Type.String({ minLength: 1 })),
-	}),
+	content: Type.Optional(
+		Type.Object({
+			altText: Type.Optional(Type.String({ minLength: 1 })),
+		}),
+	),
 	assetId: Type.Optional(Type.String({ format: "uuid" })),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 const createComponentVideoSchema = Type.Object({
@@ -68,17 +80,23 @@ const createComponentVideoSchema = Type.Object({
 		isLooped: Type.Optional(Type.Boolean()),
 	}),
 	assetId: Type.String({ format: "uuid" }),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 const updateComponentVideoSchema = Type.Object({
 	type: Type.Literal("video"),
-	content: Type.Object({
-		altText: Type.Optional(Type.String({ minLength: 1 })),
-		isLooped: Type.Optional(Type.Boolean()),
-	}),
+	content: Type.Optional(
+		Type.Object({
+			altText: Type.Optional(Type.String({ minLength: 1 })),
+			isLooped: Type.Optional(Type.Boolean()),
+		}),
+	),
 	assetId: Type.Optional(Type.String({ format: "uuid" })),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 const createComponentAudioSchema = Type.Object({
@@ -88,17 +106,23 @@ const createComponentAudioSchema = Type.Object({
 		isLooped: Type.Optional(Type.Boolean()),
 	}),
 	assetId: Type.String({ format: "uuid" }),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 const updateComponentAudioSchema = Type.Object({
 	type: Type.Literal("audio"),
-	content: Type.Object({
-		altText: Type.Optional(Type.String({ minLength: 1 })),
-		isLooped: Type.Optional(Type.Boolean()),
-	}),
+	content: Type.Optional(
+		Type.Object({
+			altText: Type.Optional(Type.String({ minLength: 1 })),
+			isLooped: Type.Optional(Type.Boolean()),
+		}),
+	),
 	assetId: Type.Optional(Type.String({ format: "uuid" })),
-	parent_id: Type.Optional(Type.String({ format: "uuid" })),
+	parent_id: Type.Optional(
+		Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+	),
 });
 
 export const exampleComponentValues = {

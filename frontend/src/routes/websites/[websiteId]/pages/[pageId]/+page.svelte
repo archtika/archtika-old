@@ -103,6 +103,18 @@ async function handleDrop(
 	const isFooterDropArea =
 		currentComponentDropArea?.getAttribute("data-component-type") === "footer";
 
+	let totalNumRows = 0;
+
+	if (isFooterDropArea) {
+		const numZones = Array.from(document.querySelectorAll("div[data-zone]"))
+			.pop()
+			?.getAttribute("data-zone");
+
+		if (typeof numZones === "string") {
+			totalNumRows = Number.parseInt(numZones) / 12;
+		}
+	}
+
 	const componentId = event.dataTransfer?.getData("text/plain");
 
 	const index = $components.findIndex((component: Component) => {
@@ -111,13 +123,30 @@ async function handleDrop(
 
 	$components[index] = {
 		...$components[index],
-		row_start: isFooterDropArea ? -1 : rowStart,
+		row_start: isFooterDropArea ? rowStart - totalNumRows - 1 : rowStart,
 		col_start: colStart,
 		row_end: isFooterDropArea
-			? -2
+			? rowEnd - totalNumRows - 1 - ($components[index].row_end_span || 1)
 			: rowEnd + ($components[index].row_end_span ?? 0),
 		col_end: colEnd + ($components[index].col_end_span ?? 0),
 	};
+
+	const updateComponentFormData = new FormData();
+	updateComponentFormData.append("id", `${$components[index].id}`);
+	updateComponentFormData.append("type", `${$components[index].type}`);
+	updateComponentFormData.append(
+		"parent-id",
+		currentComponentDropArea?.getAttribute("data-component-id") ?? "",
+	);
+
+	const updateComponentResponse = await fetch("?/updateComponent", {
+		method: "POST",
+		body: updateComponentFormData,
+	});
+
+	const updateComponentResult = deserialize(
+		await updateComponentResponse.text(),
+	);
 
 	const formData = new FormData();
 	formData.append("component-id", `${$components[index].id}`);
@@ -135,10 +164,11 @@ async function handleDrop(
 
 	const result = deserialize(await response.text());
 
-	if (result.type === "success") {
+	if (updateComponentResult.type === "success" && result.type === "success") {
 		await invalidateAll();
 	}
 
+	applyAction(updateComponentResult);
 	applyAction(result);
 }
 

@@ -1,7 +1,12 @@
+<script lang="ts">
+export let isNegativeRow: boolean;
+</script>
+
 <div
     data-resizer
     on:mousedown
     role="presentation"
+    class:ne-resize={isNegativeRow}
 />
 
 <style>
@@ -14,5 +19,10 @@
         inset-block-end: 0;
         inset-inline-end: 0;
         cursor: se-resize;
+    }
+
+    .ne-resize {
+        cursor: ne-resize;
+        inset-block-start: 0;
     }
 </style>

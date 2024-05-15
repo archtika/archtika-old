@@ -60,26 +60,22 @@ export async function getWebsite(
 ) {
 	const { id } = req.params;
 
-	try {
-		const website = await req.server.kysely.db
-			.selectFrom("structure.website")
-			.selectAll()
-			.where(({ and, or, exists, selectFrom }) =>
-				or([
-					and({ id, user_id: req.user?.id }),
-					exists(
-						selectFrom("collaboration.collaborator")
-							.where(and({ user_id: req.user?.id, website_id: id }))
-							.where("permission_level", ">=", 10),
-					),
-				]),
-			)
-			.executeTakeFirstOrThrow();
+	const website = await req.server.kysely.db
+		.selectFrom("structure.website")
+		.selectAll()
+		.where(({ and, or, exists, selectFrom }) =>
+			or([
+				and({ id, user_id: req.user?.id }),
+				exists(
+					selectFrom("collaboration.collaborator")
+						.where(and({ user_id: req.user?.id, website_id: id }))
+						.where("permission_level", ">=", 10),
+				),
+			]),
+		)
+		.executeTakeFirstOrThrow();
 
-		return reply.status(200).send(website);
-	} catch (error) {
-		return reply.notFound("Website not found or not allowed");
-	}
+	return reply.status(200).send(website);
 }
 
 export async function generateWebsite(
@@ -216,32 +212,28 @@ export async function updateWebsite(
 	const { id } = req.params;
 	const { title, metaDescription } = req.body;
 
-	try {
-		const website = await req.server.kysely.db
-			.updateTable("structure.website")
-			.set({
-				title,
-				meta_description: metaDescription,
-				updated_at: sql`now()`,
-				last_modified_by: req.user?.id,
-			})
-			.where(({ or, and, exists, selectFrom }) =>
-				or([
-					and({ id, user_id: req.user?.id }),
-					exists(
-						selectFrom("collaboration.collaborator")
-							.where(and({ user_id: req.user?.id, website_id: id }))
-							.where("permission_level", ">=", 30),
-					),
-				]),
-			)
-			.returningAll()
-			.executeTakeFirstOrThrow();
+	const website = await req.server.kysely.db
+		.updateTable("structure.website")
+		.set({
+			title,
+			meta_description: metaDescription,
+			updated_at: sql`now()`,
+			last_modified_by: req.user?.id,
+		})
+		.where(({ or, and, exists, selectFrom }) =>
+			or([
+				and({ id, user_id: req.user?.id }),
+				exists(
+					selectFrom("collaboration.collaborator")
+						.where(and({ user_id: req.user?.id, website_id: id }))
+						.where("permission_level", ">=", 30),
+				),
+			]),
+		)
+		.returningAll()
+		.executeTakeFirstOrThrow();
 
-		return reply.status(200).send(website);
-	} catch (error) {
-		return reply.notFound("Website not found or not allowed");
-	}
+	return reply.status(200).send(website);
 }
 
 export async function deleteWebsite(
@@ -250,15 +242,11 @@ export async function deleteWebsite(
 ) {
 	const { id } = req.params;
 
-	try {
-		const website = await req.server.kysely.db
-			.deleteFrom("structure.website")
-			.where(({ and }) => and({ id, user_id: req.user?.id }))
-			.returningAll()
-			.executeTakeFirstOrThrow();
+	const website = await req.server.kysely.db
+		.deleteFrom("structure.website")
+		.where(({ and }) => and({ id, user_id: req.user?.id }))
+		.returningAll()
+		.executeTakeFirstOrThrow();
 
-		return reply.status(200).send(website);
-	} catch (error) {
-		return reply.notFound("Website not found or not allowed");
-	}
+	return reply.status(200).send(website);
 }
