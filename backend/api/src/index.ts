@@ -56,7 +56,7 @@ export function app() {
 
 	fastify.register(fastifyAutoload, {
 		dir: join(__dirname, "modules"),
-		options: Object.assign({ prefix: "/api/v1" }),
+		options: { prefix: "/api/v1" },
 		ignoreFilter: (path) =>
 			path.includes("schemas") ||
 			path.includes("controller") ||
