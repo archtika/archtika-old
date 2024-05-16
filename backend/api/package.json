@@ -46,7 +46,7 @@
 		"@types/archiver": "^6.0.2",
 		"@types/jsdom": "^21.1.6",
 		"@types/node": "^20.12.11",
-		"@types/pg": "^8.11.5",
+		"@types/pg": "^8.11.6",
 		"@types/ws": "^8.5.10",
 		"kysely-codegen": "^0.15.0",
 		"pino-pretty": "^11.0.0",
