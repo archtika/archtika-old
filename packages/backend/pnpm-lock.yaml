@@ -59,6 +59,9 @@ dependencies:
   arctic:
     specifier: ^1.8.1
     version: 1.8.1
+  common:
+    specifier: link:../common
+    version: link:../common
   fastify:
     specifier: ^4.27.0
     version: 4.27.0

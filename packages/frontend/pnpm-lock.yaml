@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  common:
+    specifier: link:../common
+    version: link:../common
   isomorphic-dompurify:
     specifier: ^2.9.0
     version: 2.9.0
