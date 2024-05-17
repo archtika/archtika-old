@@ -66,7 +66,7 @@ function handleDragLeave(event: DragEvent) {
 	target.style.backgroundColor = "";
 }
 
-let currentComponentDropArea: HTMLElement;
+let currentComponentDropArea: HTMLElement | null;
 
 function handleComponentDragEnter(event: DragEvent) {
 	const target = event.target as HTMLElement;
@@ -83,6 +83,55 @@ function handleComponentDragEnter(event: DragEvent) {
 	target.style.zIndex = "-10";
 }
 
+function isOutsideNestedComponent(target: HTMLElement) {
+	if (!currentComponentDropArea) {
+		return;
+	}
+
+	for (const element of [
+		...document.querySelectorAll(
+			'[data-component-type="footer"], [data-component-type="header"]',
+		),
+	] as HTMLElement[]) {
+		element.style.zIndex = "";
+	}
+
+	let rowStart = 0;
+	let colStart = 0;
+	let rowEnd = 0;
+	let colEnd = 0;
+
+	const gridArea = getComputedStyle(currentComponentDropArea).getPropertyValue(
+		"grid-area",
+	);
+	[rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
+
+	const totalZones = Math.abs((rowEnd - rowStart) * (colEnd - colStart));
+	let zoneStart = 0;
+	let zoneEnd = 0;
+
+	if (rowStart < 0) {
+		const numZones = Array.from(document.querySelectorAll("div[data-zone]"))
+			.pop()
+			?.getAttribute("data-zone");
+
+		zoneStart =
+			Number.parseInt(numZones as string) -
+			Math.abs((rowEnd - rowStart) * 12) +
+			1;
+		zoneEnd = zoneStart + totalZones - 1;
+	} else {
+		zoneStart = (rowStart === 1 ? 0 : rowStart) * 12 + colStart;
+		zoneEnd = zoneStart + totalZones - 1;
+	}
+
+	const zone = Number.parseInt(target.getAttribute("data-zone") as string);
+
+	if (zone > zoneEnd || zone < zoneStart) {
+		currentComponentDropArea = null;
+	}
+}
+
 async function handleDrop(
 	event: DragEvent,
 	rowStart: number,
@@ -96,9 +145,7 @@ async function handleDrop(
 
 	target.style.backgroundColor = "";
 
-	if (currentComponentDropArea) {
-		currentComponentDropArea.style.zIndex = "";
-	}
+	isOutsideNestedComponent(target);
 
 	const isFooterDropArea =
 		currentComponentDropArea?.getAttribute("data-component-type") === "footer";
