@@ -173,6 +173,7 @@ export async function getAllComponents(
 				selectFrom("structure.page").select("website_id").where("id", "=", id),
 			),
 		)
+		.orderBy('created_at')
 		.execute();
 
 	const componentsWithUrls = await Promise.all(

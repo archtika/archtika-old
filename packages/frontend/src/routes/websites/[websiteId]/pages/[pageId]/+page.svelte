@@ -307,7 +307,7 @@ if (browser) {
 }
 
 $: totalRows =
-	Math.max(12, ...$components.map((item) => item.row_end)) * 2 || 24;
+	Math.max(12, ...$components.map((item) => item.row_end)) + 12 || 24;
 </script>
 
 <svelte:window on:click={handleWindowClick} />
