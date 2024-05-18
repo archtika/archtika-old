@@ -142,8 +142,9 @@ function updateComponentGridArea() {
     on:click={handleComponentClick}
     role="presentation"
     style="{styles}{$selectedComponent === component.id ? "; outline: 0.25rem solid yellow" : ""}"
-    data-component-id={component.id}
 		data-component-type={component.type}
+    data-component-id={component.id}
+		data-component-parent-id={component.parent_id}
 >
     <Resizer on:mousedown={handleResize} isNegativeRow={component.row_start < 0} />
 

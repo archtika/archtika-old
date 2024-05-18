@@ -8,6 +8,7 @@ export interface Component {
 		isLooped?: boolean;
 	};
 	asset_id?: string;
+	parent_id: null | string;
 	created_at: string;
 	updated_at: string | null;
 	url: string | null;

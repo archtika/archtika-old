@@ -123,28 +123,50 @@ export async function generateWebsite(
 		let htmlContent = "";
 
 		const htmlElements = htmlContainer?.querySelectorAll("[data-component-id]");
-		const groupedElements = new Map<number, Element[]>();
+		const groupedElements = new Map<number | string, Element[]>();
+		let currentComponentMapType = "header";
 
 		for (const element of htmlElements || []) {
-			const componentId = element.getAttribute("data-component-id");
-
 			const gridArea = new JSDOM().window
 				.getComputedStyle(element)
 				.getPropertyValue("grid-area");
 			const [rowStart] = gridArea.split(" / ").map(Number);
 
+			const componentType = element.getAttribute("data-component-type");
+
+			if (componentType && ["header", "footer"].includes(componentType)) {
+				currentComponentMapType = componentType;
+				groupedElements.set(componentType, []);
+				continue;
+			}
+
+			if (
+				!element.hasAttribute("data-component-parent-id") &&
+				!groupedElements.has(rowStart)
+			) {
+				groupedElements.set(rowStart, []);
+			}
+
 			for (const child of element.children) {
 				if (child.hasAttribute("data-resizer")) continue;
 
-				if (!groupedElements.has(rowStart)) {
-					groupedElements.set(rowStart, []);
+				if (element.hasAttribute("data-component-parent-id")) {
+					groupedElements.get(currentComponentMapType)?.push(child);
+					continue;
 				}
+
 				groupedElements.get(rowStart)?.push(child);
 			}
 		}
 
-		for (const [rowStart, elements] of groupedElements) {
-			if (elements.length > 1) {
+		for (const [key, elements] of groupedElements) {
+			if (["header", "footer"].includes(String(key))) {
+				htmlContent += `<${key}>\n`;
+				for (const element of elements) {
+					htmlContent += `${element.outerHTML}\n`;
+				}
+				htmlContent += `</${key}>\n`;
+			} else if (elements.length > 1) {
 				htmlContent += `<div class="grid">\n`;
 				for (const element of elements) {
 					htmlContent += `${element.outerHTML}\n`;
@@ -154,6 +176,8 @@ export async function generateWebsite(
 				htmlContent += `${elements[0].outerHTML}\n`;
 			}
 		}
+
+		console.log(groupedElements);
 
 		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
@@ -167,9 +191,7 @@ export async function generateWebsite(
 	<title>${page.title}</title>
 </head>
 <body>
-	<main>
-		${htmlContent}
-	</main>
+	${htmlContent}
 </body>
 </html>
 		`;
