@@ -145,6 +145,7 @@ function updateComponentGridArea() {
 		data-component-type={component.type}
     data-component-id={component.id}
 		data-component-parent-id={component.parent_id}
+		data-component-parent-type={component.parent_id ? $components.find(c => c.id === component.parent_id)?.type : null}
 >
     <Resizer on:mousedown={handleResize} isNegativeRow={component.row_start < 0} />
 

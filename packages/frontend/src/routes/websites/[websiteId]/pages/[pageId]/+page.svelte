@@ -650,6 +650,10 @@ $: totalRows =
         border: 0.125rem solid black;
     }
 
+    div[data-sidebar] {
+        padding-inline: 0.5rem;
+    }
+
     div[data-content-container] {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));

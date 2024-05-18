@@ -124,7 +124,6 @@ export async function generateWebsite(
 
 		const htmlElements = htmlContainer?.querySelectorAll("[data-component-id]");
 		const groupedElements = new Map<number | string, Element[]>();
-		let currentComponentMapType = "header";
 
 		for (const element of htmlElements || []) {
 			const gridArea = new JSDOM().window
@@ -132,17 +131,12 @@ export async function generateWebsite(
 				.getPropertyValue("grid-area");
 			const [rowStart] = gridArea.split(" / ").map(Number);
 
-			const componentType = element.getAttribute("data-component-type");
-
-			if (componentType && ["header", "footer"].includes(componentType)) {
-				currentComponentMapType = componentType;
-				groupedElements.set(componentType, []);
-				continue;
-			}
-
 			if (
-				!element.hasAttribute("data-component-parent-id") &&
-				!groupedElements.has(rowStart)
+				!element.hasAttribute("data-component-parent-type") &&
+				!groupedElements.has(rowStart) &&
+				!["header", "footer"].includes(
+					element.getAttribute("data-component-type") as string,
+				)
 			) {
 				groupedElements.set(rowStart, []);
 			}
@@ -150,8 +144,21 @@ export async function generateWebsite(
 			for (const child of element.children) {
 				if (child.hasAttribute("data-resizer")) continue;
 
-				if (element.hasAttribute("data-component-parent-id")) {
-					groupedElements.get(currentComponentMapType)?.push(child);
+				if (element.hasAttribute("data-component-parent-type")) {
+					if (
+						!groupedElements.has(
+							element.getAttribute("data-component-parent-type") as string,
+						)
+					) {
+						groupedElements.set(
+							element.getAttribute("data-component-parent-type") as string,
+							[],
+						);
+					}
+
+					groupedElements
+						.get(element.getAttribute("data-component-parent-type") as string)
+						?.push(child);
 					continue;
 				}
 
@@ -176,8 +183,6 @@ export async function generateWebsite(
 				htmlContent += `${elements[0].outerHTML}\n`;
 			}
 		}
-
-		console.log(groupedElements);
 
 		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
