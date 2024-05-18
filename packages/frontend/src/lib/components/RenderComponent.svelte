@@ -189,6 +189,7 @@ function updateComponentGridArea() {
 
 <style>
 	div[data-component-id] {
+		overflow: hidden;
 		position: relative;
 		border: 0.125rem solid black;
 		background-color: white;
