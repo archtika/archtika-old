@@ -6,22 +6,17 @@ import { page } from "$app/stores";
 import RenderComponent from "$lib/components/RenderComponent.svelte";
 import { components, selectedComponent } from "$lib/stores";
 import type { Component } from "$lib/types";
+import { mimeTypes } from "common";
 import type { PageServerData } from "./$types";
 import type { SubmitFunction } from "./$types";
 
 export let data: PageServerData;
 
-interface MimeTypes {
-	[key: string]: string[];
-}
-
-const mimeTypes: MimeTypes = {
-	image: ["image/jpeg", "image/png", "image/svg+xml", "image/webp"],
-	audio: ["audio/mpeg", "audio/wav", "audio/aac", "audio/ogg"],
-	video: ["video/mp4", "video/webm", "video/ogg"],
-};
-
 $: $components = data.components;
+
+function getMimeTypes(type: string): string[] {
+	return mimeTypes[type as "image" | "audio" | "video"];
+}
 
 $: getMedia = (type: string) => {
 	if (!data.media[type]) return [];
@@ -398,7 +393,7 @@ $: totalRows =
                             id="update-component-{componentData?.id}-file"
                             name="file"
                             type="file"
-                            accept={mimeTypes[componentData?.type || 'image'].join(', ')}
+                            accept={getMimeTypes(componentData?.type ?? 'image').join(', ')}
                         />
                     </label>
                     <fieldset>
@@ -657,9 +652,5 @@ $: totalRows =
     div[data-content-container] {
         display: grid;
         grid-template-columns: repeat(12, minmax(0, 1fr));
-    }
-
-    div[data-zone] {
-        border: 0.0725rem solid hsl(0, 0%, 90%)
     }
 </style>

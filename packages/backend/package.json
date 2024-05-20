@@ -9,7 +9,8 @@
 		"build:watch": "tsc -p tsconfig.json -w",
 		"start": "NODE_ENV='development' node --watch ./js-output/index.js",
 		"gentypes": "kysely-codegen --dialect postgres",
-		"test": "NODE_ENV='test' node --test ./js-output/modules/**/*-tests.js"
+		"test": "NODE_ENV='test' node --test ./js-output/modules/**/*-tests.js",
+		"format:lint": "pnpm biome check --apply ."
 	},
 	"dependencies": {
 		"@fastify/autoload": "^5.8.0",

@@ -1,7 +1,7 @@
+import { mimeTypes } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import type WebSocket from "ws";
-import { mimeTypes } from "../../utils/mimetypes.js";
 import {
 	getExistingPresignedUrl,
 	updateLastModifiedByColumn,
@@ -75,11 +75,7 @@ export async function createComponent(
 								asset_id: selectFrom("media.media_asset")
 									.select("media.media_asset.id")
 									.where("media.media_asset.id", "=", assetId)
-									.where(
-										"media.media_asset.mimetype",
-										"in",
-										mimeTypes[type as keyof typeof mimeTypes],
-									),
+									.where("media.media_asset.mimetype", "in", mimeTypes[type]),
 							}
 						: {}),
 					is_public: isPublic,

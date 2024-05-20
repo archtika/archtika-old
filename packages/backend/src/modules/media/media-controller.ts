@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
+import { mimeTypes } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { mimeTypes } from "../../utils/mimetypes.js";
 import { getExistingPresignedUrl } from "../../utils/queries.js";
 import type {
 	ParamsSchemaType,

@@ -2,9 +2,11 @@
 	"name": "common",
 	"type": "module",
 	"main": "./js-output/index.js",
+	"types": "./types/index.d.ts",
 	"scripts": {
 		"build": "tsc -p tsconfig.json",
-		"build:watch": "tsc -p tsconfig.json -w"
+		"build:watch": "tsc -p tsconfig.json -w",
+		"format:lint": "pnpm biome check --apply ."
 	},
 	"devDependencies": {
 		"@tsconfig/node20": "^20.1.4",
