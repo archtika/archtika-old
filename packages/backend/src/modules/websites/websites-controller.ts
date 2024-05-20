@@ -166,7 +166,20 @@ export async function generateWebsite(
 			}
 		}
 
-		for (const [key, elements] of groupedElements) {
+		const sortedGroupedElements = new Map(
+			Array.from(groupedElements.entries()).sort(([keyA], [keyB]) => {
+				if (keyA === "header") return -1;
+				if (keyB === "header") return 1;
+				if (keyA === "footer") return 1;
+				if (keyB === "footer") return -1;
+				if (typeof keyA === "number" && typeof keyB === "number") {
+					return keyA - keyB;
+				}
+				return 0;
+			}),
+		);
+
+		for (const [key, elements] of sortedGroupedElements) {
 			if (["header", "footer"].includes(String(key))) {
 				htmlContent += `<${key}>\n`;
 				for (const element of elements) {
@@ -174,15 +187,17 @@ export async function generateWebsite(
 				}
 				htmlContent += `</${key}>\n`;
 			} else if (elements.length > 1) {
-				htmlContent += `<div class="grid">\n`;
+				// htmlContent += `<div class="grid">\n`;
 				for (const element of elements) {
 					htmlContent += `${element.outerHTML}\n`;
 				}
-				htmlContent += "</div>\n";
+				// htmlContent += "</div>\n";
 			} else {
 				htmlContent += `${elements[0].outerHTML}\n`;
 			}
 		}
+
+		console.log(sortedGroupedElements);
 
 		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
