@@ -5,7 +5,7 @@ export async function up(db: Kysely<DB>) {
 	await db.schema.createSchema("components").execute();
 	await db.schema
 		.createType("components.component_type")
-		.asEnum(["text", "image", "video", "audio"])
+		.asEnum(["text", "image", "video", "audio", "header", "footer"])
 		.execute();
 
 	await db.schema

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import archiver from "archiver";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { JSDOM } from "jsdom";
@@ -104,6 +105,8 @@ export async function generateWebsite(
 		return reply.send(err);
 	});
 
+	const filesContent: { name: string; content: string }[] = [];
+
 	for (const page of allPages) {
 		const htmlData = await fetch(
 			`http://localhost:5173/websites/${page.website_id}/pages/${page.id}`,
@@ -197,8 +200,6 @@ export async function generateWebsite(
 			}
 		}
 
-		console.log(sortedGroupedElements);
-
 		const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
 		const content = `
@@ -217,6 +218,7 @@ export async function generateWebsite(
 		`;
 
 		archive.append(content, { name: fileName });
+		filesContent.push({ name: fileName, content });
 	}
 
 	const cssData = await fetch("http://localhost:5173/api/styles", {
@@ -238,10 +240,39 @@ export async function generateWebsite(
 	`;
 
 	archive.append(css, { name: "styles.css" });
+	filesContent.push({ name: "styles.css", content: css });
 
-	archive.finalize();
+	await archive.finalize();
 
-	return reply.status(200).send(archive);
+	const deploymentRowCount = await req.server.kysely.db
+		.selectFrom("tracking.deployment")
+		.select(({ fn }) => fn.countAll<string>().as("count"))
+		.executeTakeFirstOrThrow();
+
+	const deployment = await req.server.kysely.db
+		.insertInto("tracking.deployment")
+		.values({
+			user_id: req.user?.id ?? "",
+			generation: Number.parseInt(deploymentRowCount.count) + 1,
+			file_hash: createHash("sha256")
+				.update(JSON.stringify(filesContent))
+				.digest("hex"),
+		})
+		.onConflict((oc) => oc.constraint("uniqueFileHash").doNothing())
+		.returningAll()
+		.executeTakeFirstOrThrow();
+
+	await req.server.minio.client.putObject(
+		"deployments",
+		`${req.user?.id}/${id}/${deployment.generation
+			.toString()
+			.padStart(2, "0")}.zip`,
+		archive,
+		archive.pointer(),
+		{
+			"Content-Type": "application/zip",
+		},
+	);
 }
 
 export async function updateWebsite(

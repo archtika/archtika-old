@@ -36,9 +36,15 @@ export async function getExistingPresignedUrl(
 		) {
 			presignedUrl = existingRecord.presigned_url;
 		} else {
+			const media = await req.server.kysely.db
+				.selectFrom("media.media_asset")
+				.select("mimetype")
+				.where("id", "=", assetId)
+				.executeTakeFirst();
+
 			presignedUrl = await req.server.minio.client.presignedGetObject(
-				"archtika",
-				assetId,
+				"media",
+				`${req.user?.id}/${assetId}.${media?.mimetype.split("/")[1]}`,
 			);
 
 			await req.server.kysely.db

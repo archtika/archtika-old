@@ -8,11 +8,6 @@ export async function up(db: Kysely<DB>) {
 			col.references("components.component.id").onDelete("cascade"),
 		)
 		.execute();
-
-	await sql`
-    alter type components.component_type add value 'header';
-    alter type components.component_type add value 'footer';
-  `.execute(db);
 }
 
 export async function down(db: Kysely<DB>) {

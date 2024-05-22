@@ -18,8 +18,17 @@ function getMimeTypes(type: string): string[] {
 	return mimeTypes[type as "image" | "audio" | "video"];
 }
 
-$: getMedia = (type: string) => {
+$: getMedia = (
+	type: string,
+	updatedComponent: undefined | Component = undefined,
+) => {
 	if (!data.media[type]) return [];
+
+	if (updatedComponent) {
+		return data.media[type].filter(
+			(media: { id: string }) => media.id !== updatedComponent.asset_id,
+		);
+	}
 
 	return data.media[type];
 };
@@ -52,13 +61,13 @@ function handleDragOver(event: DragEvent) {
 function handleDragEnter(event: DragEvent) {
 	const target = event.target as HTMLElement;
 
-	target.style.backgroundColor = "red";
+	target.style.border = "0.125rem solid black";
 }
 
 function handleDragLeave(event: DragEvent) {
 	const target = event.target as HTMLElement;
 
-	target.style.backgroundColor = "";
+	target.style.border = "";
 }
 
 let currentComponentDropArea: HTMLElement | null;
@@ -138,7 +147,7 @@ async function handleDrop(
 
 	const target = event.target as HTMLElement;
 
-	target.style.backgroundColor = "";
+	target.style.border = "";
 
 	isOutsideNestedComponent(target);
 
@@ -325,6 +334,8 @@ $: totalRows =
 
         <h2>{data.page.title}</h2>
 
+        <a href="{data.page.id}/preview">Preview</a>
+
         {#if $selectedComponent}
             {@const componentData = $components.find(component => component.id === $selectedComponent)}
 
@@ -385,7 +396,7 @@ $: totalRows =
                         name="id"
                         value={componentData?.id}
                     />
-
+                    
                     <label>
                         {componentData?.type.charAt(0).toUpperCase() +
                             (componentData?.type.slice(1) ?? '')}:
@@ -396,22 +407,24 @@ $: totalRows =
                             accept={getMimeTypes(componentData?.type ?? 'image').join(', ')}
                         />
                     </label>
-                    <fieldset>
-                        <legend>Select existing {componentData?.type}:</legend>
-                        <div>
-                            {#each getMedia(componentData?.type ?? '') as media}
-                                <label>
-                                    <input
-                                        type="radio"
-                                        id="update-component-{componentData?.id}-existing-file-{media.id}"
-                                        name="existing-file"
-                                        value={media.id}
-                                    />
-                                    {media.name}
-                                </label>
-                            {/each}
-                        </div>
-                    </fieldset>
+                    {#if getMedia(componentData?.type ?? '', componentData).length > 0}
+                        <fieldset>
+                            <legend>Select existing {componentData?.type}:</legend>
+                            <div>
+                                {#each getMedia(componentData?.type ?? '', componentData) as media}
+                                    <label>
+                                        <input
+                                            type="radio"
+                                            id="update-component-{componentData?.id}-existing-file-{media.id}"
+                                            name="existing-file"
+                                            value={media.id}
+                                        />
+                                        {media.name}
+                                    </label>
+                                {/each}
+                            </div>
+                        </fieldset>
+                    {/if}
                     <label>
                         Alt text:
                         <input
@@ -560,22 +573,24 @@ $: totalRows =
                                 accept={mimes.join(', ')}
                             />
                         </label>
-                        <fieldset>
-                            <legend>Select existing {type}:</legend>
-                            <div>
-                                {#each getMedia(type) as media}
-                                    <label>
-                                        <input
-                                            id="create-component-{type}-existing-file-{media.id}"
-                                            type="radio"
-                                            name="existing-file"
-                                            value={media.id}
-                                        />
-                                        {media.name}
-                                    </label>
-                                {/each}
-                            </div>
-                        </fieldset>
+                        {#if getMedia(type).length > 0}
+                            <fieldset>
+                                <legend>Select existing {type}:</legend>
+                                <div>
+                                    {#each getMedia(type) as media}
+                                        <label>
+                                            <input
+                                                id="create-component-{type}-existing-file-{media.id}"
+                                                type="radio"
+                                                name="existing-file"
+                                                value={media.id}
+                                            />
+                                            {media.name}
+                                        </label>
+                                    {/each}
+                                </div>
+                            </fieldset>
+                        {/if}
                         <label>
                             Alt text:
                             <input

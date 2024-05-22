@@ -51,14 +51,16 @@ export async function createMedia(
 		.returningAll()
 		.executeTakeFirstOrThrow();
 
-	const bucketName = "archtika";
-	const objectName = randomId;
+	const bucketName = "media";
+	const objectName = `${req.user?.id}/${randomId}.${
+		media.mimetype.split("/")[1]
+	}`;
 
 	await req.server.minio.client.putObject(
 		bucketName,
 		objectName,
 		buffer,
-		undefined,
+		buffer.length,
 		{
 			"Content-Type": media.mimetype,
 			"X-Amz-Meta-Original-Name": media.name,
@@ -146,7 +148,10 @@ export async function deleteMedia(
 		.returningAll()
 		.executeTakeFirstOrThrow();
 
-	await req.server.minio.client.removeObject("archtika", media.id);
+	await req.server.minio.client.removeObject(
+		"media",
+		`${req.user?.id}/${media.id}.${media.mimetype.split("/")[1]}`,
+	);
 
 	return reply.status(200).send(media);
 }

@@ -33,6 +33,11 @@ export const actions: Actions = {
 			}),
 		});
 	},
+	generateWebsite: async ({ fetch, params }) => {
+		await fetch(
+			`http://localhost:3000/api/v1/websites/${params.websiteId}/generate`,
+		);
+	},
 	deleteWebsite: async ({ fetch, params }) => {
 		const deletionRequest = await fetch(
 			`http://localhost:3000/api/v1/websites/${params.websiteId}`,

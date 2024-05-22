@@ -76,7 +76,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
 		}
 
 		watch(__dirname, { recursive: true }, (eventType, filename) => {
-			console.log(__dirname);
+			if (filename?.includes("db-migrations")) {
+				return;
+			}
 
 			console.log(
 				`Detected ${eventType} in ${filename}, restarting workers...`,

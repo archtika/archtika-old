@@ -14,11 +14,16 @@ async function minio(fastify: FastifyInstance) {
 
 	if (cluster.worker && cluster.worker.id === 1) {
 		try {
-			const exists = await minioClient.bucketExists("archtika");
+			const buckets = ["media", "deployments"];
 
-			if (!exists) {
-				await minioClient.makeBucket("archtika", "us-east-1");
-				console.log("Bucket created successfully");
+			for (const bucket of buckets) {
+				const bucketExists = await minioClient.bucketExists(bucket);
+
+				if (!bucketExists) {
+					await minioClient.makeBucket(bucket, "us-east-1");
+
+					console.log(`Bucket "${bucket}" created successfully`);
+				}
 			}
 		} catch (err) {
 			console.error(err);
