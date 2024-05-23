@@ -35,12 +35,22 @@
         host.port = 19001;
         guest.port = 9001;
       }
+      {
+        from = "host";
+        host.port = 12019;
+        guest.port = 2019;
+      }
+      {
+        from = "host";
+        host.port = 18000;
+        guest.port = 80;
+      }
     ];
   };
 
   networking.firewall = {
-    allowedTCPPorts = [ 5432 9000 9001 ];
-    allowedUDPPorts = [ 5432 9000 9001 ];
+    allowedTCPPorts = [ 5432 9000 9001 2019 80 ];
+    allowedUDPPorts = [ 5432 9000 9001 2019 80 ];
   };
 
   services = {
@@ -67,6 +77,19 @@
       enable = true;
       listenAddress = "0.0.0.0:9000";
       consoleAddress = "0.0.0.0:9001";
+    };
+    caddy = {
+      enable = true;
+      globalConfig = ''
+        admin 0.0.0.0:2019
+      '';
+      extraConfig = ''
+        :80 {
+          handle_path /{userId}/{websiteId}/{deployment_generation} {
+            respond "Dynamic route for user {userId} and website {websiteId} and deployment generation {deployment_generation}"
+          }
+        }
+      '';
     };
   };
 

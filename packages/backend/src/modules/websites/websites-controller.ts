@@ -273,6 +273,39 @@ export async function generateWebsite(
 			"Content-Type": "application/zip",
 		},
 	);
+
+	await fetch("http://localhost:12019/config/apps/http/servers/srv0/routes", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			handle: [
+				{
+					handler: "subroute",
+					routes: [
+						{
+							handle: [
+								{
+									handler: "static_response",
+									body: `Dynamic route for user ${req.user?.id} and website ${id} and deployment generation ${deployment.generation}`,
+								},
+							],
+							match: [
+								{
+									path: [`/${req.user?.id}/${id}/${deployment.generation}`],
+								},
+							],
+						},
+					],
+				},
+			],
+		}),
+	});
+
+	console.log(
+		`Generated website http://localhost:18000/${req.user?.id}/${id}/${deployment.generation}`,
+	);
 }
 
 export async function updateWebsite(
