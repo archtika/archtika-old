@@ -85,8 +85,26 @@
       '';
       extraConfig = ''
         :80 {
-          handle_path /{userId}/{websiteId}/{deployment_generation} {
-            respond "Dynamic route for user {userId} and website {websiteId} and deployment generation {deployment_generation}"
+          @dynamicPath {
+            path_regexp dynamicPath ^/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(.*)$
+          }
+          @notDynamicPath {
+            not path_regexp dynamicPath ^/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(.*)$
+          }
+
+          rewrite @dynamicPath /{http.regexp.dynamicPath.1}/{http.regexp.dynamicPath.2}{http.regexp.dynamicPath.3}
+
+          handle @notDynamicPath {
+            respond "400 Invalid path format" 400
+          }
+
+          handle_path /* {
+            root * /var/www
+            file_server
+          }
+
+          handle_errors {
+            respond "{err.status_code} {err.status_text}"
           }
         }
       '';
