@@ -103,7 +103,7 @@
 
 <h3>Logs</h3>
 
-<a href="{$page.url}/logs">View full change-log</a>
+<a href="/websites/{$page.params.websiteId}/logs">View full change-log</a>
 
 <h3>Deployments</h3>
 
@@ -111,7 +111,8 @@
   <button type="submit">Deploy website</button>
 </form>
 
-<a href="{$page.url}/deployments">View all deployments</a>
+<a href="/websites/{$page.params.websiteId}/deployments">View all deployments</a
+>
 
 <h3>Delete</h3>
 
@@ -149,7 +150,7 @@
   {#each data.pages as { id, title }}
     <article>
       <h3>{title}</h3>
-      <a href="{$page.url}/pages/{id}">Edit</a>
+      <a href="/websites/{$page.params.websiteId}/pages/{id}">Edit</a>
     </article>
   {/each}
 {/if}
