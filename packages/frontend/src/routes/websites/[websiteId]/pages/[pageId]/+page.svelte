@@ -380,7 +380,7 @@
             <textarea
               id="update-component-{$selectedComponent}-content"
               name="updated-content"
-              >{componentData?.content.textContent}</textarea
+              required>{componentData?.content.textContent}</textarea
             >
           </label>
           <button type="submit">Update</button>
@@ -441,6 +441,7 @@
               id="update-component-{componentData?.id}-alt-text"
               name="alt-text"
               type="text"
+              minlength="1"
             />
           </label>
           {#if ["audio", "video"].includes(componentData?.type ?? "")}
@@ -494,6 +495,10 @@
               name="route"
               type="text"
               value={data.page.route}
+              minlength="1"
+              maxlength="200"
+              pattern={"^/(|[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*)$"}
+              required
             />
           </label>
           <label>
@@ -503,12 +508,18 @@
               name="title"
               type="text"
               value={data.page.title}
+              minlength="5"
+              maxlength="50"
+              required
             />
           </label>
           <label>
             Description:
-            <textarea id="update-page-description" name="description"
-              >{data.page.meta_description}</textarea
+            <textarea
+              id="update-page-description"
+              name="description"
+              minlength="10"
+              maxlength="200">{data.page.meta_description}</textarea
             >
           </label>
           <button type="submit">Update</button>
@@ -565,7 +576,7 @@
           />
           <label>
             Content:
-            <textarea id="create-component-text-content" name="content"
+            <textarea id="create-component-text-content" name="content" required
             ></textarea>
           </label>
           <button type="submit">Add</button>
@@ -621,6 +632,7 @@
                 id="create-component-{type}-alt-text"
                 name="alt-text"
                 type="text"
+                minlength="1"
               />
             </label>
             {#if ["audio", "video"].includes(type)}

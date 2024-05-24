@@ -52,7 +52,9 @@ const updateComponentTextSchema = Type.Object({
 const createComponentImageSchema = Type.Object({
   type: Type.Literal("image"),
   content: Type.Object({
-    altText: Type.Optional(Type.String({ minLength: 1 })),
+    altText: Type.Optional(
+      Type.Union([Type.String({ minLength: 1 }), Type.Null()]),
+    ),
   }),
   assetId: Type.String({ format: "uuid" }),
   parent_id: Type.Optional(
@@ -64,7 +66,9 @@ const updateComponentImageSchema = Type.Object({
   type: Type.Literal("image"),
   content: Type.Optional(
     Type.Object({
-      altText: Type.Optional(Type.String({ minLength: 1 })),
+      altText: Type.Optional(
+        Type.Union([Type.String({ minLength: 1 }), Type.Null()]),
+      ),
     }),
   ),
   assetId: Type.Optional(Type.String({ format: "uuid" })),
@@ -76,7 +80,9 @@ const updateComponentImageSchema = Type.Object({
 const createComponentVideoSchema = Type.Object({
   type: Type.Literal("video"),
   content: Type.Object({
-    altText: Type.Optional(Type.String({ minLength: 1 })),
+    altText: Type.Optional(
+      Type.Union([Type.String({ minLength: 1 }), Type.Null()]),
+    ),
     isLooped: Type.Optional(Type.Boolean()),
   }),
   assetId: Type.String({ format: "uuid" }),
@@ -89,7 +95,9 @@ const updateComponentVideoSchema = Type.Object({
   type: Type.Literal("video"),
   content: Type.Optional(
     Type.Object({
-      altText: Type.Optional(Type.String({ minLength: 1 })),
+      altText: Type.Optional(
+        Type.Union([Type.String({ minLength: 1 }), Type.Null()]),
+      ),
       isLooped: Type.Optional(Type.Boolean()),
     }),
   ),
@@ -102,7 +110,9 @@ const updateComponentVideoSchema = Type.Object({
 const createComponentAudioSchema = Type.Object({
   type: Type.Literal("audio"),
   content: Type.Object({
-    altText: Type.Optional(Type.String({ minLength: 1 })),
+    altText: Type.Optional(
+      Type.Union([Type.String({ minLength: 1 }), Type.Null()]),
+    ),
     isLooped: Type.Optional(Type.Boolean()),
   }),
   assetId: Type.String({ format: "uuid" }),
@@ -115,7 +125,9 @@ const updateComponentAudioSchema = Type.Object({
   type: Type.Literal("audio"),
   content: Type.Optional(
     Type.Object({
-      altText: Type.Optional(Type.String({ minLength: 1 })),
+      altText: Type.Optional(
+        Type.Union([Type.String({ minLength: 1 }), Type.Null()]),
+      ),
       isLooped: Type.Optional(Type.Boolean()),
     }),
   ),

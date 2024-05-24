@@ -17,11 +17,11 @@ export const createPageSchema = Type.Object({
   route: Type.String({
     minLength: 1,
     maxLength: 200,
-    pattern: "^(/|(?!.*--)[a-z0-9\\-/]*[^-/])$",
+    pattern: "^/(|[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*)$",
   }),
-  title: Type.Optional(Type.String({ minLength: 5, maxLength: 50 })),
+  title: Type.String({ minLength: 5, maxLength: 50 }),
   metaDescription: Type.Optional(
-    Type.String({ minLength: 10, maxLength: 200 }),
+    Type.Union([Type.String({ minLength: 10, maxLength: 200 }), Type.Null()]),
   ),
 });
 
@@ -32,12 +32,12 @@ export const updatePageSchema = Type.Object({
     Type.String({
       minLength: 1,
       maxLength: 200,
-      pattern: "^(/|(?!.*--)[a-z0-9\\-/]*[^-/])$",
+      pattern: "^/(|[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*)$",
     }),
   ),
-  title: Type.Optional(Type.String({ minLength: 5, maxLength: 50 })),
+  title: Type.String({ minLength: 5, maxLength: 50 }),
   metaDescription: Type.Optional(
-    Type.String({ minLength: 10, maxLength: 200 }),
+    Type.Union([Type.String({ minLength: 10, maxLength: 200 }), Type.Null()]),
   ),
 });
 

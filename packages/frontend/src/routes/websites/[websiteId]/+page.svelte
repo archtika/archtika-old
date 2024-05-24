@@ -26,12 +26,18 @@
       id="update-website-title"
       name="title"
       value={data.website.title}
+      minlength="5"
+      maxlength="50"
+      required
     />
   </label>
   <label>
     Description:
-    <textarea id="update-website-description" name="description"
-      >{data.website.meta_description}</textarea
+    <textarea
+      id="update-website-description"
+      name="description"
+      minlength="10"
+      maxlength="200">{data.website.meta_description}</textarea
     >
   </label>
   <button type="submit">Save</button>
@@ -44,11 +50,21 @@
   <form method="post" action="?/addCollaborator" use:enhance>
     <label>
       User id:
-      <input type="text" id="add-collaborator-user-id" name="user-id" />
+      <input
+        type="text"
+        id="add-collaborator-user-id"
+        name="user-id"
+        pattern={"[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}"}
+        required
+      />
     </label>
     <label>
       Permission level:
-      <select id="add-collaborator-permission-level" name="permission-level">
+      <select
+        id="add-collaborator-permission-level"
+        name="permission-level"
+        required
+      >
         <option value="10">View</option>
         <option value="20">Edit</option>
         <option value="30">Manage</option>
@@ -79,6 +95,7 @@
             <select
               id="update-collaborator-permission-level"
               name="permission-level"
+              required
             >
               <option value="10">View</option>
               <option value="20">Edit</option>
@@ -130,15 +147,35 @@
   <form method="post" action="?/createPage" use:enhance>
     <label>
       Route:
-      <input id="create-page-route" name="route" type="text" />
+      <input
+        id="create-page-route"
+        name="route"
+        type="text"
+        minlength="1"
+        maxlength="200"
+        pattern={"^/(|[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*)$"}
+        required
+      />
     </label>
     <label>
       Title:
-      <input id="create-page-title" name="title" type="text" />
+      <input
+        id="create-page-title"
+        name="title"
+        type="text"
+        minlength="5"
+        maxlength="50"
+        required
+      />
     </label>
     <label>
       Description:
-      <textarea id="create-page-description" name="description"></textarea>
+      <textarea
+        id="create-page-description"
+        name="description"
+        minlength="10"
+        maxlength="200"
+      ></textarea>
     </label>
     <button type="submit">Create</button>
   </form>

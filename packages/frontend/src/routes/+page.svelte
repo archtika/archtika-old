@@ -13,11 +13,23 @@
   <form method="post" action="?/createWebsite" use:enhance>
     <label>
       Title:
-      <input id="create-website-title" name="title" type="text" />
+      <input
+        id="create-website-title"
+        name="title"
+        type="text"
+        minlength="5"
+        maxlength="50"
+        required
+      />
     </label>
     <label>
       Description:
-      <textarea id="create-website-description" name="description"></textarea>
+      <textarea
+        id="create-website-description"
+        name="description"
+        minlength="10"
+        maxlength="200"
+      ></textarea>
     </label>
     <button type="submit">Create</button>
   </form>

@@ -9,7 +9,7 @@ export type WebsiteParamsSchemaType = Static<typeof websiteParamsSchema>;
 export const createWebsiteSchema = Type.Object({
   title: Type.String({ minLength: 5, maxLength: 50 }),
   metaDescription: Type.Optional(
-    Type.String({ minLength: 10, maxLength: 200 }),
+    Type.Union([Type.String({ minLength: 10, maxLength: 200 }), Type.Null()]),
   ),
 });
 
@@ -24,7 +24,7 @@ export type GetWebsitesQuerySchemaType = Static<typeof getWebsitesQuerySchema>;
 export const updateWebsiteSchema = Type.Object({
   title: Type.Optional(Type.String({ minLength: 5, maxLength: 50 })),
   metaDescription: Type.Optional(
-    Type.String({ minLength: 10, maxLength: 200 }),
+    Type.Union([Type.String({ minLength: 10, maxLength: 200 }), Type.Null()]),
   ),
 });
 
