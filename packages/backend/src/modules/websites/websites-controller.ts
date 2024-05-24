@@ -4,6 +4,7 @@ import AdmZip from "adm-zip";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { JSDOM } from "jsdom";
 import { sql } from "kysely";
+import { getAllPages } from "../../utils/queries.js";
 import type {
 	CreateWebsiteSchemaType,
 	GetWebsitesQuerySchemaType,
@@ -86,11 +87,9 @@ export async function generateWebsite(
 ) {
 	const { id } = req.params;
 
-	const allPages = await req.server.kysely.db
-		.selectFrom("structure.page")
-		.selectAll()
-		.where("website_id", "=", id)
-		.execute();
+	const allPages = await getAllPages(req, id);
+
+	if (allPages.length === 0) return;
 
 	const zip = new AdmZip();
 
@@ -248,6 +247,7 @@ export async function generateWebsite(
 		.insertInto("tracking.deployment")
 		.values({
 			user_id: req.user?.id ?? "",
+			website_id: id,
 			generation: Number.parseInt(deploymentRowCount.count) + 1,
 			file_hash: createHash("sha256")
 				.update(JSON.stringify(filesContent))

@@ -7,6 +7,9 @@ export async function up(db: Kysely<DB>) {
 		.addColumn("id", "uuid", (col) =>
 			col.primaryKey().notNull().defaultTo(sql`gen_random_uuid()`),
 		)
+		.addColumn("website_id", "uuid", (col) =>
+			col.references("structure.website.id").notNull().onDelete("cascade"),
+		)
 		.addColumn("user_id", "uuid", (col) =>
 			col.notNull().references("auth.auth_user.id").onDelete("cascade"),
 		)

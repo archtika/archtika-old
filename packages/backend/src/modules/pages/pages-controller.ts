@@ -1,6 +1,9 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
-import { updateLastModifiedByColumn } from "../../utils/queries.js";
+import {
+	getAllPages as getPages,
+	updateLastModifiedByColumn,
+} from "../../utils/queries.js";
 import type {
 	CreatePageSchemaType,
 	PageParamsSchemaType,
@@ -58,30 +61,7 @@ export async function getAllPages(
 ) {
 	const { id } = req.params;
 
-	const allPages = await req.server.kysely.db
-		.selectFrom("structure.page")
-		.selectAll()
-		.where(({ or, and, exists, selectFrom }) =>
-			or([
-				exists(
-					selectFrom("structure.website").where(
-						and({ id, user_id: req.user?.id }),
-					),
-				),
-				exists(
-					selectFrom("collaboration.collaborator")
-						.where(
-							and({
-								user_id: req.user?.id,
-								website_id: id,
-							}),
-						)
-						.where("permission_level", ">=", 10),
-				),
-			]),
-		)
-		.where("website_id", "=", id)
-		.execute();
+	const allPages = await getPages(req, id);
 
 	return reply.status(200).send(allPages);
 }

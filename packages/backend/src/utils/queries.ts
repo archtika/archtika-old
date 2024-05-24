@@ -66,3 +66,34 @@ export async function getExistingPresignedUrl(
 
 	return presignedUrl;
 }
+
+export async function getAllPages(req: FastifyRequest, websiteId: string) {
+	const id = websiteId;
+
+	const allPages = await req.server.kysely.db
+		.selectFrom("structure.page")
+		.selectAll()
+		.where(({ or, and, exists, selectFrom }) =>
+			or([
+				exists(
+					selectFrom("structure.website").where(
+						and({ id, user_id: req.user?.id }),
+					),
+				),
+				exists(
+					selectFrom("collaboration.collaborator")
+						.where(
+							and({
+								user_id: req.user?.id,
+								website_id: id,
+							}),
+						)
+						.where("permission_level", ">=", 10),
+				),
+			]),
+		)
+		.where("website_id", "=", id)
+		.execute();
+
+	return allPages;
+}
