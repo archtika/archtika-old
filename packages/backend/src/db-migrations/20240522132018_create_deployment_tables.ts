@@ -19,18 +19,8 @@ export async function up(db: Kysely<DB>) {
 		)
 		.addUniqueConstraint("uniqueFileHash", ["file_hash", "user_id"])
 		.execute();
-
-	await db.schema
-		.createTable("tracking.deployment_url")
-		.addColumn("deployment_id", "uuid", (col) =>
-			col.primaryKey().references("tracking.deployment.id").onDelete("cascade"),
-		)
-		.addColumn("presigned_url", "varchar", (col) => col.notNull())
-		.addColumn("expiry_timestamp", "bigint", (col) => col.notNull())
-		.execute();
 }
 
 export async function down(db: Kysely<DB>) {
-	await db.schema.dropTable("tracking.deployment_url").execute();
 	await db.schema.dropTable("tracking.deployment").execute();
 }
