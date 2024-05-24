@@ -2,46 +2,46 @@ import { type Kysely, sql } from "kysely";
 import type { DB } from "kysely-codegen";
 
 export async function up(db: Kysely<DB>) {
-	await db.schema.createSchema("tracking").execute();
-	await db.schema
-		.createType("tracking.entity_type")
-		.asEnum([
-			"website",
-			"page",
-			"component",
-			"component-position",
-			"collaborator",
-		])
-		.execute();
-	await db.schema
-		.createType("tracking.entity_action_type")
-		.asEnum(["create", "update", "delete"])
-		.execute();
+  await db.schema.createSchema("tracking").execute();
+  await db.schema
+    .createType("tracking.entity_type")
+    .asEnum([
+      "website",
+      "page",
+      "component",
+      "component-position",
+      "collaborator",
+    ])
+    .execute();
+  await db.schema
+    .createType("tracking.entity_action_type")
+    .asEnum(["create", "update", "delete"])
+    .execute();
 
-	await db.schema
-		.createTable("tracking.change_log")
-		.addColumn("id", "uuid", (col) =>
-			col.primaryKey().notNull().defaultTo(sql`gen_random_uuid()`),
-		)
-		.addColumn("website_id", "uuid", (col) =>
-			col.references("structure.website.id").notNull().onDelete("cascade"),
-		)
-		.addColumn("user_id", "uuid", (col) =>
-			col.notNull().references("auth.auth_user.id"),
-		)
-		.addColumn("entity_type", sql`tracking.entity_type`, (col) => col.notNull())
-		.addColumn("action_type", sql`tracking.entity_action_type`, (col) =>
-			col.notNull(),
-		)
-		.addColumn("previous_value", "jsonb")
-		.addColumn("new_value", "jsonb")
-		.addColumn("change_summary", "varchar", (col) => col.notNull())
-		.addColumn("created_at", "timestamptz", (col) =>
-			col.notNull().defaultTo(sql`now()`),
-		)
-		.execute();
+  await db.schema
+    .createTable("tracking.change_log")
+    .addColumn("id", "uuid", (col) =>
+      col.primaryKey().notNull().defaultTo(sql`gen_random_uuid()`),
+    )
+    .addColumn("website_id", "uuid", (col) =>
+      col.references("structure.website.id").notNull().onDelete("cascade"),
+    )
+    .addColumn("user_id", "uuid", (col) =>
+      col.notNull().references("auth.auth_user.id"),
+    )
+    .addColumn("entity_type", sql`tracking.entity_type`, (col) => col.notNull())
+    .addColumn("action_type", sql`tracking.entity_action_type`, (col) =>
+      col.notNull(),
+    )
+    .addColumn("previous_value", "jsonb")
+    .addColumn("new_value", "jsonb")
+    .addColumn("change_summary", "varchar", (col) => col.notNull())
+    .addColumn("created_at", "timestamptz", (col) =>
+      col.notNull().defaultTo(sql`now()`),
+    )
+    .execute();
 
-	await sql`
+  await sql`
       CREATE FUNCTION tracking.log_change()
       RETURNS TRIGGER
       LANGUAGE plpgsql
@@ -167,20 +167,20 @@ export async function up(db: Kysely<DB>) {
 }
 
 export async function down(db: Kysely<DB>) {
-	await db.schema.dropTable("tracking.change_log").execute();
-	await sql`DROP TRIGGER log_website_changes ON structure.website`.execute(db);
-	await sql`DROP TRIGGER log_page_changes ON structure.page`.execute(db);
-	await sql`DROP TRIGGER log_component_changes ON components.component`.execute(
-		db,
-	);
-	await sql`DROP TRIGGER log_component_position_changes ON components.component_position`.execute(
-		db,
-	);
-	await sql`DROP TRIGGER log_collaborator_changes ON collaboration.collaborator`.execute(
-		db,
-	);
-	await sql`DROP FUNCTION tracking.log_change()`.execute(db);
-	await db.schema.dropType("tracking.entity_type").execute();
-	await db.schema.dropType("tracking.entity_action_type").execute();
-	await db.schema.dropSchema("tracking").execute();
+  await db.schema.dropTable("tracking.change_log").execute();
+  await sql`DROP TRIGGER log_website_changes ON structure.website`.execute(db);
+  await sql`DROP TRIGGER log_page_changes ON structure.page`.execute(db);
+  await sql`DROP TRIGGER log_component_changes ON components.component`.execute(
+    db,
+  );
+  await sql`DROP TRIGGER log_component_position_changes ON components.component_position`.execute(
+    db,
+  );
+  await sql`DROP TRIGGER log_collaborator_changes ON collaboration.collaborator`.execute(
+    db,
+  );
+  await sql`DROP FUNCTION tracking.log_change()`.execute(db);
+  await db.schema.dropType("tracking.entity_type").execute();
+  await db.schema.dropType("tracking.entity_action_type").execute();
+  await db.schema.dropSchema("tracking").execute();
 }

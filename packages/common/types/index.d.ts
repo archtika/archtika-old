@@ -1,3 +1,3 @@
 declare module "common" {
-	export const mimeTypes: { [key: string]: string[] };
+  export const mimeTypes: { [key: string]: string[] };
 }
