@@ -11,9 +11,17 @@
     password = "dev";
   };
 
+  systemd.tmpfiles.rules = [ "d /var/www/archtika-websites 0777 root root -" ];
+
   virtualisation = {
     graphics = false;
     memorySize = 2048;
+    sharedDirectories = {
+      websites = {
+        source = "/var/www/archtika-websites";
+        target = "/var/www/archtika-websites";
+      };
+    };
     forwardPorts = [
       {
         from = "host";
@@ -88,18 +96,11 @@
           @dynamicPath {
             path_regexp dynamicPath ^/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(.*)$
           }
-          @notDynamicPath {
-            not path_regexp dynamicPath ^/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(.*)$
-          }
 
           rewrite @dynamicPath /{http.regexp.dynamicPath.1}/{http.regexp.dynamicPath.2}{http.regexp.dynamicPath.3}
 
-          handle @notDynamicPath {
-            respond "400 Invalid path format" 400
-          }
-
-          handle_path /* {
-            root * /var/www
+          handle {
+            root * /var/www/archtika-websites
             file_server
           }
 

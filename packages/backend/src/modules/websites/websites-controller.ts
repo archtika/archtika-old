@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import archiver from "archiver";
+import { mkdir } from "node:fs/promises";
+import AdmZip from "adm-zip";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { JSDOM } from "jsdom";
 import { sql } from "kysely";
@@ -91,19 +92,13 @@ export async function generateWebsite(
 		.where("website_id", "=", id)
 		.execute();
 
-	const archive = archiver("zip", {
-		zlib: { level: 9 },
-	});
+	const zip = new AdmZip();
 
 	reply.header("Content-Type", "application/zip");
 	reply.header(
 		"Content-Disposition",
 		`attachment; filename="website-${id}.zip"`,
 	);
-
-	archive.on("error", (err) => {
-		return reply.send(err);
-	});
 
 	const filesContent: { name: string; content: string }[] = [];
 
@@ -217,7 +212,7 @@ export async function generateWebsite(
 </html>
 		`;
 
-		archive.append(content, { name: fileName });
+		zip.addFile(fileName, Buffer.from(content));
 		filesContent.push({ name: fileName, content });
 	}
 
@@ -239,10 +234,10 @@ export async function generateWebsite(
 }
 	`;
 
-	archive.append(css, { name: "styles.css" });
+	zip.addFile("styles.css", Buffer.from(css));
 	filesContent.push({ name: "styles.css", content: css });
 
-	await archive.finalize();
+	const buffer = zip.toBuffer();
 
 	const deploymentRowCount = await req.server.kysely.db
 		.selectFrom("tracking.deployment")
@@ -262,17 +257,30 @@ export async function generateWebsite(
 		.returningAll()
 		.executeTakeFirstOrThrow();
 
+	const paddedDeploymentGenName = `${deployment.generation
+		.toString()
+		.padStart(2, "0")}.zip`;
+	const deploymentPath = `${req.user?.id}/${id}/${paddedDeploymentGenName}`;
+
 	await req.server.minio.client.putObject(
 		"deployments",
-		`${req.user?.id}/${id}/${deployment.generation
-			.toString()
-			.padStart(2, "0")}.zip`,
-		archive,
-		archive.pointer(),
+		deploymentPath,
+		buffer,
+		buffer.length,
 		{
 			"Content-Type": "application/zip",
 		},
 	);
+
+	try {
+		const extractionPath = `/var/www/archtika-websites/${req.user?.id}/${id}`;
+
+		await mkdir(extractionPath, { recursive: true });
+
+		zip.extractAllTo(extractionPath, true);
+	} catch (err) {
+		console.error(err);
+	}
 }
 
 export async function updateWebsite(

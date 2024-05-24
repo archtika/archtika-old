@@ -29,7 +29,7 @@
 		"@fastify/websocket": "^10.0.1",
 		"@lucia-auth/adapter-postgresql": "^3.1.2",
 		"@sinclair/typebox": "^0.32.30",
-		"archiver": "^7.0.1",
+		"adm-zip": "^0.5.12",
 		"arctic": "^1.8.1",
 		"common": "link:../common",
 		"fastify": "^4.27.0",
@@ -45,6 +45,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.7.3",
 		"@tsconfig/node20": "^20.1.4",
+		"@types/adm-zip": "^0.5.5",
 		"@types/archiver": "^6.0.2",
 		"@types/jsdom": "^21.1.6",
 		"@types/node": "^20.12.11",
