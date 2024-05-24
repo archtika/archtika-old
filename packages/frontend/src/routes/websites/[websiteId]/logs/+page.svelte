@@ -56,7 +56,7 @@
   }
 </script>
 
-<h1>Logs for {data.website.title}</h1>
+<h1>Logs for <a href="/websites/{data.website.id}">{data.website.title}</a></h1>
 
 {#if data.logs.length === 0}
   <p>No logs yet.</p>
