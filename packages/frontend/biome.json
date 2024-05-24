@@ -6,6 +6,9 @@
 	"files": {
 		"ignore": ["node_modules", ".svelte-kit"]
 	},
+	"formatter": {
+		"ignore": ["*.svelte"]
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {

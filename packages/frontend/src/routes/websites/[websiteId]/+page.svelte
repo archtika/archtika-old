@@ -1,9 +1,9 @@
 <script lang="ts">
-import { enhance } from "$app/forms";
-import { page } from "$app/stores";
-import type { PageServerData } from "./$types";
+  import { enhance } from "$app/forms";
+  import { page } from "$app/stores";
+  import type { PageServerData } from "./$types";
 
-export let data: PageServerData;
+  export let data: PageServerData;
 </script>
 
 <h1>Overview for {data.website.title}</h1>
@@ -11,145 +11,145 @@ export let data: PageServerData;
 <h2>Website settings</h2>
 
 <form
-    method="post"
-    action="?/updateWebsite"
-    use:enhance={() => {
-        return async ({ update }) => {
-            await update({ reset: false })
-        }
-    }}
+  method="post"
+  action="?/updateWebsite"
+  use:enhance={() => {
+    return async ({ update }) => {
+      await update({ reset: false });
+    };
+  }}
 >
-    <label>
-        Title:
-        <input
-            type="text"
-            id="update-website-title"
-            name="title"
-            value={data.website.title}
-        />
-    </label>
-    <label>
-        Description:
-        <textarea id="update-website-description" name="description"
-            >{data.website.meta_description}</textarea
-        >
-    </label>
-    <button type="submit">Save</button>
+  <label>
+    Title:
+    <input
+      type="text"
+      id="update-website-title"
+      name="title"
+      value={data.website.title}
+    />
+  </label>
+  <label>
+    Description:
+    <textarea id="update-website-description" name="description"
+      >{data.website.meta_description}</textarea
+    >
+  </label>
+  <button type="submit">Save</button>
 </form>
 
 <h3>Collaborators</h3>
 
 <details>
-    <summary>Add collaborator</summary>
-    <form method="post" action="?/addCollaborator" use:enhance>
-        <label>
-            User id:
-            <input type="text" id="add-collaborator-user-id" name="user-id" />
-        </label>
-        <label>
-            Permission level:
-            <select
-                id="add-collaborator-permission-level"
-                name="permission-level"
-            >
-                <option value="10">View</option>
-                <option value="20">Edit</option>
-                <option value="30">Manage</option>
-            </select>
-        </label>
-        <button type="submit">Add</button>
-    </form>
+  <summary>Add collaborator</summary>
+  <form method="post" action="?/addCollaborator" use:enhance>
+    <label>
+      User id:
+      <input type="text" id="add-collaborator-user-id" name="user-id" />
+    </label>
+    <label>
+      Permission level:
+      <select id="add-collaborator-permission-level" name="permission-level">
+        <option value="10">View</option>
+        <option value="20">Edit</option>
+        <option value="30">Manage</option>
+      </select>
+    </label>
+    <button type="submit">Add</button>
+  </form>
 </details>
 
 {#if data.collaborators.length === 0}
-    <p>No collaborators added yet</p>
+  <p>No collaborators added yet</p>
 {:else}
-    {#each data.collaborators as { user_id, permission_level }}
-        <article>
-            <p>User id: {user_id}</p>
-            <p>Permission level: {permission_level}</p>
-            <details>
-                <summary>Change permissions</summary>
-                <form method="post" action="?/updateCollaborator" use:enhance>
-                    <input
-                        type="hidden"
-                        id="update-collaborator-user-id"
-                        name="user-id"
-                        value={user_id}
-                    />
-                    <label>
-                        Permission level:
-                        <select
-                            id="update-collaborator-permission-level"
-                            name="permission-level"
-                        >
-                            <option value="10">View</option>
-                            <option value="20">Edit</option>
-                            <option value="30">Manage</option>
-                        </select>
-                    </label>
-                    <button type="submit">Save</button>
-                </form>
-            </details>
-            <form method="post" action="?/removeCollaborator" use:enhance>
-                <input
-                    type="hidden"
-                    id="remove-collaborator-user-id"
-                    name="user-id"
-                    value={user_id}
-                />
-                <button type="submit">Remove</button>
-            </form>
-        </article>
-    {/each}
+  {#each data.collaborators as { user_id, permission_level }}
+    <article>
+      <p>User id: {user_id}</p>
+      <p>Permission level: {permission_level}</p>
+      <details>
+        <summary>Change permissions</summary>
+        <form method="post" action="?/updateCollaborator" use:enhance>
+          <input
+            type="hidden"
+            id="update-collaborator-user-id"
+            name="user-id"
+            value={user_id}
+          />
+          <label>
+            Permission level:
+            <select
+              id="update-collaborator-permission-level"
+              name="permission-level"
+            >
+              <option value="10">View</option>
+              <option value="20">Edit</option>
+              <option value="30">Manage</option>
+            </select>
+          </label>
+          <button type="submit">Save</button>
+        </form>
+      </details>
+      <form method="post" action="?/removeCollaborator" use:enhance>
+        <input
+          type="hidden"
+          id="remove-collaborator-user-id"
+          name="user-id"
+          value={user_id}
+        />
+        <button type="submit">Remove</button>
+      </form>
+    </article>
+  {/each}
 {/if}
 
 <h3>Logs</h3>
 
 <a href="{$page.url}/logs">View full change-log</a>
 
+<h3>Deployments</h3>
+
+<form method="post" action="?/generateWebsite" use:enhance>
+  <button type="submit">Deploy website</button>
+</form>
+
+<a href="{$page.url}/deployments">View all deployments</a>
+
 <h3>Delete</h3>
 
 <details>
-    <summary>Delete</summary>
-    <form method="post" action="?/deleteWebsite" use:enhance>
-        <button type="submit">Delete website</button>
-    </form>
+  <summary>Delete</summary>
+  <form method="post" action="?/deleteWebsite" use:enhance>
+    <button type="submit">Delete website</button>
+  </form>
 </details>
-
-<form method="post" action="?/generateWebsite" use:enhance>
-    <button type="submit">Deploy website</button>
-</form>
 
 <h2>Pages</h2>
 
 <details>
-    <summary>Create new page</summary>
-    <form method="post" action="?/createPage" use:enhance>
-        <label>
-            Route:
-            <input id="create-page-route" name="route" type="text" />
-        </label>
-        <label>
-            Title:
-            <input id="create-page-title" name="title" type="text" />
-        </label>
-        <label>
-            Description:
-            <textarea id="create-page-description" name="description"
-            ></textarea>
-        </label>
-        <button type="submit">Create</button>
-    </form>
+  <summary>Create new page</summary>
+  <form method="post" action="?/createPage" use:enhance>
+    <label>
+      Route:
+      <input id="create-page-route" name="route" type="text" />
+    </label>
+    <label>
+      Title:
+      <input id="create-page-title" name="title" type="text" />
+    </label>
+    <label>
+      Description:
+      <textarea id="create-page-description" name="description"></textarea>
+    </label>
+    <button type="submit">Create</button>
+  </form>
 </details>
 
 {#if data.pages.length === 0}
-    <p>No pages created yet.</p>
+  <p>No pages created yet.</p>
 {:else}
-    {#each data.pages as { id, title }}
-        <article>
-            <h3>{title}</h3>
-            <a href="{$page.url}/pages/{id}">Edit</a>
-        </article>
-    {/each}
+  {#each data.pages as { id, title }}
+    <article>
+      <h3>{title}</h3>
+      <a href="{$page.url}/pages/{id}">Edit</a>
+    </article>
+  {/each}
 {/if}
