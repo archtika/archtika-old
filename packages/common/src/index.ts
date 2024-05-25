@@ -17,7 +17,7 @@ export interface Component {
   parent_id: null | string;
   created_at: string;
   updated_at: string | null;
-  url: string | null;
+  url?: string | null;
   row_start: number;
   col_start: number;
   row_end: number;
@@ -27,28 +27,34 @@ export interface Component {
 }
 
 export class ElementFactory {
-  createElement(component: Component, purifiedTextContent: string) {
+  createElement(
+    component: Component,
+    purifiedTextContent?: string,
+    localFileUrl?: string,
+  ) {
     switch (component.type) {
       case "header":
         return this.createHeader();
       case "footer":
         return this.createFooter();
       case "text":
-        return this.createText(purifiedTextContent);
+        return this.createText(
+          purifiedTextContent ?? component.content.textContent ?? "",
+        );
       case "image":
         return this.createImage(
-          component.url ?? "",
+          localFileUrl ?? component.url ?? "",
           component.content.altText ?? "",
         );
       case "audio":
         return this.createAudio(
-          component.url ?? "",
+          localFileUrl ?? component.url ?? "",
           component.content.altText ?? "",
           component.content.isLooped ?? false,
         );
       case "video":
         return this.createVideo(
-          component.url ?? "",
+          localFileUrl ?? component.url ?? "",
           component.content.altText ?? "",
           component.content.isLooped ?? false,
         );

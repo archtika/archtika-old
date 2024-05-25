@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import AdmZip from "adm-zip";
+import { Component, ElementFactory } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { JSDOM } from "jsdom";
 import { sql } from "kysely";
 import { getAllPages } from "../../utils/queries.js";
 import type {
@@ -93,102 +93,61 @@ export async function generateWebsite(
 
   const zip = new AdmZip();
 
-  const filesContent: { name: string; content: string }[] = [];
+  const element = new ElementFactory();
 
   for (const page of allPages) {
-    const htmlData = await fetch(
-      `http://localhost:5173/websites/${page.website_id}/pages/${page.id}`,
-      {
-        headers: {
-          Cookie: `auth_session=${req.cookies.auth_session}`,
-        },
-      },
-    );
-    const html = await htmlData.text();
-
-    const data = new JSDOM(html);
-
-    const htmlContainer = data.window.document.querySelector(
-      "[data-content-container]",
-    );
-    let htmlContent = "";
-
-    const htmlElements = htmlContainer?.querySelectorAll("[data-component-id]");
-    const groupedElements = new Map<number | string, Element[]>();
-
-    for (const element of htmlElements || []) {
-      const gridArea = new JSDOM().window
-        .getComputedStyle(element)
-        .getPropertyValue("grid-area");
-      const [rowStart] = gridArea.split(" / ").map(Number);
-
-      if (
-        !element.hasAttribute("data-component-parent-type") &&
-        !groupedElements.has(rowStart) &&
-        !["header", "footer"].includes(
-          element.getAttribute("data-component-type") as string,
-        )
-      ) {
-        groupedElements.set(rowStart, []);
-      }
-
-      for (const child of element.children) {
-        if (child.hasAttribute("data-resizer")) continue;
-
-        if (element.hasAttribute("data-component-parent-type")) {
-          if (
-            !groupedElements.has(
-              element.getAttribute("data-component-parent-type") as string,
-            )
-          ) {
-            groupedElements.set(
-              element.getAttribute("data-component-parent-type") as string,
-              [],
-            );
-          }
-
-          groupedElements
-            .get(element.getAttribute("data-component-parent-type") as string)
-            ?.push(child);
-          continue;
-        }
-
-        groupedElements.get(rowStart)?.push(child);
-      }
-    }
-
-    const sortedGroupedElements = new Map(
-      Array.from(groupedElements.entries()).sort(([keyA], [keyB]) => {
-        if (keyA === "header") return -1;
-        if (keyB === "header") return 1;
-        if (keyA === "footer") return 1;
-        if (keyB === "footer") return -1;
-        if (typeof keyA === "number" && typeof keyB === "number") {
-          return keyA - keyB;
-        }
-        return 0;
-      }),
-    );
-
-    for (const [key, elements] of sortedGroupedElements) {
-      if (["header", "footer"].includes(String(key))) {
-        htmlContent += `<${key}>\n`;
-        for (const element of elements) {
-          htmlContent += `${element.outerHTML}\n`;
-        }
-        htmlContent += `</${key}>\n`;
-      } else if (elements.length > 1) {
-        // htmlContent += `<div class="grid">\n`;
-        for (const element of elements) {
-          htmlContent += `${element.outerHTML}\n`;
-        }
-        // htmlContent += "</div>\n";
-      } else {
-        htmlContent += `${elements[0].outerHTML}\n`;
-      }
-    }
-
     const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
+
+    const allComponents = await req.server.kysely.db
+      .selectFrom("components.component")
+      .innerJoin(
+        "components.component_position",
+        "components.component.id",
+        "components.component_position.component_id",
+      )
+      .orderBy("components.component_position.row_start")
+      .selectAll()
+      .where("components.component.page_id", "=", page.id)
+      .execute();
+
+    let components = "";
+
+    for (const component of allComponents) {
+      if (["image", "audio", "video"].includes(component.type)) {
+        const media = await req.server.kysely.db
+          .selectFrom("media.media_asset")
+          .select("mimetype")
+          .where("id", "=", component.asset_id)
+          .executeTakeFirst();
+
+        const mimeTypeExtension = media?.mimetype.split("/")[1];
+
+        const dataStream = await req.server.minio.client.getObject(
+          "media",
+          `${req.user?.id}/${component.asset_id}.${mimeTypeExtension}`,
+        );
+
+        const chunks = [];
+        for await (const chunk of dataStream) {
+          chunks.push(chunk);
+        }
+
+        const buffer = Buffer.concat(chunks);
+
+        zip.addFile(
+          `assets/${component.asset_id}.${mimeTypeExtension}`,
+          buffer,
+        );
+
+        components += element.createElement(
+          component,
+          undefined,
+          `./assets/${component.asset_id}.${mimeTypeExtension}`,
+        );
+      } else {
+        components += element.createElement(component);
+      }
+    }
 
     const content = `
 <!DOCTYPE html>
@@ -200,13 +159,12 @@ export async function generateWebsite(
 	<title>${page.title}</title>
 </head>
 <body>
-	${htmlContent}
+	${components}
 </body>
 </html>
 		`;
 
     zip.addFile(fileName, Buffer.from(content));
-    filesContent.push({ name: fileName, content });
   }
 
   const cssData = await fetch("http://localhost:5173/api/styles", {
@@ -228,7 +186,6 @@ export async function generateWebsite(
 	`;
 
   zip.addFile("styles.css", Buffer.from(css));
-  filesContent.push({ name: "styles.css", content: css });
 
   const buffer = zip.toBuffer();
 
@@ -243,9 +200,7 @@ export async function generateWebsite(
       user_id: req.user?.id ?? "",
       website_id: id,
       generation: Number.parseInt(deploymentRowCount.count) + 1,
-      file_hash: createHash("sha256")
-        .update(JSON.stringify(filesContent))
-        .digest("hex"),
+      file_hash: createHash("sha256").update(buffer).digest("hex"),
     })
     .onConflict((oc) => oc.constraint("uniqueFileHash").doNothing())
     .returningAll()
