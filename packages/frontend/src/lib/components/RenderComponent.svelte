@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { applyAction, deserialize, enhance } from "$app/forms";
+  import { applyAction, deserialize } from "$app/forms";
   import { invalidateAll } from "$app/navigation";
   import { components, selectedComponent } from "$lib/stores";
   import type { Component } from "$lib/types";
+  import { ElementFactory } from "common";
   import DOMPurify from "isomorphic-dompurify";
   import { Renderer, parse } from "marked";
   import Resizer from "./Resizer.svelte";
 
   export let component: Component;
   export let styles: string;
+
+  const element = new ElementFactory();
 
   const renderer = new Renderer();
 
@@ -157,46 +160,7 @@
     isNegativeRow={component.row_start < 0}
   />
 
-  {#if component.type === "header"}
-    <header></header>
-  {/if}
-
-  {#if component.type === "footer"}
-    <footer></footer>
-  {/if}
-
-  {#if component.type === "text"}
-    {@html purifiedTextContent}
-  {/if}
-
-  {#if component.type === "image"}
-    <img
-      src={component.url}
-      alt={component.content.altText}
-      draggable="false"
-    />
-  {/if}
-
-  {#if component.type === "audio"}
-    <audio
-      controls
-      title={component.content.altText}
-      loop={component.content.isLooped}
-    >
-      <source src={component.url} />
-    </audio>
-  {/if}
-
-  {#if component.type === "video"}
-    <video
-      controls
-      loop={component.content.isLooped}
-      title={component.content.altText}
-      src={component.url}
-    >
-      <track default kind="captions" srclang="en" />
-    </video>
-  {/if}
+  {@html element.createElement(component, purifiedTextContent)}
 </div>
 
 <style>

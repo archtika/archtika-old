@@ -93,12 +93,6 @@ export async function generateWebsite(
 
   const zip = new AdmZip();
 
-  reply.header("Content-Type", "application/zip");
-  reply.header(
-    "Content-Disposition",
-    `attachment; filename="website-${id}.zip"`,
-  );
-
   const filesContent: { name: string; content: string }[] = [];
 
   for (const page of allPages) {
@@ -281,6 +275,8 @@ export async function generateWebsite(
   } catch (err) {
     console.error(err);
   }
+
+  return reply.status(201).send("Website generated successfully.");
 }
 
 export async function updateWebsite(

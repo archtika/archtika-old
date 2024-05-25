@@ -2,7 +2,11 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./js-output",
-    "strict": true
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "baseUrl": "."
   },
   "extends": "@tsconfig/node20/tsconfig.json"
 }
