@@ -15,17 +15,37 @@
   <p>No deployments yet.</p>
 {:else}
   <p>
-    Your website is deployed at <a href={deploymentUrl} target="_blank">{deploymentUrl}</a>
+    Your website is deployed at <a href={deploymentUrl} target="_blank"
+      >{deploymentUrl}</a
+    >
   </p>
 
   <h2>History</h2>
   {#each data.deployments as { user_id, generation, file_hash, created_at }}
     <hr />
-    <article>
-      <p><strong>Date and time:</strong> <DateTime date={created_at} /></p>
-      <p><strong>User:</strong> {user_id}</p>
-      <p><strong>Generation:</strong> {generation}</p>
-      <p><strong>File hash:</strong> <code>{file_hash}</code></p>
-    </article>
+    <ul>
+      <li>
+        <strong>Date and time:</strong>
+        <DateTime date={created_at} />
+      </li>
+      <li>
+        <strong>User:</strong>
+        {user_id}
+      </li>
+      <li>
+        <strong>Generation:</strong>
+        {generation}
+      </li>
+      <li>
+        <strong>File hash:</strong> <code>{file_hash}</code>
+      </li>
+      <li>
+        <a
+          href="http://localhost:3000/api/v1/websites/{data.website
+            .id}/deployments/{generation}/download"
+          download>Download website</a
+        >
+      </li>
+    </ul>
   {/each}
 {/if}

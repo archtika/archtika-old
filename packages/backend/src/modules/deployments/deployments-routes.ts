@@ -1,6 +1,9 @@
 import type { FastifyInstance } from "fastify";
-import { viewDeployments } from "./deployments-controller.js";
-import { paramsSchema } from "./deployments-schemas.js";
+import {
+  downloadDeployment,
+  viewDeployments,
+} from "./deployments-controller.js";
+import { downloadParamsSchema, paramsSchema } from "./deployments-schemas.js";
 
 const commonSchema = {
   schema: {
@@ -18,6 +21,17 @@ export default async function (fastify: FastifyInstance) {
       },
     },
     viewDeployments,
+  );
+
+  fastify.get(
+    "/:websiteId/deployments/:generation/download",
+    {
+      schema: {
+        tags: commonSchema.schema.tags,
+        params: downloadParamsSchema,
+      },
+    },
+    downloadDeployment,
   );
 }
 

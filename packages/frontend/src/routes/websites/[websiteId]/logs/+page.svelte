@@ -63,11 +63,20 @@
 {:else}
   {#each data.logs as { created_at, user_id, change_summary, previous_value, new_value }}
     <hr />
-    <article>
-      <p><strong>Date and time:</strong> <DateTime date={created_at} /></p>
-      <p><strong>User:</strong> {user_id}</p>
-      <p><strong>Change summary:</strong> {change_summary}</p>
-      <pre>{@html generateDiffHtml(previous_value, new_value)}</pre>
-    </article>
+    <ul>
+      <li>
+        <strong>Date and time:</strong>
+        <DateTime date={created_at} />
+      </li>
+      <li>
+        <strong>User:</strong>
+        {user_id}
+      </li>
+      <li>
+        <strong>Change summary:</strong>
+        {change_summary}
+        <pre>{@html generateDiffHtml(previous_value, new_value)}</pre>
+      </li>
+    </ul>
   {/each}
 {/if}

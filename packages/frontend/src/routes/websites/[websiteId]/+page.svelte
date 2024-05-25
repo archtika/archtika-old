@@ -78,7 +78,7 @@
   <p>No collaborators added yet</p>
 {:else}
   {#each data.collaborators as { user_id, permission_level }}
-    <article>
+    <div>
       <p>User id: {user_id}</p>
       <p>Permission level: {permission_level}</p>
       <details>
@@ -114,7 +114,7 @@
         />
         <button type="submit">Remove</button>
       </form>
-    </article>
+    </div>
   {/each}
 {/if}
 
@@ -185,9 +185,9 @@
   <p>No pages created yet.</p>
 {:else}
   {#each data.pages as { id, title }}
-    <article>
+    <div>
       <h3>{title}</h3>
       <a href="/websites/{$page.params.websiteId}/pages/{id}">Edit</a>
-    </article>
+    </div>
   {/each}
 {/if}

@@ -5,3 +5,10 @@ export const paramsSchema = Type.Object({
 });
 
 export type ParamsSchemaType = Static<typeof paramsSchema>;
+
+export const downloadParamsSchema = Type.Object({
+  websiteId: Type.String({ format: "uuid" }),
+  generation: Type.Integer({ minimum: 1 }),
+});
+
+export type DownloadParamsSchemaType = Static<typeof downloadParamsSchema>;

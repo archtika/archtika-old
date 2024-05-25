@@ -41,7 +41,7 @@
   <p>No websites created yet.</p>
 {:else}
   {#each data.websites as { id, title, created_at, updated_at, last_modified_by }}
-    <article>
+    <div>
       <h3>{title}</h3>
       <p>
         {#if updated_at}
@@ -53,7 +53,7 @@
       <div>
         <a href="/websites/{id}">Edit</a>
       </div>
-    </article>
+    </div>
   {/each}
 {/if}
 
@@ -63,7 +63,7 @@
   <p>No websites shared with you.</p>
 {:else}
   {#each data.sharedWebsites as { id, title, created_at, updated_at }}
-    <article>
+    <div>
       <h3>{title}</h3>
       <p>
         {@html updated_at
@@ -73,6 +73,6 @@
       <div>
         <a href="/websites/{id}">Edit</a>
       </div>
-    </article>
+    </div>
   {/each}
 {/if}
