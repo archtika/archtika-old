@@ -5,7 +5,7 @@
   import { page } from "$app/stores";
   import RenderComponent from "$lib/components/RenderComponent.svelte";
   import { components, selectedComponent } from "$lib/stores";
-  import type { Component } from "$lib/types";
+  import type { Component } from "common";
   import { mimeTypes } from "common";
   import type { PageServerData } from "./$types";
   import type { SubmitFunction } from "./$types";

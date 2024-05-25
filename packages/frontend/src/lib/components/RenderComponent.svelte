@@ -2,7 +2,7 @@
   import { applyAction, deserialize } from "$app/forms";
   import { invalidateAll } from "$app/navigation";
   import { components, selectedComponent } from "$lib/stores";
-  import type { Component } from "$lib/types";
+  import type { Component } from "common";
   import { ElementFactory } from "common";
   import DOMPurify from "isomorphic-dompurify";
   import { Renderer, parse } from "marked";

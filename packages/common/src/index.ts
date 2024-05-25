@@ -4,8 +4,30 @@ export const mimeTypes: { [key: string]: string[] } = {
   video: ["video/mp4", "video/webm", "video/ogg"],
 };
 
+export interface Component {
+  id: string;
+  type: string;
+  page_id: string;
+  content: {
+    altText?: string;
+    textContent?: string;
+    isLooped?: boolean;
+  };
+  asset_id?: string;
+  parent_id: null | string;
+  created_at: string;
+  updated_at: string | null;
+  url: string | null;
+  row_start: number;
+  col_start: number;
+  row_end: number;
+  col_end: number;
+  row_end_span: number;
+  col_end_span: number;
+}
+
 export class ElementFactory {
-  createElement(component, purifiedTextContent: string) {
+  createElement(component: Component, purifiedTextContent: string) {
     switch (component.type) {
       case "header":
         return this.createHeader();
@@ -14,18 +36,21 @@ export class ElementFactory {
       case "text":
         return this.createText(purifiedTextContent);
       case "image":
-        return this.createImage(component.url, component.content.altText);
+        return this.createImage(
+          component.url ?? "",
+          component.content.altText ?? "",
+        );
       case "audio":
         return this.createAudio(
-          component.url,
-          component.content.altText,
-          component.content.isLooped,
+          component.url ?? "",
+          component.content.altText ?? "",
+          component.content.isLooped ?? false,
         );
       case "video":
         return this.createVideo(
-          component.url,
-          component.content.altText,
-          component.content.isLooped,
+          component.url ?? "",
+          component.content.altText ?? "",
+          component.content.isLooped ?? false,
         );
       default:
         throw new Error(`Unknown component type: ${component.type}`);
