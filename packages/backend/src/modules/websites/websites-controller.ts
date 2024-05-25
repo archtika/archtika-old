@@ -105,14 +105,22 @@ export async function generateWebsite(
         "components.component.id",
         "components.component_position.component_id",
       )
-      .orderBy("components.component_position.row_start")
-      .selectAll()
+      .selectAll("components.component")
+      .select(["components.component_position.row_start"])
+      .select(["components.component_position.col_start"])
+      .select(["components.component_position.row_end"])
+      .select(["components.component_position.col_end"])
+      .select(["components.component_position.row_end_span"])
+      .select(["components.component_position.col_end_span"])
       .where("components.component.page_id", "=", page.id)
+      .orderBy("components.component_position.row_start")
       .execute();
 
     let components = "";
 
     for (const component of allComponents) {
+      console.log(component);
+
       if (["image", "audio", "video"].includes(component.type)) {
         const media = await req.server.kysely.db
           .selectFrom("media.media_asset")

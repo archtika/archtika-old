@@ -150,12 +150,18 @@ export async function up(db: Kysely<DB>) {
       EXECUTE FUNCTION tracking.log_change();
 
       CREATE TRIGGER log_component_changes
-      AFTER INSERT OR UPDATE OR DELETE ON components.component
+      AFTER INSERT OR DELETE ON components.component
       FOR EACH ROW
       EXECUTE FUNCTION tracking.log_change();
 
+      CREATE TRIGGER log_component_changes_update
+      AFTER UPDATE ON components.component
+      FOR EACH ROW
+      WHEN ((to_jsonb(OLD.*) - 'updated_at') IS DISTINCT FROM (to_jsonb(NEW.*) - 'updated_at'))
+      EXECUTE FUNCTION tracking.log_change();
+
       CREATE TRIGGER log_component_position_changes
-      AFTER INSERT OR UPDATE ON components.component_position
+      AFTER UPDATE ON components.component_position
       FOR EACH ROW
       EXECUTE FUNCTION tracking.log_change();
 
@@ -171,6 +177,9 @@ export async function down(db: Kysely<DB>) {
   await sql`DROP TRIGGER log_website_changes ON structure.website`.execute(db);
   await sql`DROP TRIGGER log_page_changes ON structure.page`.execute(db);
   await sql`DROP TRIGGER log_component_changes ON components.component`.execute(
+    db,
+  );
+  await sql`DROP TRIGGER log_component_changes_update ON components.component`.execute(
     db,
   );
   await sql`DROP TRIGGER log_component_position_changes ON components.component_position`.execute(

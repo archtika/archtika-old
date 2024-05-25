@@ -75,7 +75,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
       cluster.fork();
     }
 
-    watch(__dirname, { recursive: true }, (eventType, filename) => {
+    /* watch(__dirname, { recursive: true }, (eventType, filename) => {
       if (filename?.includes("db-migrations")) {
         return;
       }
@@ -87,7 +87,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
       for (const id in cluster.workers) {
         cluster.workers[id]?.kill("SIGTERM");
       }
-    });
+    }); */
 
     cluster.on("exit", (worker, code, signal) => {
       console.log(`Worker ${worker.process.pid} died`);
