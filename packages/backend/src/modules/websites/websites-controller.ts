@@ -137,9 +137,11 @@ export async function generateWebsite(
     let components = "";
 
     for (const row of allComponents) {
-      for (const component of row.components as Component[]) {
-        console.log(component);
+      if (row.components.length > 1) {
+        components += '<div class="grid">';
+      }
 
+      for (const component of row.components as Component[]) {
         if (["image", "audio", "video"].includes(component.type)) {
           const media = await req.server.kysely.db
             .selectFrom("media.media_asset")
@@ -173,6 +175,10 @@ export async function generateWebsite(
         } else {
           components += element.createElement(component);
         }
+      }
+
+      if (row.components.length > 1) {
+        components += "</div>";
       }
     }
 
