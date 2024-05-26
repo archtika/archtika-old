@@ -4,26 +4,12 @@
   import { components, selectedComponent } from "$lib/stores";
   import type { Component } from "common";
   import { ElementFactory } from "common";
-  import DOMPurify from "isomorphic-dompurify";
-  import { Renderer, parse } from "marked";
   import Resizer from "./Resizer.svelte";
 
   export let component: Component;
   export let styles: string;
 
   const element = new ElementFactory();
-
-  const renderer = new Renderer();
-
-  renderer.image = (text) => text;
-
-  let purifiedTextContent = "";
-
-  $: if (component.type === "text") {
-    purifiedTextContent = DOMPurify.sanitize(
-      parse(component.content.textContent ?? "", { renderer }) as string
-    );
-  }
 
   function handleComponentClick(event: MouseEvent) {
     const target = (event.target as HTMLElement).closest("[data-component-id]");
@@ -160,7 +146,7 @@
     isNegativeRow={component.row_start < 0}
   />
 
-  {@html element.createElement(component, purifiedTextContent)}
+  {@html element.createElement(component)}
 </div>
 
 <style>

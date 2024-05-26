@@ -1,3 +1,6 @@
+import DOMPurify from "isomorphic-dompurify";
+import { Renderer, parse } from "marked";
+
 export const mimeTypes: { [key: string]: string[] } = {
   image: ["image/jpeg", "image/png", "image/svg+xml", "image/webp"],
   audio: ["audio/mpeg", "audio/wav", "audio/aac", "audio/ogg"],
@@ -27,20 +30,14 @@ export interface Component {
 }
 
 export class ElementFactory {
-  createElement(
-    component: Component,
-    purifiedTextContent?: string,
-    localFileUrl?: string,
-  ) {
+  createElement(component: Component, localFileUrl?: string) {
     switch (component.type) {
       case "header":
         return this.createHeader();
       case "footer":
         return this.createFooter();
       case "text":
-        return this.createText(
-          purifiedTextContent ?? component.content.textContent ?? "",
-        );
+        return this.createText(component.content.textContent ?? "");
       case "image":
         return this.createImage(
           localFileUrl ?? component.url ?? "",
@@ -72,7 +69,15 @@ export class ElementFactory {
   }
 
   private createText(content: string) {
-    return content;
+    const renderer = new Renderer();
+
+    renderer.image = (text) => text;
+
+    let purifiedTextContent = "";
+
+    purifiedTextContent = DOMPurify.sanitize(parse(content, { renderer }));
+
+    return purifiedTextContent;
   }
 
   private createImage(src: string, alt: string) {

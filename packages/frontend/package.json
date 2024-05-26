@@ -26,8 +26,6 @@
   },
   "type": "module",
   "dependencies": {
-    "common": "link:../common",
-    "isomorphic-dompurify": "^2.9.0",
-    "marked": "^12.0.2"
+    "common": "link:../common"
   }
 }

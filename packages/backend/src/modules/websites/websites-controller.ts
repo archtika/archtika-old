@@ -168,7 +168,6 @@ export async function generateWebsite(
 
           components += element.createElement(
             component,
-            undefined,
             `./assets/${component.asset_id}.${mimeTypeExtension}`,
           );
         } else {
