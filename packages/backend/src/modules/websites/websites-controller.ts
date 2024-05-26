@@ -53,6 +53,7 @@ export async function getAllWebsites(
         ),
       ),
     )
+    .orderBy("created_at")
     .execute();
 
   return reply.status(200).send(allWebsites);
@@ -205,18 +206,7 @@ export async function generateWebsite(
       Cookie: `auth_session=${req.cookies.auth_session}`,
     },
   });
-  const css = `
-		${await cssData.text()}
-
-.grid {
-	--min: 15ch;
-	--gap: 1rem;
-
-	display: grid;
-	grid-gap: var(--gap);
-	grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min)), 1fr));
-}
-	`;
+  const css = await cssData.text();
 
   zip.addFile("styles.css", Buffer.from(css));
 

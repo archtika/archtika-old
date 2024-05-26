@@ -77,6 +77,12 @@ export class ElementFactory {
 
     purifiedTextContent = DOMPurify.sanitize(parse(content, { renderer }));
 
+    const isMultipleElements = purifiedTextContent.match(/<\/\w+>\s*<\w+/);
+
+    if (isMultipleElements) {
+      purifiedTextContent = `<div>${purifiedTextContent}</div>`;
+    }
+
     return purifiedTextContent;
   }
 
