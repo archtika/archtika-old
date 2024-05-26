@@ -15,8 +15,8 @@ export interface Component {
   };
   asset_id?: string;
   parent_id: null | string;
-  created_at: string;
-  updated_at: string | null;
+  created_at: string | Date;
+  updated_at: string | Date | null;
   url?: string | null;
   row_start: number;
   col_start: number;

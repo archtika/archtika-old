@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import AdmZip from "adm-zip";
-import { Component, ElementFactory } from "common";
+import { ElementFactory } from "common";
+import type { Component } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import { getAllPages } from "../../utils/queries.js";
@@ -105,55 +106,74 @@ export async function generateWebsite(
         "components.component.id",
         "components.component_position.component_id",
       )
-      .selectAll("components.component")
-      .select(["components.component_position.row_start"])
-      .select(["components.component_position.col_start"])
-      .select(["components.component_position.row_end"])
-      .select(["components.component_position.col_end"])
-      .select(["components.component_position.row_end_span"])
-      .select(["components.component_position.col_end_span"])
-      .where("components.component.page_id", "=", page.id)
+      .select(({ fn }) => [
+        "components.component_position.row_start",
+        fn
+          // We cannot use kysely's jsonBuildObject helper function here, because we want to order inside the aggregate
+          .jsonAgg(
+            sql`json_build_object(
+              'id', components.component.id,
+              'type', components.component.type,
+              'page_id', components.component.page_id,
+              'content', components.component.content,
+              'asset_id', components.component.asset_id,
+              'created_at', components.component.created_at,
+              'updated_at', components.component.updated_at,
+              'is_public', components.component.is_public,
+              'parent_id', components.component.parent_id,
+              'col_start', components.component_position.col_start,
+              'row_end', components.component_position.row_end,
+              'col_end', components.component_position.col_end,
+              'row_end_span', components.component_position.row_end_span,
+              'col_end_span', components.component_position.col_end_span
+            ) ORDER BY components.component_position.col_start`,
+          )
+          .as("components"),
+      ])
+      .groupBy("components.component_position.row_start")
       .orderBy("components.component_position.row_start")
       .execute();
 
     let components = "";
 
-    for (const component of allComponents) {
-      console.log(component);
+    for (const row of allComponents) {
+      for (const component of row.components as Component[]) {
+        console.log(component);
 
-      if (["image", "audio", "video"].includes(component.type)) {
-        const media = await req.server.kysely.db
-          .selectFrom("media.media_asset")
-          .select("mimetype")
-          .where("id", "=", component.asset_id)
-          .executeTakeFirst();
+        if (["image", "audio", "video"].includes(component.type)) {
+          const media = await req.server.kysely.db
+            .selectFrom("media.media_asset")
+            .select("mimetype")
+            .where("id", "=", component.asset_id ?? "")
+            .executeTakeFirst();
 
-        const mimeTypeExtension = media?.mimetype.split("/")[1];
+          const mimeTypeExtension = media?.mimetype.split("/")[1];
 
-        const dataStream = await req.server.minio.client.getObject(
-          "media",
-          `${req.user?.id}/${component.asset_id}.${mimeTypeExtension}`,
-        );
+          const dataStream = await req.server.minio.client.getObject(
+            "media",
+            `${req.user?.id}/${component.asset_id}.${mimeTypeExtension}`,
+          );
 
-        const chunks = [];
-        for await (const chunk of dataStream) {
-          chunks.push(chunk);
+          const chunks = [];
+          for await (const chunk of dataStream) {
+            chunks.push(chunk);
+          }
+
+          const buffer = Buffer.concat(chunks);
+
+          zip.addFile(
+            `assets/${component.asset_id}.${mimeTypeExtension}`,
+            buffer,
+          );
+
+          components += element.createElement(
+            component,
+            undefined,
+            `./assets/${component.asset_id}.${mimeTypeExtension}`,
+          );
+        } else {
+          components += element.createElement(component);
         }
-
-        const buffer = Buffer.concat(chunks);
-
-        zip.addFile(
-          `assets/${component.asset_id}.${mimeTypeExtension}`,
-          buffer,
-        );
-
-        components += element.createElement(
-          component,
-          undefined,
-          `./assets/${component.asset_id}.${mimeTypeExtension}`,
-        );
-      } else {
-        components += element.createElement(component);
       }
     }
 
