@@ -97,3 +97,36 @@ export async function getAllPages(req: FastifyRequest, websiteId: string) {
 
   return allPages;
 }
+
+export async function getPage(
+  req: FastifyRequest,
+  websiteId: string,
+  pageId: string,
+) {
+  const page = await req.server.kysely.db
+    .selectFrom("structure.page")
+    .selectAll()
+    .where(({ or, and, exists, selectFrom }) =>
+      or([
+        exists(
+          selectFrom("structure.website").where(
+            and({ id: websiteId, user_id: req.user?.id }),
+          ),
+        ),
+        exists(
+          selectFrom("collaboration.collaborator")
+            .where(
+              and({
+                user_id: req.user?.id,
+                website_id: websiteId,
+              }),
+            )
+            .where("permission_level", ">=", 10),
+        ),
+      ]),
+    )
+    .where("id", "=", pageId)
+    .executeTakeFirstOrThrow();
+
+  return page;
+}

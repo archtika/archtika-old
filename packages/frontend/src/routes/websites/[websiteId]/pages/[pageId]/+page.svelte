@@ -652,39 +652,45 @@
     {/if}
   </div>
 
-  <div
-    style="grid-template-rows: repeat({totalRows}, 2.5rem"
-    data-content-container
-  >
-    {#each Array(totalRows * 12) as _, i}
-      {@const row = Math.floor(i / 12) + 1}
-      {@const col = (i % 12) + 1}
+  <div class="container-editor">
+    <div class="container-editor-header">
+      <a href="/websites/{data.website.id}/pages/{data.page.id}">Edit</a>
+      <a href="/websites/{data.website.id}/pages/{data.page.id}/preview">Preview</a>
+    </div>
+    <div
+      style="grid-template-rows: repeat({totalRows}, 2.5rem"
+      data-content-container
+    >
+      {#each Array(totalRows * 12) as _, i}
+        {@const row = Math.floor(i / 12) + 1}
+        {@const col = (i % 12) + 1}
 
-      <div
-        style="grid-area: {row} / {col} / {row} / {col}"
-        data-zone={i + 1}
-        on:dragover={handleDragOver}
-        on:dragenter={handleDragEnter}
-        on:dragleave={handleDragLeave}
-        on:drop={(event) => handleDrop(event, row, col, row, col)}
-        on:drag
-        role="presentation"
-      />
-    {/each}
-    {#each $components as component, i (i)}
-      <RenderComponent
-        {component}
-        styles="grid-area: {component.row_start ?? 1} / {component.col_start ??
-          1} / {component.row_end ?? 1} / {component.col_end ?? 1}{![
-          'header',
-          'footer',
-        ].includes(component.type)
-          ? '; z-index: 10'
-          : ''}"
-        on:dragstart={handleDragStart}
-        on:dragenter={handleComponentDragEnter}
-      />
-    {/each}
+        <div
+          style="grid-area: {row} / {col} / {row} / {col}"
+          data-zone={i + 1}
+          on:dragover={handleDragOver}
+          on:dragenter={handleDragEnter}
+          on:dragleave={handleDragLeave}
+          on:drop={(event) => handleDrop(event, row, col, row, col)}
+          on:drag
+          role="presentation"
+        />
+      {/each}
+      {#each $components as component, i (i)}
+        <RenderComponent
+          {component}
+          styles="grid-area: {component.row_start ??
+            1} / {component.col_start ?? 1} / {component.row_end ??
+            1} / {component.col_end ?? 1}{!['header', 'footer'].includes(
+            component.type
+          )
+            ? '; z-index: 10'
+            : ''}"
+          on:dragstart={handleDragStart}
+          on:dragenter={handleComponentDragEnter}
+        />
+      {/each}
+    </div>
   </div>
 </div>
 
@@ -695,7 +701,7 @@
   }
 
   div[data-sidebar],
-  div[data-content-container] {
+  .container-editor {
     max-block-size: 100vh;
     overflow-y: auto;
     border: 0.125rem solid black;
@@ -703,6 +709,17 @@
 
   div[data-sidebar] {
     padding-inline: 0.5rem;
+  }
+
+  .container-editor-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 50;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    border-block-end: 0.125rem solid black;
   }
 
   div[data-content-container] {

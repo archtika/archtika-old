@@ -1,7 +1,8 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import {
-  getAllPages as getPages,
+  getAllPages as getAllPagesUtil,
+  getPage as getPageUtil,
   updateLastModifiedByColumn,
 } from "../../utils/queries.js";
 import type {
@@ -61,7 +62,7 @@ export async function getAllPages(
 ) {
   const { id } = req.params;
 
-  const allPages = await getPages(req, id);
+  const allPages = await getAllPagesUtil(req, id);
 
   return reply.status(200).send(allPages);
 }
@@ -72,30 +73,18 @@ export async function getPage(
 ) {
   const { pageId, websiteId } = req.params;
 
-  const page = await req.server.kysely.db
-    .selectFrom("structure.page")
-    .selectAll()
-    .where(({ or, and, exists, selectFrom }) =>
-      or([
-        exists(
-          selectFrom("structure.website").where(
-            and({ id: websiteId, user_id: req.user?.id }),
-          ),
-        ),
-        exists(
-          selectFrom("collaboration.collaborator")
-            .where(
-              and({
-                user_id: req.user?.id,
-                website_id: websiteId,
-              }),
-            )
-            .where("permission_level", ">=", 10),
-        ),
-      ]),
-    )
-    .where("id", "=", pageId)
-    .executeTakeFirstOrThrow();
+  const page = await getPageUtil(req, websiteId, pageId);
+
+  return reply.status(200).send(page);
+}
+
+export async function getPagePreview(
+  req: FastifyRequest<{ Params: PageParamsSchemaType }>,
+  reply: FastifyReply,
+) {
+  const { pageId, websiteId } = req.params;
+
+  const page = await getPageUtil(req, websiteId, pageId);
 
   return reply.status(200).send(page);
 }

@@ -4,6 +4,7 @@ import {
   deletePage,
   getAllPages,
   getPage,
+  getPagePreview,
   updatePage,
 } from "./pages-controller.js";
 import {
@@ -52,6 +53,17 @@ export default async function (fastify: FastifyInstance) {
       },
     },
     getPage,
+  );
+
+  fastify.get(
+    "/:websiteId/pages/:pageId/preview",
+    {
+      schema: {
+        tags: commonSchema.schema.tags,
+        params: pageParamsSchema,
+      },
+    },
+    getPagePreview,
   );
 
   fastify.patch(

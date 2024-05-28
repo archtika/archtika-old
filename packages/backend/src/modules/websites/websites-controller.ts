@@ -131,6 +131,7 @@ export async function generateWebsite(
           )
           .as("components"),
       ])
+      .where("components.component.page_id", "=", page.id)
       .groupBy("components.component_position.row_start")
       .orderBy("components.component_position.row_start")
       .execute();
