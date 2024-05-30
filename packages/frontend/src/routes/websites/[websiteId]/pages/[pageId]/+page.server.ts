@@ -92,11 +92,29 @@ export const actions: Actions = {
           };
         }
         break;
+      case "section":
+        {
+          body = {
+            type: data.get("type") as string,
+            content: null,
+            parent_id: null,
+          };
+        }
+        break;
       case "text":
         body = {
           type: data.get("type") as string,
           content: {
             textContent: data.get("content") as string,
+          },
+        };
+        break;
+      case "button":
+        body = {
+          type: data.get("type") as string,
+          content: {
+            textContent: data.get("text-content") as string,
+            hyperlink: data.get("hyperlink") as string,
           },
         };
         break;

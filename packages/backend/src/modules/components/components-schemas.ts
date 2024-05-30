@@ -27,6 +27,12 @@ const createComponentFooterSchema = Type.Object({
   parent_id: Type.Null(),
 });
 
+const createComponentSectionSchema = Type.Object({
+  type: Type.Literal("section"),
+  content: Type.Null(),
+  parent_id: Type.Null(),
+});
+
 const createComponentTextSchema = Type.Object({
   type: Type.Literal("text"),
   content: Type.Object({
@@ -42,6 +48,30 @@ const updateComponentTextSchema = Type.Object({
   content: Type.Optional(
     Type.Object({
       textContent: Type.Optional(Type.String({ minLength: 1 })),
+    }),
+  ),
+  parent_id: Type.Optional(
+    Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+  ),
+});
+
+const createComponentButtonSchema = Type.Object({
+  type: Type.Literal("button"),
+  content: Type.Object({
+    textContent: Type.String({ minLength: 1 }),
+    hyperlink: Type.String({ minLength: 1 }),
+  }),
+  parent_id: Type.Optional(
+    Type.Union([Type.String({ format: "uuid" }), Type.Null()]),
+  ),
+});
+
+const updateComponentButtonSchema = Type.Object({
+  type: Type.Literal("button"),
+  content: Type.Optional(
+    Type.Object({
+      textContent: Type.Optional(Type.String({ minLength: 1 })),
+      hyperlink: Type.Optional(Type.String({ minLength: 1 })),
     }),
   ),
   parent_id: Type.Optional(
@@ -154,11 +184,27 @@ export const exampleComponentValues = {
       parent_id: null,
     },
   },
+  Section: {
+    value: {
+      type: "section",
+      content: null,
+      parent_id: null,
+    },
+  },
   Text: {
     value: {
       type: "text",
       content: {
         textContent: "Hello, world!",
+      },
+    },
+  },
+  Button: {
+    value: {
+      type: "button",
+      content: {
+        textContent: "Click me!",
+        hyperlink: "https://google.com",
       },
     },
   },
@@ -197,7 +243,9 @@ export const createComponentSchema = Type.Union(
   [
     createComponentHeaderSchema,
     createComponentFooterSchema,
+    createComponentSectionSchema,
     createComponentTextSchema,
+    createComponentButtonSchema,
     createComponentImageSchema,
     createComponentVideoSchema,
     createComponentAudioSchema,
@@ -212,6 +260,7 @@ export type CreateComponentSchemaType = Static<typeof createComponentSchema>;
 export const updateComponentSchema = Type.Union(
   [
     updateComponentTextSchema,
+    updateComponentButtonSchema,
     updateComponentImageSchema,
     updateComponentVideoSchema,
     updateComponentAudioSchema,

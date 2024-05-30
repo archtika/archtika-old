@@ -15,6 +15,7 @@ export interface Component {
     altText?: string;
     textContent?: string;
     isLooped?: boolean;
+    hyperlink?: string;
   };
   asset_id?: string;
   parent_id: null | string;
@@ -36,8 +37,15 @@ export class ElementFactory {
         return this.createHeader();
       case "footer":
         return this.createFooter();
+      case "section":
+        return this.createSection();
       case "text":
         return this.createText(component.content.textContent ?? "");
+      case "button":
+        return this.createButton(
+          component.content.textContent ?? "",
+          component.content.hyperlink ?? "",
+        );
       case "image":
         return this.createImage(
           localFileUrl ?? component.url ?? "",
@@ -68,6 +76,10 @@ export class ElementFactory {
     return "<footer></footer>";
   }
 
+  private createSection() {
+    return "<section></section>";
+  }
+
   private createText(content: string) {
     const renderer = new Renderer();
 
@@ -80,6 +92,20 @@ export class ElementFactory {
     purifiedTextContent = DOMPurify.sanitize(parse(content, { renderer }));
 
     return `<div>${purifiedTextContent}</div>`;
+  }
+
+  private createButton(textContent: string, hyperlink: string) {
+    const renderer = new Renderer();
+
+    renderer.html = (html) => {
+      return DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
+    };
+
+    let purifiedTextContent = "";
+
+    purifiedTextContent = DOMPurify.sanitize(parse(textContent, { renderer }));
+
+    return `<a href="${hyperlink}">${purifiedTextContent}</a>`;
   }
 
   private createImage(src: string, alt: string) {

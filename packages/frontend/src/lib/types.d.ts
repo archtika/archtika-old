@@ -4,6 +4,7 @@ export interface ComponentApiPayload {
     altText?: string;
     textContent?: string;
     isLooped?: boolean;
+    hyperlink?: string;
   } | null;
   assetId?: string | null;
   parent_id?: string | null;

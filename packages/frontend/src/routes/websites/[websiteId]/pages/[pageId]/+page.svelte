@@ -76,7 +76,7 @@
     const target = event.target as HTMLElement;
 
     if (
-      !["header", "footer"].includes(
+      !["header", "footer", "section"].includes(
         target.getAttribute("data-component-type") ?? ""
       )
     ) {
@@ -94,7 +94,7 @@
 
     for (const element of [
       ...document.querySelectorAll(
-        '[data-component-type="footer"], [data-component-type="header"]'
+        '[data-component-type="footer"], [data-component-type="header"], [data-component-type="section"]'
       ),
     ] as HTMLElement[]) {
       element.style.zIndex = "";
@@ -560,6 +560,19 @@
         />
         <button type="submit">Add footer</button>
       </form>
+      <form
+        action="?/createComponent"
+        method="post"
+        use:enhance={enhanceCreateComponentForm}
+      >
+        <input
+          type="hidden"
+          id="create-component-section-type"
+          name="type"
+          value="section"
+        />
+        <button type="submit">Add section</button>
+      </form>
 
       <div>
         <h4>Text</h4>
@@ -578,6 +591,40 @@
             Content:
             <textarea id="create-component-text-content" name="content" required
             ></textarea>
+          </label>
+          <button type="submit">Add</button>
+        </form>
+      </div>
+      <div>
+        <h4>Button</h4>
+        <form
+          action="?/createComponent"
+          method="post"
+          use:enhance={enhanceCreateComponentForm}
+        >
+          <input
+            type="hidden"
+            id="create-component-button-type"
+            name="type"
+            value="button"
+          />
+          <label>
+            Text:
+            <input
+              type="text"
+              id="create-component-button-content"
+              name="text-content"
+              required
+            />
+          </label>
+          <label>
+            Link:
+            <input
+              type="text"
+              id="create-component-button-hyperlink"
+              name="hyperlink"
+              required
+            />
           </label>
           <button type="submit">Add</button>
         </form>
@@ -674,11 +721,12 @@
     {#each $components as component, i (i)}
       <RenderComponent
         {component}
-        styles="grid-area: {component.row_start ??
-          1} / {component.col_start ?? 1} / {component.row_end ??
-          1} / {component.col_end ?? 1}{!['header', 'footer'].includes(
-          component.type
-        )
+        styles="grid-area: {component.row_start ?? 1} / {component.col_start ??
+          1} / {component.row_end ?? 1} / {component.col_end ?? 1}{![
+          'header',
+          'footer',
+          'section',
+        ].includes(component.type)
           ? '; z-index: 10'
           : ''}"
         on:dragstart={handleDragStart}
