@@ -71,19 +71,15 @@ export class ElementFactory {
   private createText(content: string) {
     const renderer = new Renderer();
 
-    renderer.image = (text) => text;
+    renderer.html = (html) => {
+      return DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
+    };
 
     let purifiedTextContent = "";
 
     purifiedTextContent = DOMPurify.sanitize(parse(content, { renderer }));
 
-    const isMultipleElements = purifiedTextContent.match(/<\/\w+>\s*<\w+/);
-
-    if (isMultipleElements) {
-      purifiedTextContent = `<div>${purifiedTextContent}</div>`;
-    }
-
-    return purifiedTextContent;
+    return `<div>${purifiedTextContent}</div>`;
   }
 
   private createImage(src: string, alt: string) {
