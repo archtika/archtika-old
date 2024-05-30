@@ -95,15 +95,7 @@ export class ElementFactory {
   }
 
   private createButton(textContent: string, hyperlink: string) {
-    const renderer = new Renderer();
-
-    renderer.html = (html) => {
-      return DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
-    };
-
-    let purifiedTextContent = "";
-
-    purifiedTextContent = DOMPurify.sanitize(parse(textContent, { renderer }));
+    const purifiedTextContent = DOMPurify.sanitize(textContent);
 
     return `<a href="${hyperlink}">${purifiedTextContent}</a>`;
   }
