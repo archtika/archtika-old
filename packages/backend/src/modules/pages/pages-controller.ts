@@ -78,17 +78,6 @@ export async function getPage(
   return reply.status(200).send(page);
 }
 
-export async function getPagePreview(
-  req: FastifyRequest<{ Params: PageParamsSchemaType }>,
-  reply: FastifyReply,
-) {
-  const { pageId, websiteId } = req.params;
-
-  const page = await getPageUtil(req, websiteId, pageId);
-
-  return reply.status(200).send(page);
-}
-
 export async function updatePage(
   req: FastifyRequest<{
     Params: PageParamsSchemaType;

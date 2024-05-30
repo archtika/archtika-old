@@ -654,8 +654,8 @@
 
   <div class="container-editor">
     <div class="container-editor-header">
-      <a href="/websites/{data.website.id}/pages/{data.page.id}">Edit</a>
-      <a href="/websites/{data.website.id}/pages/{data.page.id}/preview">Preview</a>
+      <button>Desktop</button>
+      <button>Mobile</button>
     </div>
     <div
       style="grid-template-rows: repeat({totalRows}, 2.5rem"
@@ -720,6 +720,7 @@
     justify-content: center;
     gap: 1rem;
     border-block-end: 0.125rem solid black;
+    padding-block: 0.5rem;
   }
 
   div[data-content-container] {

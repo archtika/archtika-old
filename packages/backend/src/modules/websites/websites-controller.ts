@@ -139,10 +139,6 @@ export async function generateWebsite(
     let components = "";
 
     for (const row of allComponents) {
-      if (row.components.length > 1) {
-        components += '<div class="grid">';
-      }
-
       for (const component of row.components as Component[]) {
         if (["image", "audio", "video"].includes(component.type)) {
           const media = await req.server.kysely.db
@@ -177,10 +173,6 @@ export async function generateWebsite(
         } else {
           components += element.createElement(component);
         }
-      }
-
-      if (row.components.length > 1) {
-        components += "</div>";
       }
     }
 
@@ -224,6 +216,8 @@ export async function generateWebsite(
       user_id: req.user?.id ?? "",
       website_id: id,
       generation: Number.parseInt(deploymentRowCount.count) + 1,
+      /* TODO: The hash is always different here, even with the same file contents. This is
+      probably because of zip metadata such as creation date that is always different */
       file_hash: createHash("sha256").update(buffer).digest("hex"),
     })
     .onConflict((oc) => oc.constraint("uniqueFileHash").doNothing())
