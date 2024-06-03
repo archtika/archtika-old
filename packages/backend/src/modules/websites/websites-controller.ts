@@ -94,8 +94,9 @@ export async function generateWebsite(
   if (allPages.length === 0) return;
 
   const zip = new AdmZip();
-
   const element = new ElementFactory();
+
+  const fileContents = [];
 
   for (const page of allPages) {
     const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
@@ -136,6 +137,8 @@ export async function generateWebsite(
       .orderBy("components.component_position.row_start")
       .execute();
 
+    console.log(JSON.stringify(allComponents, null, 4));
+
     let components = "";
 
     for (const row of allComponents) {
@@ -170,6 +173,8 @@ export async function generateWebsite(
             component,
             `./assets/${component.asset_id}.${mimeTypeExtension}`,
           );
+
+          fileContents.push(buffer);
         } else {
           components += element.createElement(component);
         }
@@ -192,6 +197,8 @@ export async function generateWebsite(
 		`;
 
     zip.addFile(fileName, Buffer.from(content));
+
+    fileContents.push(Buffer.from(content));
   }
 
   const cssData = await fetch("http://localhost:5173/api/styles", {
@@ -203,7 +210,15 @@ export async function generateWebsite(
 
   zip.addFile("styles.css", Buffer.from(css));
 
+  fileContents.push(Buffer.from(css));
+
   const buffer = zip.toBuffer();
+
+  const hash = createHash("sha256");
+  for (const content of fileContents) {
+    hash.update(content);
+  }
+  const fileHash = hash.digest("hex");
 
   const deploymentRowCount = await req.server.kysely.db
     .selectFrom("tracking.deployment")
@@ -216,9 +231,7 @@ export async function generateWebsite(
       user_id: req.user?.id ?? "",
       website_id: id,
       generation: Number.parseInt(deploymentRowCount.count) + 1,
-      /* TODO: The hash is always different here, even with the same file contents. This is
-      probably because of zip metadata such as creation date that is always different */
-      file_hash: createHash("sha256").update(buffer).digest("hex"),
+      file_hash: fileHash,
     })
     .onConflict((oc) => oc.constraint("uniqueFileHash").doNothing())
     .returningAll()
