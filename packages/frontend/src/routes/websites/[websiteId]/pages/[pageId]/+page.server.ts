@@ -244,7 +244,7 @@ export const actions: Actions = {
         break;
     }
 
-    body.parent_id = (data.get("parent-id") as string) || null;
+    body.parent_id = (data.get("parent-id") as string) || undefined;
 
     if (data.get("parent-id") || data.get("parent-id") === "") {
       body.content = undefined;

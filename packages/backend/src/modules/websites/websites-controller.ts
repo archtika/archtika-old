@@ -83,6 +83,21 @@ export async function getWebsite(
   return reply.status(200).send(website);
 }
 
+function nestComponents(
+  components: Component[],
+  parentId: string | null = null,
+): Component[] {
+  const nested = components
+    .filter((component) => component.parent_id === parentId)
+    .map((component) => ({
+      ...component,
+      row_start: component.row_start,
+      children: nestComponents(components, component.id),
+    }));
+
+  return nested;
+}
+
 export async function generateWebsite(
   req: FastifyRequest<{ Params: WebsiteParamsSchemaType }>,
   reply: FastifyReply,
@@ -108,76 +123,67 @@ export async function generateWebsite(
         "components.component.id",
         "components.component_position.component_id",
       )
-      .select(({ fn }) => [
+      .select([
+        "components.component.id",
+        "components.component.type",
+        "components.component.page_id",
+        "components.component.content",
+        "components.component.asset_id",
+        "components.component.created_at",
+        "components.component.updated_at",
+        "components.component.is_public",
+        "components.component.parent_id",
         "components.component_position.row_start",
-        fn
-          // We cannot use kysely's jsonBuildObject helper function here, because we want to order inside the aggregate
-          .jsonAgg(
-            sql`json_build_object(
-              'id', components.component.id,
-              'type', components.component.type,
-              'page_id', components.component.page_id,
-              'content', components.component.content,
-              'asset_id', components.component.asset_id,
-              'created_at', components.component.created_at,
-              'updated_at', components.component.updated_at,
-              'is_public', components.component.is_public,
-              'parent_id', components.component.parent_id,
-              'col_start', components.component_position.col_start,
-              'row_end', components.component_position.row_end,
-              'col_end', components.component_position.col_end,
-              'row_end_span', components.component_position.row_end_span,
-              'col_end_span', components.component_position.col_end_span
-            ) ORDER BY components.component_position.col_start`,
-          )
-          .as("components"),
+        "components.component_position.col_start",
+        "components.component_position.row_end",
+        "components.component_position.col_end",
+        "components.component_position.row_end_span",
+        "components.component_position.col_end_span",
       ])
       .where("components.component.page_id", "=", page.id)
-      .groupBy("components.component_position.row_start")
       .orderBy("components.component_position.row_start")
+      .orderBy("components.component_position.col_start")
       .execute();
 
-    console.log(JSON.stringify(allComponents, null, 4));
+    const newAllComponents = nestComponents(allComponents as Component[]);
 
     let components = "";
 
-    for (const row of allComponents) {
-      for (const component of row.components as Component[]) {
-        if (["image", "audio", "video"].includes(component.type)) {
-          const media = await req.server.kysely.db
-            .selectFrom("media.media_asset")
-            .select("mimetype")
-            .where("id", "=", component.asset_id ?? "")
-            .executeTakeFirst();
+    for (const component of newAllComponents as Component[]) {
+      if (["image", "audio", "video"].includes(component.type)) {
+        const media = await req.server.kysely.db
+          .selectFrom("media.media_asset")
+          .select("mimetype")
+          .where("id", "=", component.asset_id ?? "")
+          .executeTakeFirst();
 
-          const mimeTypeExtension = media?.mimetype.split("/")[1];
+        const mimeTypeExtension = media?.mimetype.split("/")[1];
 
-          const dataStream = await req.server.minio.client.getObject(
-            "media",
-            `${req.user?.id}/${component.asset_id}.${mimeTypeExtension}`,
-          );
+        const dataStream = await req.server.minio.client.getObject(
+          "media",
+          `${req.user?.id}/${component.asset_id}.${mimeTypeExtension}`,
+        );
 
-          const chunks = [];
-          for await (const chunk of dataStream) {
-            chunks.push(chunk);
-          }
-
-          const buffer = Buffer.concat(chunks);
-
-          zip.addFile(
-            `assets/${component.asset_id}.${mimeTypeExtension}`,
-            buffer,
-          );
-
-          components += element.createElement(
-            component,
-            `./assets/${component.asset_id}.${mimeTypeExtension}`,
-          );
-
-          fileContents.push(buffer);
-        } else {
-          components += element.createElement(component);
+        const chunks = [];
+        for await (const chunk of dataStream) {
+          chunks.push(chunk);
         }
+
+        const buffer = Buffer.concat(chunks);
+
+        zip.addFile(
+          `assets/${component.asset_id}.${mimeTypeExtension}`,
+          buffer,
+        );
+
+        components += element.createElement(
+          component,
+          `./assets/${component.asset_id}.${mimeTypeExtension}`,
+        );
+
+        fileContents.push(buffer);
+      } else {
+        components += element.createElement(component);
       }
     }
 
@@ -219,6 +225,8 @@ export async function generateWebsite(
     hash.update(content);
   }
   const fileHash = hash.digest("hex");
+
+  console.log(`HASHHHHHHHHHHHHHHHHH: ${fileHash}`);
 
   const deploymentRowCount = await req.server.kysely.db
     .selectFrom("tracking.deployment")

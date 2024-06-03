@@ -126,7 +126,7 @@
 </script>
 
 <div
-  draggable="true"
+  draggable={!["header", "footer"].includes(component.type)}
   on:dragstart
   on:dragenter
   on:click={handleComponentClick}
