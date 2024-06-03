@@ -141,6 +141,13 @@ export async function generateWebsite(
         "components.component_position.col_end_span",
       ])
       .where("components.component.page_id", "=", page.id)
+      .orderBy(sql`
+        CASE
+          WHEN components.component.type = 'header' THEN 1
+          WHEN components.component.type = 'footer' THEN 3
+          ELSE 2
+        END
+      `)
       .orderBy("components.component_position.row_start")
       .orderBy("components.component_position.col_start")
       .execute();
@@ -225,8 +232,6 @@ export async function generateWebsite(
     hash.update(content);
   }
   const fileHash = hash.digest("hex");
-
-  console.log(`HASHHHHHHHHHHHHHHHHH: ${fileHash}`);
 
   const deploymentRowCount = await req.server.kysely.db
     .selectFrom("tracking.deployment")

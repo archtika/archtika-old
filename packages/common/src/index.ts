@@ -31,41 +31,61 @@ export interface Component {
 }
 
 export class ElementFactory {
-  createElement(component: Component, localFileUrl?: string) {
+  createElement(
+    component: Component & Partial<{ children: Component[] }>,
+    localFileUrl?: string,
+  ) {
+    let element = ""
+
     switch (component.type) {
       case "header":
-        return this.createHeader();
+        element = this.createHeader();
+        break;
       case "footer":
-        return this.createFooter();
+        element = this.createFooter();
+        break;
       case "section":
-        return this.createSection();
+        element = this.createSection();
+        break;
       case "text":
-        return this.createText(component.content.textContent ?? "");
+        element = this.createText(component.content.textContent ?? "");
+        break;
       case "button":
-        return this.createButton(
+        element = this.createButton(
           component.content.textContent ?? "",
           component.content.hyperlink ?? "",
         );
+        break;
       case "image":
-        return this.createImage(
+        element = this.createImage(
           localFileUrl ?? component.url ?? "",
           component.content.altText ?? "",
         );
+        break;
       case "audio":
-        return this.createAudio(
+        element = this.createAudio(
           localFileUrl ?? component.url ?? "",
           component.content.altText ?? "",
           component.content.isLooped ?? false,
         );
+        break;
       case "video":
-        return this.createVideo(
+        element = this.createVideo(
           localFileUrl ?? component.url ?? "",
           component.content.altText ?? "",
           component.content.isLooped ?? false,
         );
+        break;
       default:
         throw new Error(`Unknown component type: ${component.type}`);
     }
+
+    if (component.children && component.children.length > 0) {
+      const childrenElements = component.children.map(child => this.createElement(child, localFileUrl)).join('');
+      element = element.replace('</', `${childrenElements}</`);
+    }
+
+    return element;
   }
 
   private createHeader() {
