@@ -35,7 +35,7 @@ export class ElementFactory {
     component: Component & Partial<{ children: Component[] }>,
     localFileUrl?: string,
   ) {
-    let element = ""
+    let element = "";
 
     switch (component.type) {
       case "header":
@@ -81,8 +81,10 @@ export class ElementFactory {
     }
 
     if (component.children && component.children.length > 0) {
-      const childrenElements = component.children.map(child => this.createElement(child, localFileUrl)).join('');
-      element = element.replace('</', `${childrenElements}</`);
+      const childrenElements = component.children
+        .map((child) => this.createElement(child, localFileUrl))
+        .join("");
+      element = element.replace("</", `${childrenElements}</`);
     }
 
     return element;
