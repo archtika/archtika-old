@@ -314,8 +314,7 @@
     };
   }
 
-  $: totalRows =
-    Math.max(12, ...$components.map((item) => item.row_end)) + 12 || 24;
+  $: totalRows = Math.max(...$components.map((item) => item.row_end))
 </script>
 
 <svelte:window on:click={handleWindowClick} />
@@ -534,6 +533,8 @@
 
       <h3>Components</h3>
 
+      <h4>Structure</h4>
+
       <form
         action="?/createComponent"
         method="post"
@@ -574,8 +575,10 @@
         <button type="submit">Add section</button>
       </form>
 
+      <h4>Content</h4>
+
       <div>
-        <h4>Text</h4>
+        <h5>Text</h5>
         <form
           action="?/createComponent"
           method="post"
@@ -596,7 +599,7 @@
         </form>
       </div>
       <div>
-        <h4>Button</h4>
+        <h5>Button</h5>
         <form
           action="?/createComponent"
           method="post"
@@ -633,7 +636,7 @@
         {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
 
         <div>
-          <h4>{title}</h4>
+          <h5>{title}</h5>
           <form
             action="?/createComponent"
             method="post"

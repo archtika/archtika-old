@@ -33,7 +33,7 @@ export interface Component {
 export class ElementFactory {
   createElement(
     component: Component & Partial<{ children: Component[] }>,
-    localFileUrl?: string,
+    assetPaths: string[] = [],
   ) {
     let element = "";
 
@@ -58,20 +58,32 @@ export class ElementFactory {
         break;
       case "image":
         element = this.createImage(
-          localFileUrl ?? component.url ?? "",
+          assetPaths.find((path) =>
+            path.includes(component.asset_id as string),
+          ) ??
+            component.url ??
+            "",
           component.content.altText ?? "",
         );
         break;
       case "audio":
         element = this.createAudio(
-          localFileUrl ?? component.url ?? "",
+          assetPaths.find((path) =>
+            path.includes(component.asset_id as string),
+          ) ??
+            component.url ??
+            "",
           component.content.altText ?? "",
           component.content.isLooped ?? false,
         );
         break;
       case "video":
         element = this.createVideo(
-          localFileUrl ?? component.url ?? "",
+          assetPaths.find((path) =>
+            path.includes(component.asset_id as string),
+          ) ??
+            component.url ??
+            "",
           component.content.altText ?? "",
           component.content.isLooped ?? false,
         );
@@ -82,7 +94,7 @@ export class ElementFactory {
 
     if (component.children && component.children.length > 0) {
       const childrenElements = component.children
-        .map((child) => this.createElement(child, localFileUrl))
+        .map((child) => this.createElement(child, assetPaths))
         .join("");
       element = element.replace("</", `${childrenElements}</`);
     }

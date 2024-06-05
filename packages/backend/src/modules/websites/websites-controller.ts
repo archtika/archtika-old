@@ -6,6 +6,7 @@ import type { Component } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import { getAllPages } from "../../utils/queries.js";
+import { getAllComponents } from "../../utils/queries.js";
 import type {
   CreateWebsiteSchemaType,
   GetWebsitesQuerySchemaType,
@@ -116,59 +117,31 @@ export async function generateWebsite(
   for (const page of allPages) {
     const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
 
-    const allComponents = await req.server.kysely.db
-      .selectFrom("components.component")
-      .innerJoin(
-        "components.component_position",
-        "components.component.id",
-        "components.component_position.component_id",
-      )
-      .select([
-        "components.component.id",
-        "components.component.type",
-        "components.component.page_id",
-        "components.component.content",
-        "components.component.asset_id",
-        "components.component.created_at",
-        "components.component.updated_at",
-        "components.component.is_public",
-        "components.component.parent_id",
-        "components.component_position.row_start",
-        "components.component_position.col_start",
-        "components.component_position.row_end",
-        "components.component_position.col_end",
-        "components.component_position.row_end_span",
-        "components.component_position.col_end_span",
-      ])
-      .where("components.component.page_id", "=", page.id)
-      .orderBy(sql`
-        CASE
-          WHEN components.component.type = 'header' THEN 1
-          WHEN components.component.type = 'footer' THEN 3
-          ELSE 2
-        END
-      `)
-      .orderBy("components.component_position.row_start")
-      .orderBy("components.component_position.col_start")
-      .execute();
+    const allComponents = await getAllComponents(req, page.id);
 
-    const newAllComponents = nestComponents(allComponents as Component[]);
+    const allComponentsNested = nestComponents(allComponents as Component[]);
 
     let components = "";
 
-    for (const component of newAllComponents as Component[]) {
-      if (["image", "audio", "video"].includes(component.type)) {
+    for (const component of allComponentsNested as Component[]) {
+      const assetPaths = [];
+
+      for (const comp of allComponents.filter(
+        (c) =>
+          c.parent_id === component.id &&
+          ["image", "video", "audio"].includes(c.type),
+      )) {
         const media = await req.server.kysely.db
           .selectFrom("media.media_asset")
           .select("mimetype")
-          .where("id", "=", component.asset_id ?? "")
+          .where("id", "=", comp.asset_id ?? "")
           .executeTakeFirst();
 
         const mimeTypeExtension = media?.mimetype.split("/")[1];
 
         const dataStream = await req.server.minio.client.getObject(
           "media",
-          `${req.user?.id}/${component.asset_id}.${mimeTypeExtension}`,
+          `${req.user?.id}/${comp.asset_id}.${mimeTypeExtension}`,
         );
 
         const chunks = [];
@@ -178,20 +151,15 @@ export async function generateWebsite(
 
         const buffer = Buffer.concat(chunks);
 
-        zip.addFile(
-          `assets/${component.asset_id}.${mimeTypeExtension}`,
-          buffer,
-        );
+        zip.addFile(`assets/${comp.asset_id}.${mimeTypeExtension}`, buffer);
 
-        components += element.createElement(
-          component,
-          `./assets/${component.asset_id}.${mimeTypeExtension}`,
-        );
+        const path = `./assets/${comp.asset_id}.${mimeTypeExtension}`;
+        assetPaths.push(path);
 
         fileContents.push(buffer);
-      } else {
-        components += element.createElement(component);
       }
+
+      components += element.createElement(component, assetPaths);
     }
 
     const content = `
