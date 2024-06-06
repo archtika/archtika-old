@@ -125,7 +125,7 @@
         1;
       zoneEnd = zoneStart + totalZones - 1;
     } else {
-      zoneStart = (rowStart === 1 ? 0 : rowStart) * 12 + colStart;
+      zoneStart = (rowStart === 1 ? 0 : rowStart - 1) * 12 + colStart;
       zoneEnd = zoneStart + totalZones - 1;
     }
 
@@ -186,10 +186,13 @@
     const updateComponentFormData = new FormData();
     updateComponentFormData.append("id", `${$components[index].id}`);
     updateComponentFormData.append("type", `${$components[index].type}`);
-    updateComponentFormData.append(
-      "parent-id",
-      currentComponentDropArea?.getAttribute("data-component-id") ?? ""
-    );
+    if (currentComponentDropArea) {
+      updateComponentFormData.append(
+        "parent-id",
+        currentComponentDropArea.getAttribute("data-component-id") ?? ""
+      );
+    }
+    updateComponentFormData.append("submission-type", "drop-event");
 
     const updateComponentResponse = await fetch("?/updateComponent", {
       method: "POST",
@@ -314,10 +317,13 @@
     };
   }
 
-  $: totalRows = Math.max(...$components.map((item) => item.row_end))
+  $: totalRows = Math.max(12, ...$components.map((item) => item.row_end)) + 12;
 </script>
 
-<svelte:window on:click={handleWindowClick} />
+<svelte:window
+  on:keydown={(e) => e.key === "Escape" && ($selectedComponent = null)}
+  on:click={handleWindowClick}
+/>
 
 <div class="editor-wrapper">
   <div data-sidebar>
@@ -381,6 +387,52 @@
               name="updated-content"
               required>{componentData?.content.textContent}</textarea
             >
+          </label>
+          <button type="submit">Update</button>
+        </form>
+      {/if}
+
+      {#if componentData?.type === "button"}
+        <form
+          action="?/updateComponent"
+          method="post"
+          use:enhance={() => {
+            return async ({ update }) => {
+              await update({ reset: false });
+            };
+          }}
+        >
+          <input
+            type="hidden"
+            id="update-component-{componentData?.id}-id"
+            name="id"
+            value={componentData?.id}
+          />
+          <input
+            type="hidden"
+            id="update-component-{componentData?.type}-type"
+            name="type"
+            value={componentData?.type}
+          />
+          <label>
+            Text:
+            <input
+              type="text"
+              id="update-component-{$selectedComponent}-content"
+              name="updated-text-content"
+              value={componentData.content.textContent}
+              required
+            />
+          </label>
+          <label>
+            Link:
+            <input
+              type="text"
+              id="update-component-${selectedComponent}-hyperlink"
+              name="updated-hyperlink"
+              value={componentData.content.hyperlink}
+              required
+            />
           </label>
           <button type="submit">Update</button>
         </form>

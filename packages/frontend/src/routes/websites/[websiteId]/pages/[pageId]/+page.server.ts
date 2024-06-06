@@ -202,6 +202,15 @@ export const actions: Actions = {
           },
         };
         break;
+      case "button":
+        body = {
+          type: data.get("type") as string,
+          content: {
+            textContent: data.get("updated-text-content") as string,
+            hyperlink: data.get("updated-hyperlink") as string,
+          },
+        };
+        break;
       case "image":
       case "audio":
       case "video":
@@ -244,9 +253,9 @@ export const actions: Actions = {
         break;
     }
 
-    body.parent_id = (data.get("parent-id") as string) || undefined;
+    body.parent_id = (data.get("parent-id") as string) ?? null;
 
-    if (data.get("parent-id") || data.get("parent-id") === "") {
+    if (data.get("submission-type") === "drop-event") {
       body.content = undefined;
     }
 

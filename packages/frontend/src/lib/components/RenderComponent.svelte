@@ -132,7 +132,7 @@
   on:click={handleComponentClick}
   role="presentation"
   style="{styles}{$selectedComponent === component.id
-    ? '; outline: 0.25rem solid yellow'
+    ? '; z-index: 5; outline: 0.5rem solid yellow'
     : ''}"
   data-component-type={component.type}
   data-component-id={component.id}
