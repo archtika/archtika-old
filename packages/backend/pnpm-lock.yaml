@@ -43,7 +43,7 @@ dependencies:
     version: 3.0.0
   '@fastify/type-provider-typebox':
     specifier: ^4.0.0
-    version: 4.0.0(@sinclair/typebox@0.32.30)
+    version: 4.0.0(@sinclair/typebox@0.32.31)
   '@fastify/websocket':
     specifier: ^10.0.1
     version: 10.0.1
@@ -51,8 +51,8 @@ dependencies:
     specifier: ^3.1.2
     version: 3.1.2(lucia@3.2.0)(pg@8.11.5)
   '@sinclair/typebox':
-    specifier: ^0.32.30
-    version: 0.32.30
+    specifier: ^0.32.31
+    version: 0.32.31
   adm-zip:
     specifier: ^0.5.12
     version: 0.5.12
@@ -384,12 +384,12 @@ packages:
       - supports-color
     dev: false
 
-  /@fastify/type-provider-typebox@4.0.0(@sinclair/typebox@0.32.30):
+  /@fastify/type-provider-typebox@4.0.0(@sinclair/typebox@0.32.31):
     resolution: {integrity: sha512-kTlN0saC/+xhcQPyBjb3YONQAMjiD/EHlCRjQjsr5E3NFjS5K8ZX5LGzXYDRjSa+sV4y8gTL5Q7FlObePv4iTA==}
     peerDependencies:
       '@sinclair/typebox': '>=0.26 <=0.32'
     dependencies:
-      '@sinclair/typebox': 0.32.30
+      '@sinclair/typebox': 0.32.31
     dev: false
 
   /@fastify/websocket@10.0.1:
@@ -750,8 +750,8 @@ packages:
     dev: false
     optional: true
 
-  /@sinclair/typebox@0.32.30:
-    resolution: {integrity: sha512-IYK1H0k2sHVB2GjzBK2DXBErhex45GoLuPdgn8lNw5t0+5elIuhpixOMPobFyq6kE0AGIBa4+76Ph4enco0q2Q==}
+  /@sinclair/typebox@0.32.31:
+    resolution: {integrity: sha512-rYB0tgGHawpom3ZwwsGidvI0NI+W/rRHu1dyyO1KlIoH8iMdg3esSnYQxQtyJ8eflhqxmzEV7Nu8zT4JY7CHKw==}
     dev: false
 
   /@tsconfig/node20@20.1.4:
