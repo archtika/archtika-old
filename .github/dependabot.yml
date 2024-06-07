@@ -1,14 +1,14 @@
 version: 2
 updates:
-  - package-ecosystem: "pnpm"
+  - package-ecosystem: "npm"
     directory: "/packages/backend"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "pnpm"
+  - package-ecosystem: "npm"
     directory: "/packages/common"
     schedule:
       interval: "weekly"
-  - package-ecosystem: "pnpm"
+  - package-ecosystem: "npm"
     directory: "/packages-frontend"
     schedule:
       interval: "weekly"
