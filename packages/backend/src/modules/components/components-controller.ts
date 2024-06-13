@@ -312,9 +312,18 @@ export async function deleteComponent(
     .execute(async (trx) => {
       updateLastModifiedByColumn(req, trx);
 
+      const componentType = await req.server.kysely.db
+        .selectFrom("components.component")
+        .select("type")
+        .where("id", "=", componentId)
+        .executeTakeFirstOrThrow();
+
       return await trx
         .deleteFrom("components.component")
-        .where(({ and }) => and({ page_id: pageId, id: componentId }))
+        .where("id", "=", componentId)
+        .$if(!["header", "footer"].includes(componentType.type), (qb) =>
+          qb.where("page_id", "=", pageId),
+        )
         .where(({ or, exists, selectFrom }) =>
           or([
             exists(

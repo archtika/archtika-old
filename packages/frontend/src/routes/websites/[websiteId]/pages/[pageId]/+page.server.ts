@@ -273,6 +273,8 @@ export const actions: Actions = {
   deleteComponent: async ({ request, fetch, params }) => {
     const data = await request.formData();
 
+    console.log(data);
+
     await fetch(
       `http://localhost:3000/api/v1/pages/${
         params.pageId

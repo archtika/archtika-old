@@ -1,12 +1,11 @@
 import { createHash } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import AdmZip from "adm-zip";
-import { ElementFactory } from "common";
+import { ElementFactory, nestComponents } from "common";
 import type { Component } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
-import { getAllPages } from "../../utils/queries.js";
-import { getAllComponents } from "../../utils/queries.js";
+import { getAllComponents, getAllPages } from "../../utils/queries.js";
 import type {
   CreateWebsiteSchemaType,
   GetWebsitesQuerySchemaType,
@@ -82,21 +81,6 @@ export async function getWebsite(
     .executeTakeFirstOrThrow();
 
   return reply.status(200).send(website);
-}
-
-function nestComponents(
-  components: Component[],
-  parentId: string | null = null,
-): Component[] {
-  const nested = components
-    .filter((component) => component.parent_id === parentId)
-    .map((component) => ({
-      ...component,
-      row_start: component.row_start,
-      children: nestComponents(components, component.id),
-    }));
-
-  return nested;
 }
 
 export async function generateWebsite(

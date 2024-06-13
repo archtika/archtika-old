@@ -7,6 +7,7 @@
   import { components, selectedComponent } from "$lib/stores";
   import type { Component } from "common";
   import { mimeTypes } from "common";
+  import { nestComponents } from "common";
   import type { PageServerData } from "./$types";
   import type { SubmitFunction } from "./$types";
 
@@ -44,222 +45,117 @@
     }
   }
 
-  function handleDragStart(event: DragEvent) {
-    const componentId = (event.target as HTMLElement).getAttribute(
-      "data-component-id"
-    );
+  const enhanceCreateComponentForm: SubmitFunction = async ({ formData }) => {
+    let rowStart = 1;
+    let rowEnd = 2;
+    const colStart = 1;
+    const colEnd = 13;
 
-    if (componentId) {
-      event.dataTransfer?.setData("text/plain", componentId);
-    }
-  }
+    const header = $components.find((c) => c.type === "header");
+    const sections = $components.filter((c) => c.type === "section");
+    const sectionsAndHeader = header ? sections.concat(header) : sections;
 
-  function handleDragOver(event: DragEvent) {
-    event.preventDefault();
-  }
+    switch (formData.get("type")) {
+      case "section":
+        {
+          const lastSectionEnding =
+            sectionsAndHeader.length > 0
+              ? Math.max(...sectionsAndHeader.map((c) => c.row_end))
+              : 1;
 
-  function handleDragEnter(event: DragEvent) {
-    const target = event.target as HTMLElement;
+          rowStart = lastSectionEnding === 1 ? 1 : lastSectionEnding + 1;
+          rowEnd =
+            lastSectionEnding === 1
+              ? lastSectionEnding + 1
+              : lastSectionEnding + 2;
+          
+          const footer = $components.find((c) => c.type === "footer");
 
-    target.style.border = "0.125rem solid black";
-  }
+          if (footer && !(footer.row_start > rowEnd)) {
+            const index = $components.findIndex((c) => c.type === "footer");
 
-  function handleDragLeave(event: DragEvent) {
-    const target = event.target as HTMLElement;
+            const formData = new FormData();
+            formData.append("component-id", `${$components[index].id}`);
+            formData.append("row-start", `${rowEnd + 1}`);
+            formData.append("col-start", `${$components[index].col_start}`);
+            formData.append("row-end", `${rowEnd + 2}`);
+            formData.append("col-end", `${$components[index].col_end}`);
+            formData.append(
+              "row-end-span",
+              `${$components[index].row_end_span}`
+            );
+            formData.append(
+              "col-end-span",
+              `${$components[index].col_end_span}`
+            );
 
-    target.style.border = "";
-  }
+            const response = await fetch("?/updateComponentPosition", {
+              method: "POST",
+              body: formData,
+            });
 
-  let currentComponentDropArea: HTMLElement | null;
+            const result = deserialize(await response.text());
 
-  function handleComponentDragEnter(event: DragEvent) {
-    const target = event.target as HTMLElement;
+            if (result.type === "success") {
+              await invalidateAll();
+            }
 
-    if (
-      !["header", "footer", "section"].includes(
-        target.getAttribute("data-component-type") ?? ""
-      )
-    ) {
-      return;
-    }
+            applyAction(result);
+          }
+        }
+        break;
+      case "footer":
+        {
+          const lastSectionEnding =
+            sectionsAndHeader.length > 0
+              ? Math.max(...sectionsAndHeader.map((c) => c.row_end))
+              : 1;
 
-    currentComponentDropArea = target;
-    target.style.zIndex = "-10";
-  }
+          rowStart = lastSectionEnding === 1 ? 1 : lastSectionEnding + 1;
+          rowEnd =
+            lastSectionEnding === 1
+              ? lastSectionEnding + 1
+              : lastSectionEnding + 2;
+        }
+        break;
+      case "header":
+        {
+          const footer = $components.find((c) => c.type === "footer");
+          const sectionsAndFooter = footer ? sections.concat(footer) : sections;
 
-  function isOutsideNestedComponent(target: HTMLElement) {
-    if (!currentComponentDropArea) {
-      return;
-    }
+          for (const element of sectionsAndFooter) {
+            const index = $components.findIndex((c) => c.id === element.id);
 
-    for (const element of [
-      ...document.querySelectorAll(
-        '[data-component-type="footer"], [data-component-type="header"], [data-component-type="section"]'
-      ),
-    ] as HTMLElement[]) {
-      element.style.zIndex = "";
-    }
+            const formData = new FormData();
+            formData.append("component-id", `${$components[index].id}`);
+            formData.append("row-start", `${$components[index].row_start + 2}`);
+            formData.append("col-start", `${$components[index].col_start}`);
+            formData.append("row-end", `${$components[index].row_end + 2}`);
+            formData.append("col-end", `${$components[index].col_end}`);
+            formData.append(
+              "row-end-span",
+              `${$components[index].row_end_span}`
+            );
+            formData.append(
+              "col-end-span",
+              `${$components[index].col_end_span}`
+            );
 
-    let rowStart = 0;
-    let colStart = 0;
-    let rowEnd = 0;
-    let colEnd = 0;
+            const response = await fetch("?/updateComponentPosition", {
+              method: "POST",
+              body: formData,
+            });
 
-    const gridArea = getComputedStyle(
-      currentComponentDropArea
-    ).getPropertyValue("grid-area");
-    [rowStart, colStart, rowEnd, colEnd] = gridArea.split(" / ").map(Number);
+            const result = deserialize(await response.text());
 
-    const totalZones = Math.abs((rowEnd - rowStart) * (colEnd - colStart));
-    let zoneStart = 0;
-    let zoneEnd = 0;
+            if (result.type === "success") {
+              await invalidateAll();
+            }
 
-    if (rowStart < 0) {
-      const numZones = Array.from(document.querySelectorAll("div[data-zone]"))
-        .pop()
-        ?.getAttribute("data-zone");
-
-      zoneStart =
-        Number.parseInt(numZones as string) -
-        Math.abs((rowEnd - rowStart) * 12) +
-        1;
-      zoneEnd = zoneStart + totalZones - 1;
-    } else {
-      zoneStart = (rowStart === 1 ? 0 : rowStart - 1) * 12 + colStart;
-      zoneEnd = zoneStart + totalZones - 1;
-    }
-
-    const zone = Number.parseInt(target.getAttribute("data-zone") as string);
-
-    if (zone > zoneEnd || zone < zoneStart) {
-      currentComponentDropArea = null;
-    }
-  }
-
-  async function handleDrop(
-    event: DragEvent,
-    rowStart: number,
-    colStart: number,
-    rowEnd: number,
-    colEnd: number
-  ) {
-    event.preventDefault();
-
-    const target = event.target as HTMLElement;
-
-    target.style.border = "";
-
-    isOutsideNestedComponent(target);
-
-    const isFooterDropArea =
-      currentComponentDropArea?.getAttribute("data-component-type") ===
-      "footer";
-
-    let totalNumRows = 0;
-
-    if (isFooterDropArea) {
-      const numZones = Array.from(document.querySelectorAll("div[data-zone]"))
-        .pop()
-        ?.getAttribute("data-zone");
-
-      if (typeof numZones === "string") {
-        totalNumRows = Number.parseInt(numZones) / 12;
-      }
-    }
-
-    const componentId = event.dataTransfer?.getData("text/plain");
-
-    const index = $components.findIndex((component: Component) => {
-      return component.id === componentId;
-    });
-
-    $components[index] = {
-      ...$components[index],
-      row_start: isFooterDropArea ? rowStart - totalNumRows - 1 : rowStart,
-      col_start: colStart,
-      row_end: isFooterDropArea
-        ? rowEnd - totalNumRows - 1 - ($components[index].row_end_span || 1)
-        : rowEnd + ($components[index].row_end_span ?? 0),
-      col_end: colEnd + ($components[index].col_end_span ?? 0),
-    };
-
-    const updateComponentFormData = new FormData();
-    updateComponentFormData.append("id", `${$components[index].id}`);
-    updateComponentFormData.append("type", `${$components[index].type}`);
-    if (currentComponentDropArea) {
-      updateComponentFormData.append(
-        "parent-id",
-        currentComponentDropArea.getAttribute("data-component-id") ?? ""
-      );
-    }
-    updateComponentFormData.append("submission-type", "drop-event");
-
-    const updateComponentResponse = await fetch("?/updateComponent", {
-      method: "POST",
-      body: updateComponentFormData,
-    });
-
-    const updateComponentResult = deserialize(
-      await updateComponentResponse.text()
-    );
-
-    const formData = new FormData();
-    formData.append("component-id", `${$components[index].id}`);
-    formData.append("row-start", `${$components[index].row_start}`);
-    formData.append("col-start", `${$components[index].col_start}`);
-    formData.append("row-end", `${$components[index].row_end}`);
-    formData.append("col-end", `${$components[index].col_end}`);
-    formData.append("row-end-span", `${$components[index].row_end_span}`);
-    formData.append("col-end-span", `${$components[index].col_end_span}`);
-
-    const response = await fetch("?/updateComponentPosition", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = deserialize(await response.text());
-
-    if (updateComponentResult.type === "success" && result.type === "success") {
-      await invalidateAll();
-    }
-
-    applyAction(updateComponentResult);
-    applyAction(result);
-  }
-
-  const enhanceCreateComponentForm: SubmitFunction = ({ formData }) => {
-    const gridCellSize = document.querySelector(`[data-zone="1"]`);
-
-    if (!gridCellSize) return;
-
-    const rect = gridCellSize.getBoundingClientRect();
-    const gridCellHeight = rect.height;
-    const contentContainer = document.querySelector("[data-content-container]");
-
-    if (!contentContainer) return;
-
-    const scrollTop = contentContainer.scrollTop;
-    const partialOffset = scrollTop % gridCellHeight;
-    const visibleZoneIndex = Math.floor(scrollTop / gridCellHeight);
-    const zone = visibleZoneIndex * 12 + 1;
-    const zoneElement = document.querySelector(`[data-zone="${zone}"]`);
-
-    if (!zoneElement) return;
-
-    const gridArea =
-      getComputedStyle(zoneElement).getPropertyValue("grid-area");
-    let [rowStart, colStart, rowEnd, colEnd] = gridArea
-      .split(" / ")
-      .map(Number);
-
-    if (partialOffset > gridCellHeight * 0.5) {
-      rowStart += 1;
-      rowEnd += 1;
-    }
-
-    if (formData.get("type") === "footer") {
-      rowStart = -1;
-      rowEnd = -2;
+            applyAction(result);
+          }
+        }
+        break;
     }
 
     const initialPosition = JSON.stringify({
@@ -317,7 +213,7 @@
     };
   }
 
-  $: totalRows = Math.max(12, ...$components.map((item) => item.row_end)) + 12;
+  $: totalRows = Math.max(0, ...$components.map((item) => item.row_end)) + 12;
 </script>
 
 <svelte:window
@@ -598,7 +494,7 @@
           name="type"
           value="header"
         />
-        <button type="submit">Add header</button>
+        <button type="submit">Header</button>
       </form>
       <form
         action="?/createComponent"
@@ -611,7 +507,7 @@
           name="type"
           value="footer"
         />
-        <button type="submit">Add footer</button>
+        <button type="submit">Footer</button>
       </form>
       <form
         action="?/createComponent"
@@ -624,13 +520,13 @@
           name="type"
           value="section"
         />
-        <button type="submit">Add section</button>
+        <button type="submit">Section</button>
       </form>
 
       <h4>Content</h4>
 
-      <div>
-        <h5>Text</h5>
+      <details>
+        <summary>Text</summary>
         <form
           action="?/createComponent"
           method="post"
@@ -649,9 +545,9 @@
           </label>
           <button type="submit">Add</button>
         </form>
-      </div>
-      <div>
-        <h5>Button</h5>
+      </details>
+      <details>
+        <summary>Button</summary>
         <form
           action="?/createComponent"
           method="post"
@@ -683,12 +579,12 @@
           </label>
           <button type="submit">Add</button>
         </form>
-      </div>
+      </details>
       {#each Object.entries(mimeTypes) as [type, mimes]}
         {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
 
-        <div>
-          <h5>{title}</h5>
+        <details>
+          <summary>{title}</summary>
           <form
             action="?/createComponent"
             method="post"
@@ -749,7 +645,7 @@
             {/if}
             <button type="submit">Add</button>
           </form>
-        </div>
+        </details>
       {/each}
     {/if}
   </div>
@@ -758,35 +654,11 @@
     style="grid-template-rows: repeat({totalRows}, 2.5rem"
     data-content-container
   >
-    {#each Array(totalRows * 12) as _, i}
-      {@const row = Math.floor(i / 12) + 1}
-      {@const col = (i % 12) + 1}
-
-      <div
-        style="grid-area: {row} / {col} / {row} / {col}"
-        data-zone={i + 1}
-        on:dragover={handleDragOver}
-        on:dragenter={handleDragEnter}
-        on:dragleave={handleDragLeave}
-        on:drop={(event) => handleDrop(event, row, col, row, col)}
-        on:drag
-        role="presentation"
-      />
+    {#each Array(totalRows) as _, i}
+      <div style="grid-area: {i + 1} / 1 / {i + 1} / 13" data-row={i + 1} />
     {/each}
-    {#each $components as component, i (i)}
-      <RenderComponent
-        {component}
-        styles="grid-area: {component.row_start ?? 1} / {component.col_start ??
-          1} / {component.row_end ?? 1} / {component.col_end ?? 1}{![
-          'header',
-          'footer',
-          'section',
-        ].includes(component.type)
-          ? '; z-index: 10'
-          : ''}"
-        on:dragstart={handleDragStart}
-        on:dragenter={handleComponentDragEnter}
-      />
+    {#each nestComponents($components) as component, i (i)}
+      <RenderComponent {component} />
     {/each}
   </div>
 </div>
@@ -805,7 +677,8 @@
   }
 
   div[data-content-container] {
-    resize: horizontal;
+    padding-inline: 1rem;
+    padding-block: 2rem;
   }
 
   div[data-sidebar] {
@@ -814,6 +687,5 @@
 
   div[data-content-container] {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 </style>

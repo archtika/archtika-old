@@ -28,6 +28,22 @@ export interface Component {
   col_end: number;
   row_end_span: number;
   col_end_span: number;
+  children?: Component[];
+}
+
+export function nestComponents(
+  components: Component[],
+  parentId: string | null = null,
+): Component[] {
+  const nested = components
+    .filter((component) => component.parent_id === parentId)
+    .map((component) => ({
+      ...component,
+      row_start: component.row_start,
+      children: nestComponents(components, component.id),
+    }));
+
+  return nested;
 }
 
 export class ElementFactory {
@@ -123,7 +139,9 @@ export class ElementFactory {
 
     let purifiedTextContent = "";
 
-    purifiedTextContent = DOMPurify.sanitize(parse(content, { renderer }));
+    purifiedTextContent = DOMPurify.sanitize(
+      parse(content, { renderer }) as string,
+    );
 
     return `<div>${purifiedTextContent}</div>`;
   }
