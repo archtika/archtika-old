@@ -21,6 +21,7 @@ const cpuCount = os.availableParallelism();
 
 const envToLogger = {
   development: {
+    level: "error",
     transport: {
       target: "pino-pretty",
       options: {
@@ -34,7 +35,7 @@ const envToLogger = {
 };
 
 interface AjvCustom {
-  addKeyword: (defintion: { keyword: string }) => void;
+  addKeyword: (definition: { keyword: string }) => void;
 }
 
 export function app() {

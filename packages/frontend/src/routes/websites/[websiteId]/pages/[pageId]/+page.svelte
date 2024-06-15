@@ -55,107 +55,15 @@
     const sections = $components.filter((c) => c.type === "section");
     const sectionsAndHeader = header ? sections.concat(header) : sections;
 
-    switch (formData.get("type")) {
-      case "section":
-        {
-          const lastSectionEnding =
-            sectionsAndHeader.length > 0
-              ? Math.max(...sectionsAndHeader.map((c) => c.row_end))
-              : 1;
+    if (["section", "footer"].includes(formData.get("type") as string)) {
+      const lastSectionEnding =
+        sectionsAndHeader.length > 0
+          ? Math.max(...sectionsAndHeader.map((c) => c.row_end))
+          : 1;
 
-          rowStart = lastSectionEnding === 1 ? 1 : lastSectionEnding + 1;
-          rowEnd =
-            lastSectionEnding === 1
-              ? lastSectionEnding + 1
-              : lastSectionEnding + 2;
-          
-          const footer = $components.find((c) => c.type === "footer");
-
-          if (footer && !(footer.row_start > rowEnd)) {
-            const index = $components.findIndex((c) => c.type === "footer");
-
-            const formData = new FormData();
-            formData.append("component-id", `${$components[index].id}`);
-            formData.append("row-start", `${rowEnd + 1}`);
-            formData.append("col-start", `${$components[index].col_start}`);
-            formData.append("row-end", `${rowEnd + 2}`);
-            formData.append("col-end", `${$components[index].col_end}`);
-            formData.append(
-              "row-end-span",
-              `${$components[index].row_end_span}`
-            );
-            formData.append(
-              "col-end-span",
-              `${$components[index].col_end_span}`
-            );
-
-            const response = await fetch("?/updateComponentPosition", {
-              method: "POST",
-              body: formData,
-            });
-
-            const result = deserialize(await response.text());
-
-            if (result.type === "success") {
-              await invalidateAll();
-            }
-
-            applyAction(result);
-          }
-        }
-        break;
-      case "footer":
-        {
-          const lastSectionEnding =
-            sectionsAndHeader.length > 0
-              ? Math.max(...sectionsAndHeader.map((c) => c.row_end))
-              : 1;
-
-          rowStart = lastSectionEnding === 1 ? 1 : lastSectionEnding + 1;
-          rowEnd =
-            lastSectionEnding === 1
-              ? lastSectionEnding + 1
-              : lastSectionEnding + 2;
-        }
-        break;
-      case "header":
-        {
-          const footer = $components.find((c) => c.type === "footer");
-          const sectionsAndFooter = footer ? sections.concat(footer) : sections;
-
-          for (const element of sectionsAndFooter) {
-            const index = $components.findIndex((c) => c.id === element.id);
-
-            const formData = new FormData();
-            formData.append("component-id", `${$components[index].id}`);
-            formData.append("row-start", `${$components[index].row_start + 2}`);
-            formData.append("col-start", `${$components[index].col_start}`);
-            formData.append("row-end", `${$components[index].row_end + 2}`);
-            formData.append("col-end", `${$components[index].col_end}`);
-            formData.append(
-              "row-end-span",
-              `${$components[index].row_end_span}`
-            );
-            formData.append(
-              "col-end-span",
-              `${$components[index].col_end_span}`
-            );
-
-            const response = await fetch("?/updateComponentPosition", {
-              method: "POST",
-              body: formData,
-            });
-
-            const result = deserialize(await response.text());
-
-            if (result.type === "success") {
-              await invalidateAll();
-            }
-
-            applyAction(result);
-          }
-        }
-        break;
+      rowStart = lastSectionEnding === 1 ? 1 : lastSectionEnding + 1;
+      rowEnd =
+        lastSectionEnding === 1 ? lastSectionEnding + 1 : lastSectionEnding + 2;
     }
 
     const initialPosition = JSON.stringify({
