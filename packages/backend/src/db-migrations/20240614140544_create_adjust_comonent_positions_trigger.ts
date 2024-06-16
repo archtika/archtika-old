@@ -135,6 +135,50 @@ export async function up(db: Kysely<DB>) {
     AFTER INSERT ON components.component
     FOR EACH ROW
     EXECUTE FUNCTION components.adjust_positions_on_insert();
+
+
+    CREATE FUNCTION components.adjust_positions_on_position_update()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $$
+    DECLARE
+      current_page_id UUID;
+      current_website_id UUID;
+      row_span INT;
+    BEGIN
+      SELECT page_id
+      INTO current_page_id
+      FROM components.component
+      WHERE id = NEW.component_id;
+
+      SELECT website_id
+      INTO current_website_id
+      FROM structure.page
+      WHERE id = current_page_id;
+
+      row_span := NEW.row_end - OLD.row_end;
+
+      UPDATE components.component_position cp
+      SET row_start = row_start + row_span,
+          row_end = row_end + row_span
+      FROM components.component c
+      WHERE cp.row_start > OLD.row_end
+      AND cp.component_id = c.id
+      AND c.type IN ('section', 'footer')
+      AND (
+        c.is_public = true
+        OR c.page_id = current_page_id
+      );
+
+      RETURN NEW;
+    END;
+    $$;
+
+    CREATE TRIGGER adjust_positions_on_position_update
+    AFTER UPDATE ON components.component_position
+    FOR EACH ROW
+    WHEN (pg_trigger_depth() = 0)
+    EXECUTE FUNCTION components.adjust_positions_on_position_update();
   `.execute(db);
 }
 
@@ -143,6 +187,10 @@ export async function down(db: Kysely<DB>) {
   await sql`DROP TRIGGER adjust_positions_on_insert ON components.component`.execute(
     db,
   );
+  await sql`DROP TRIGGER adjust_positions_on_position_update ON components.component_position`.execute(
+    db,
+  );
   await sql`DROP FUNCTION components.remove_empty_gaps()`.execute(db);
   await sql`DROP FUNCTION components.adjust_positions_on_insert()`.execute(db);
+  await sql`DROP FUNCTION components.adjust_positions_on_position_update()`.execute(db);
 }

@@ -110,10 +110,21 @@
   function updateComponentGridArea() {
     const index = $components.findIndex((c) => c.id === component.id);
 
+    const oldRowEnd = $components[index].row_end;
+
     $components[index].col_end = $components[index].col_start + cols;
     $components[index].row_end = $components[index].row_start + rows;
     $components[index].col_end_span = cols;
     $components[index].row_end_span = rows;
+
+    const rowShift = $components[index].row_end - oldRowEnd;
+
+    for (const component of $components) {
+      if (component.row_start > oldRowEnd) {
+        component.row_start += rowShift;
+        component.row_end += rowShift;
+      }
+    }
   }
 
   function handleDragStart(event: DragEvent) {
