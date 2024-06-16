@@ -145,30 +145,38 @@ export async function up(db: Kysely<DB>) {
       current_page_id UUID;
       current_website_id UUID;
       row_span INT;
+      component_type TEXT;
     BEGIN
-      SELECT page_id
-      INTO current_page_id
+      SELECT type
+      INTO component_type
       FROM components.component
       WHERE id = NEW.component_id;
 
-      SELECT website_id
-      INTO current_website_id
-      FROM structure.page
-      WHERE id = current_page_id;
+      IF component_type = 'header' OR component_type = 'section' THEN
+        SELECT page_id
+        INTO current_page_id
+        FROM components.component
+        WHERE id = NEW.component_id;
 
-      row_span := NEW.row_end - OLD.row_end;
+        SELECT website_id
+        INTO current_website_id
+        FROM structure.page
+        WHERE id = current_page_id;
 
-      UPDATE components.component_position cp
-      SET row_start = row_start + row_span,
-          row_end = row_end + row_span
-      FROM components.component c
-      WHERE cp.row_start > OLD.row_end
-      AND cp.component_id = c.id
-      AND c.type IN ('section', 'footer')
-      AND (
-        c.is_public = true
-        OR c.page_id = current_page_id
-      );
+        row_span := NEW.row_end - OLD.row_end;
+
+        UPDATE components.component_position cp
+        SET row_start = row_start + row_span,
+            row_end = row_end + row_span
+        FROM components.component c
+        WHERE cp.row_start > OLD.row_end
+        AND cp.component_id = c.id
+        AND c.type IN ('section', 'footer')
+        AND (
+          c.is_public = true
+          OR c.page_id = current_page_id
+        );
+      END IF;
 
       RETURN NEW;
     END;

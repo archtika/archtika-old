@@ -120,7 +120,12 @@
     const rowShift = $components[index].row_end - oldRowEnd;
 
     for (const component of $components) {
-      if (component.row_start > oldRowEnd) {
+      if (
+        component.row_start > oldRowEnd &&
+        ["header", "section"].includes($components[index].type)
+      ) {
+        console.log(component.type);
+
         component.row_start += rowShift;
         component.row_end += rowShift;
       }
