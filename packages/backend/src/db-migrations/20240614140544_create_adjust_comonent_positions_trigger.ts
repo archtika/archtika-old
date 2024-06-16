@@ -9,11 +9,17 @@ export async function up(db: Kysely<DB>) {
     AS $$
     DECLARE
       current_page_id UUID;
+      current_website_id UUID;
       deleted_row_start INT;
       deleted_row_end INT;
       row_span INT;
     BEGIN
       current_page_id := OLD.page_id;
+
+      SELECT website_id
+      INTO current_website_id
+      FROM structure.page
+      WHERE id = current_page_id;
     
       SELECT row_start, row_end
       INTO deleted_row_start, deleted_row_end
@@ -29,8 +35,15 @@ export async function up(db: Kysely<DB>) {
         FROM components.component c
         WHERE cp.row_start > deleted_row_end
         AND cp.component_id = c.id
-        AND c.page_id = current_page_id
-        AND c.type != 'footer';
+        AND c.type != 'footer'
+        AND (
+          OLD.type = 'header' AND EXISTS (
+            SELECT 1
+            FROM structure.website w
+            WHERE w.id = current_website_id
+          )
+          OR c.page_id = current_page_id
+        );
       END IF;
       
       RETURN OLD;
@@ -39,7 +52,7 @@ export async function up(db: Kysely<DB>) {
 
     CREATE TRIGGER remove_empty_gaps
     BEFORE DELETE ON components.component
-    FOR EACH STATEMENT
+    FOR EACH ROW
     EXECUTE FUNCTION components.remove_empty_gaps();
 
 
