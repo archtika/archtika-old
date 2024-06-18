@@ -25,7 +25,7 @@ dependencies:
     version: 8.2.0
   '@fastify/postgres':
     specifier: ^5.2.2
-    version: 5.2.2(pg@8.11.5)
+    version: 5.2.2(pg@8.12.0)
   '@fastify/rate-limit':
     specifier: ^9.1.0
     version: 9.1.0
@@ -49,7 +49,7 @@ dependencies:
     version: 10.0.1
   '@lucia-auth/adapter-postgresql':
     specifier: ^3.1.2
-    version: 3.1.2(lucia@3.2.0)(pg@8.11.5)
+    version: 3.1.2(lucia@3.2.0)(pg@8.12.0)
   '@sinclair/typebox':
     specifier: ^0.32.32
     version: 0.32.32
@@ -81,8 +81,8 @@ dependencies:
     specifier: ^8.0.0
     version: 8.0.0
   pg:
-    specifier: ^8.11.5
-    version: 8.11.5
+    specifier: ^8.12.0
+    version: 8.12.0
 
 devDependencies:
   '@biomejs/biome':
@@ -108,7 +108,7 @@ devDependencies:
     version: 8.5.10
   kysely-codegen:
     specifier: ^0.15.0
-    version: 0.15.0(kysely@0.27.3)(pg@8.11.5)
+    version: 0.15.0(kysely@0.27.3)(pg@8.12.0)
   pino-pretty:
     specifier: ^11.0.0
     version: 11.0.0
@@ -303,13 +303,13 @@ packages:
       stream-wormhole: 1.1.0
     dev: false
 
-  /@fastify/postgres@5.2.2(pg@8.11.5):
+  /@fastify/postgres@5.2.2(pg@8.12.0):
     resolution: {integrity: sha512-8TWRqDSiXJp0SZjbHrqwyhl0f55eV4fpYAd9m7G0hGUpyEZJFwcxIDQYjnlRAXcVTq5NloUjFH6DxgmxZ3apbQ==}
     peerDependencies:
       pg: '>=6.0.0'
     dependencies:
       fastify-plugin: 4.5.1
-      pg: 8.11.5
+      pg: 8.12.0
     dev: false
 
   /@fastify/rate-limit@9.1.0:
@@ -419,7 +419,7 @@ packages:
       wrap-ansi-cjs: /wrap-ansi@7.0.0
     dev: false
 
-  /@lucia-auth/adapter-postgresql@3.1.2(lucia@3.2.0)(pg@8.11.5):
+  /@lucia-auth/adapter-postgresql@3.1.2(lucia@3.2.0)(pg@8.12.0):
     resolution: {integrity: sha512-XgScy312JsaiyJZ0OaUHakk01hFBldF1m8abX4Ctk2Dkt7lEVS/u0xZ2Sf6Hlji1wZtEM0uiIWdeMUu79XcXZA==}
     peerDependencies:
       '@neondatabase/serverless': 0.7 - 0.9
@@ -435,7 +435,7 @@ packages:
         optional: true
     dependencies:
       lucia: 3.2.0
-      pg: 8.11.5
+      pg: 8.12.0
     dev: false
 
   /@lukeed/ms@2.0.2:
@@ -1675,7 +1675,7 @@ packages:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
     dev: false
 
-  /kysely-codegen@0.15.0(kysely@0.27.3)(pg@8.11.5):
+  /kysely-codegen@0.15.0(kysely@0.27.3)(pg@8.12.0):
     resolution: {integrity: sha512-LPta2nQOyoEPDQ3w/Gsplc+2iyZPAsGvtWoS21VzOB0NDQ0B38Xy1gS8WlbGef542Zdw2eLJHxekud9DzVdNRw==}
     hasBin: true
     peerDependencies:
@@ -1713,7 +1713,7 @@ packages:
       kysely: 0.27.3
       micromatch: 4.0.5
       minimist: 1.2.8
-      pg: 8.11.5
+      pg: 8.12.0
     dev: true
 
   /kysely@0.27.3:
@@ -1983,12 +1983,12 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
-  /pg-pool@3.6.2(pg@8.11.5):
+  /pg-pool@3.6.2(pg@8.12.0):
     resolution: {integrity: sha512-Htjbg8BlwXqSBQ9V8Vjtc+vzf/6fVUuak/3/XXKA9oxZprwW3IMDQTGHP+KDmVL7rtd+R1QjbnCFPuTHm3G4hg==}
     peerDependencies:
       pg: '>=8.0'
     dependencies:
-      pg: 8.11.5
+      pg: 8.12.0
 
   /pg-protocol@1.6.1:
     resolution: {integrity: sha512-jPIlvgoD63hrEuihvIg+tJhoGjUsLPn6poJY9N5CnlPd91c2T18T/9zBtLxZSb1EhYxBRoZJtzScCaWlYLtktg==}
@@ -2016,8 +2016,8 @@ packages:
       postgres-range: 1.1.4
     dev: true
 
-  /pg@8.11.5:
-    resolution: {integrity: sha512-jqgNHSKL5cbDjFlHyYsCXmQDrfIX/3RsNwYqpd4N0Kt8niLuNoRNH+aazv6cOd43gPh9Y4DjQCtb+X0MH0Hvnw==}
+  /pg@8.12.0:
+    resolution: {integrity: sha512-A+LHUSnwnxrnL/tZ+OLfqR1SxLN3c/pgDztZ47Rpbsd4jUytsTtwQo/TLPRzPJMp/1pbhYVhH9cuSZLAajNfjQ==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -2026,7 +2026,7 @@ packages:
         optional: true
     dependencies:
       pg-connection-string: 2.6.4
-      pg-pool: 3.6.2(pg@8.11.5)
+      pg-pool: 3.6.2(pg@8.12.0)
       pg-protocol: 1.6.1
       pg-types: 2.2.0
       pgpass: 1.0.5
