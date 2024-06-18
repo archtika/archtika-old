@@ -30,7 +30,7 @@
     "@lucia-auth/adapter-postgresql": "^3.1.2",
     "@sinclair/typebox": "^0.32.32",
     "adm-zip": "^0.5.12",
-    "arctic": "^1.8.1",
+    "arctic": "^1.9.1",
     "common": "link:../common",
     "fastify": "^4.27.0",
     "fastify-cli": "^6.1.1",
