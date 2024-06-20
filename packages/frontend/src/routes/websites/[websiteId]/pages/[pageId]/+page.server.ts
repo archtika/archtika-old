@@ -107,6 +107,7 @@ export const actions: Actions = {
           content: {
             textContent: data.get("content") as string,
           },
+          parent_id: data.get("parent-id") as string,
         };
         break;
       case "button":
@@ -116,6 +117,7 @@ export const actions: Actions = {
             textContent: data.get("text-content") as string,
             hyperlink: data.get("hyperlink") as string,
           },
+          parent_id: data.get("parent-id") as string,
         };
         break;
       case "image":
@@ -149,6 +151,7 @@ export const actions: Actions = {
               altText: data.get("alt-text") as string,
             },
             assetId,
+            parent_id: data.get("parent-id") as string,
           };
 
           if (["audio", "video"].includes(data.get("type") as string)) {

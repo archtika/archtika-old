@@ -28,23 +28,21 @@ export async function up(db: Kysely<DB>) {
     
       row_span := deleted_row_end - deleted_row_start + 1;
 
-      IF OLD.type = 'header' OR OLD.type = 'section' THEN
-        UPDATE components.component_position cp
-        SET row_start = row_start - row_span,
-            row_end = row_end - row_span
-        FROM components.component c
-        WHERE cp.row_start > deleted_row_end
-        AND cp.component_id = c.id
-        AND c.type != 'footer'
-        AND (
-          OLD.type = 'header' AND EXISTS (
-            SELECT 1
-            FROM structure.website w
-            WHERE w.id = current_website_id
-          )
-          OR c.page_id = current_page_id
-        );
-      END IF;
+      UPDATE components.component_position cp
+      SET row_start = row_start - row_span,
+          row_end = row_end - row_span
+      FROM components.component c
+      WHERE cp.row_start > deleted_row_end
+      AND cp.component_id = c.id
+      AND c.type != 'footer'
+      AND (
+        OLD.type = 'header' AND EXISTS (
+          SELECT 1
+          FROM structure.website w
+          WHERE w.id = current_website_id
+        )
+        OR c.page_id = current_page_id
+      );
       
       RETURN OLD;
     END;
@@ -53,6 +51,7 @@ export async function up(db: Kysely<DB>) {
     CREATE TRIGGER remove_empty_gaps
     BEFORE DELETE ON components.component
     FOR EACH ROW
+    WHEN (OLD.type IN ('header', 'section'))
     EXECUTE FUNCTION components.remove_empty_gaps();
 
 
@@ -115,7 +114,7 @@ export async function up(db: Kysely<DB>) {
       IF footer_row_start IS NOT NULL AND footer_row_start <= new_row_end THEN
         UPDATE components.component_position
         SET row_start = new_row_end + 1,
-            row_end = new_row_end + 2
+            row_end = new_row_end + footer_row_end - footer_row_start + 1
         WHERE component_id = (
           SELECT id FROM components.component
           WHERE type = 'footer'
@@ -134,6 +133,7 @@ export async function up(db: Kysely<DB>) {
     CREATE TRIGGER adjust_positions_on_insert
     AFTER INSERT ON components.component
     FOR EACH ROW
+    WHEN (NEW.type IN ('header', 'section', 'footer'))
     EXECUTE FUNCTION components.adjust_positions_on_insert();
 
 
@@ -173,7 +173,11 @@ export async function up(db: Kysely<DB>) {
         AND cp.component_id = c.id
         AND c.type IN ('section', 'footer')
         AND (
-          c.is_public = true
+          component_type = 'header' AND EXISTS (
+            SELECT 1
+            FROM structure.website w
+            WHERE w.id = current_website_id
+          )
           OR c.page_id = current_page_id
         );
       END IF;
@@ -200,5 +204,7 @@ export async function down(db: Kysely<DB>) {
   );
   await sql`DROP FUNCTION components.remove_empty_gaps()`.execute(db);
   await sql`DROP FUNCTION components.adjust_positions_on_insert()`.execute(db);
-  await sql`DROP FUNCTION components.adjust_positions_on_position_update()`.execute(db);
+  await sql`DROP FUNCTION components.adjust_positions_on_position_update()`.execute(
+    db,
+  );
 }

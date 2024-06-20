@@ -153,7 +153,11 @@ export class ElementFactory {
   }
 
   private createImage(src: string, alt: string) {
-    return `<img src="${src}" alt="${alt}" />`;
+    const draggable = src.includes("X-Amz-Algorithm");
+
+    return `<img src="${src}" ${
+      draggable ? 'draggable="false"' : ""
+    } alt="${alt}" />`;
   }
 
   private createAudio(src: string, alt: string, loop: boolean) {

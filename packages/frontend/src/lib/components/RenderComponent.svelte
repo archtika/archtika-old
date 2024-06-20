@@ -176,12 +176,16 @@
       return component.id === componentId;
     });
 
+    const parentId =
+      target.parentElement?.getAttribute("data-component-id") ?? "";
+
     $components[index] = {
       ...$components[index],
       row_start: rowStart,
       col_start: colStart,
       row_end: rowEnd + ($components[index].row_end_span ?? 0),
       col_end: colEnd + ($components[index].col_end_span ?? 0),
+      parent_id: parentId,
     };
 
     const updateComponentFormData = new FormData();
@@ -192,10 +196,7 @@
         target.parentElement?.getAttribute("data-component-type") ?? ""
       )
     ) {
-      updateComponentFormData.append(
-        "parent-id",
-        target.parentElement?.getAttribute("data-component-id") ?? ""
-      );
+      updateComponentFormData.append("parent-id", parentId);
     }
     updateComponentFormData.append("submission-type", "drop-event");
 
