@@ -45,11 +45,14 @@ h6 {
   isolation: isolate;
 }
 
-.grid {
-  --min: 30ch;
-  --gap: 1rem;
-
+.grid-container {
   display: grid;
-  grid-gap: var(--gap);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min)), 1fr));
+  column-gap: 2rem;
+  row-gap: 0.5rem;
+}
+
+@media (min-width: 480px) {
+  .grid-container {
+    grid-template-columns: repeat(12, 1fr);
+  }
 }

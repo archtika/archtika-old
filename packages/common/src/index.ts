@@ -55,16 +55,19 @@ export class ElementFactory {
 
     switch (component.type) {
       case "header":
-        element = this.createHeader();
+        element = this.createHeader(component.id);
         break;
       case "footer":
-        element = this.createFooter();
+        element = this.createFooter(component.id);
         break;
       case "section":
-        element = this.createSection();
+        element = this.createSection(component.id);
         break;
       case "text":
-        element = this.createText(component.content.textContent ?? "");
+        element = this.createText(
+          component.id,
+          component.content.textContent ?? "",
+        );
         break;
       case "button":
         element = this.createButton(
@@ -118,19 +121,19 @@ export class ElementFactory {
     return element;
   }
 
-  private createHeader() {
-    return "<header></header>";
+  private createHeader(componentId: string) {
+    return `<header class="grid-container header-${componentId}"></header>`;
   }
 
-  private createFooter() {
-    return "<footer></footer>";
+  private createFooter(componentId: string) {
+    return `<footer class="grid-container footer-${componentId}"></footer>`;
   }
 
-  private createSection() {
-    return "<section></section>";
+  private createSection(componentId: string) {
+    return `<section class="grid-container section-${componentId}"></section>`;
   }
 
-  private createText(content: string) {
+  private createText(componentId: string, content: string) {
     const renderer = new Renderer();
 
     renderer.html = (html) => {
@@ -143,7 +146,9 @@ export class ElementFactory {
       parse(content, { renderer }) as string,
     );
 
-    return `<div>${purifiedTextContent}</div>`;
+    return `<div class="text-${componentId}">
+      ${purifiedTextContent}
+    </div>`;
   }
 
   private createButton(textContent: string, hyperlink: string) {
