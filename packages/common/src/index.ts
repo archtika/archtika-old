@@ -71,12 +71,14 @@ export class ElementFactory {
         break;
       case "button":
         element = this.createButton(
+          component.id,
           component.content.textContent ?? "",
           component.content.hyperlink ?? "",
         );
         break;
       case "image":
         element = this.createImage(
+          component.id,
           assetPaths.find((path) =>
             path.includes(component.asset_id as string),
           ) ??
@@ -87,6 +89,7 @@ export class ElementFactory {
         break;
       case "audio":
         element = this.createAudio(
+          component.id,
           assetPaths.find((path) =>
             path.includes(component.asset_id as string),
           ) ??
@@ -98,6 +101,7 @@ export class ElementFactory {
         break;
       case "video":
         element = this.createVideo(
+          component.id,
           assetPaths.find((path) =>
             path.includes(component.asset_id as string),
           ) ??
@@ -151,33 +155,47 @@ export class ElementFactory {
     </div>`;
   }
 
-  private createButton(textContent: string, hyperlink: string) {
+  private createButton(
+    componentId: string,
+    textContent: string,
+    hyperlink: string,
+  ) {
     const purifiedTextContent = DOMPurify.sanitize(textContent);
 
-    return `<a href="${hyperlink}">${purifiedTextContent}</a>`;
+    return `<a href="${hyperlink}" class="button-${componentId}">${purifiedTextContent}</a>`;
   }
 
-  private createImage(src: string, alt: string) {
+  private createImage(componentId: string, src: string, alt: string) {
     const draggable = src.includes("X-Amz-Algorithm");
 
     return `<img src="${src}" ${
       draggable ? 'draggable="false"' : ""
-    } alt="${alt}" />`;
+    } alt="${alt}" class="image-${componentId}" />`;
   }
 
-  private createAudio(src: string, alt: string, loop: boolean) {
-    const loopAttr = loop ? " loop" : "";
+  private createAudio(
+    componentId: string,
+    src: string,
+    alt: string,
+    loop: boolean,
+  ) {
+    const loopAttr = loop ? "loop" : "";
     return `
-      <audio controls title="${alt}"${loopAttr}>
+      <audio controls title="${alt}" ${loopAttr} class="audio-${componentId}">
         <source src="${src}" />
       </audio>
     `;
   }
 
-  private createVideo(src: string, alt: string, loop: boolean) {
-    const loopAttr = loop ? " loop" : "";
+  private createVideo(
+    componentId: string,
+    src: string,
+    alt: string,
+    loop: boolean,
+  ) {
+    const loopAttr = loop ? "loop" : "";
     return `
-      <video controls src="${src}" title="${alt}"${loopAttr}>
+      <video controls src="${src}" title="${alt}" ${loopAttr} class="video-${componentId}">
         <track default kind="captions" srclang="en" />
       </video>
     `;

@@ -341,146 +341,153 @@
         <button type="submit">Delete</button>
       </form>
 
-      <details>
-        <summary>Text</summary>
-        <form
-          action="?/createComponent"
-          method="post"
-          use:enhance={enhanceCreateComponentForm}
-        >
-          <input
-            type="hidden"
-            id="create-component-text-type"
-            name="type"
-            value="text"
-          />
-          <input
-            type="hidden"
-            id="create-component-text-parent-id"
-            name="parent-id"
-            value={componentData?.id}
-          />
-          <label>
-            Content:
-            <textarea id="create-component-text-content" name="content" required
-            ></textarea>
-          </label>
-          <button type="submit">Add</button>
-        </form>
-      </details>
-      <details>
-        <summary>Button</summary>
-        <form
-          action="?/createComponent"
-          method="post"
-          use:enhance={enhanceCreateComponentForm}
-        >
-          <input
-            type="hidden"
-            id="create-component-button-type"
-            name="type"
-            value="button"
-          />
-          <input
-            type="hidden"
-            id="create-component-button-parent-id"
-            name="parent-id"
-            value={componentData?.id}
-          />
-          <label>
-            Text:
-            <input
-              type="text"
-              id="create-component-button-content"
-              name="text-content"
-              required
-            />
-          </label>
-          <label>
-            Link:
-            <input
-              type="text"
-              id="create-component-button-hyperlink"
-              name="hyperlink"
-              required
-            />
-          </label>
-          <button type="submit">Add</button>
-        </form>
-      </details>
-      {#each Object.entries(mimeTypes) as [type, mimes]}
-        {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
+      {#if componentData?.type && ["header", "section", "footer"].includes(componentData.type)}
+        <h3>Components</h3>
 
         <details>
-          <summary>{title}</summary>
+          <summary>Text</summary>
           <form
             action="?/createComponent"
             method="post"
             use:enhance={enhanceCreateComponentForm}
-            enctype="multipart/form-data"
           >
             <input
               type="hidden"
-              id="create-component-{type}-type"
+              id="create-component-text-type"
               name="type"
-              value={type}
+              value="text"
             />
             <input
               type="hidden"
-              id="create-component-{type}-parent-id"
+              id="create-component-text-parent-id"
               name="parent-id"
               value={componentData?.id}
             />
             <label>
-              {title}:
-              <input
-                id="create-component-{type}-file"
-                name="file"
-                type="file"
-                accept={mimes.join(", ")}
-              />
+              Content:
+              <textarea
+                id="create-component-text-content"
+                name="content"
+                required
+              ></textarea>
             </label>
-            {#if getMedia(type).length > 0}
-              <fieldset>
-                <legend>Select existing {type}:</legend>
-                <div>
-                  {#each getMedia(type) as media}
-                    <label>
-                      <input
-                        id="create-component-{type}-existing-file-{media.id}"
-                        type="radio"
-                        name="existing-file"
-                        value={media.id}
-                      />
-                      {media.name}
-                    </label>
-                  {/each}
-                </div>
-              </fieldset>
-            {/if}
-            <label>
-              Alt text:
-              <input
-                id="create-component-{type}-alt-text"
-                name="alt-text"
-                type="text"
-                minlength="1"
-              />
-            </label>
-            {#if ["audio", "video"].includes(type)}
-              <label>
-                Loop:
-                <input
-                  id="create-component-{type}-is-looped"
-                  name="is-looped"
-                  type="checkbox"
-                />
-              </label>
-            {/if}
             <button type="submit">Add</button>
           </form>
         </details>
-      {/each}
+        <details>
+          <summary>Button</summary>
+          <form
+            action="?/createComponent"
+            method="post"
+            use:enhance={enhanceCreateComponentForm}
+          >
+            <input
+              type="hidden"
+              id="create-component-button-type"
+              name="type"
+              value="button"
+            />
+            <input
+              type="hidden"
+              id="create-component-button-parent-id"
+              name="parent-id"
+              value={componentData?.id}
+            />
+            <label>
+              Text:
+              <input
+                type="text"
+                id="create-component-button-content"
+                name="text-content"
+                required
+              />
+            </label>
+            <label>
+              Link:
+              <input
+                type="text"
+                id="create-component-button-hyperlink"
+                name="hyperlink"
+                required
+              />
+            </label>
+            <button type="submit">Add</button>
+          </form>
+        </details>
+        {#each Object.entries(mimeTypes) as [type, mimes]}
+          {@const title = type.charAt(0).toUpperCase() + type.slice(1)}
+
+          <details>
+            <summary>{title}</summary>
+            <form
+              action="?/createComponent"
+              method="post"
+              use:enhance={enhanceCreateComponentForm}
+              enctype="multipart/form-data"
+            >
+              <input
+                type="hidden"
+                id="create-component-{type}-type"
+                name="type"
+                value={type}
+              />
+              <input
+                type="hidden"
+                id="create-component-{type}-parent-id"
+                name="parent-id"
+                value={componentData?.id}
+              />
+              <label>
+                {title}:
+                <input
+                  id="create-component-{type}-file"
+                  name="file"
+                  type="file"
+                  accept={mimes.join(", ")}
+                />
+              </label>
+              {#if getMedia(type).length > 0}
+                <fieldset>
+                  <legend>Select existing {type}:</legend>
+                  <div>
+                    {#each getMedia(type) as media}
+                      <label>
+                        <input
+                          id="create-component-{type}-existing-file-{media.id}"
+                          type="radio"
+                          name="existing-file"
+                          value={media.id}
+                        />
+                        {media.name}
+                      </label>
+                    {/each}
+                  </div>
+                </fieldset>
+              {/if}
+              <label>
+                Alt text:
+                <input
+                  id="create-component-{type}-alt-text"
+                  name="alt-text"
+                  type="text"
+                  minlength="1"
+                />
+              </label>
+              {#if ["audio", "video"].includes(type)}
+                <label>
+                  Loop:
+                  <input
+                    id="create-component-{type}-is-looped"
+                    name="is-looped"
+                    type="checkbox"
+                  />
+                </label>
+              {/if}
+              <button type="submit">Add</button>
+            </form>
+          </details>
+        {/each}
+      {/if}
     {:else}
       <details>
         <summary>Update page</summary>
@@ -537,9 +544,7 @@
         </form>
       </details>
 
-      <h3>Components</h3>
-
-      <h4>Structure</h4>
+      <h3>Structure</h3>
 
       <form
         action="?/createComponent"

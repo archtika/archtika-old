@@ -68,8 +68,6 @@ export async function createMedia(
     },
   );
 
-  console.log("File uploaded successfully");
-
   return reply.status(201).send(media);
 }
 
