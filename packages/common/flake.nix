@@ -12,7 +12,7 @@
         let pkgs = nixpkgs.legacyPackages.${system};
         in {
           default = pkgs.mkShell {
-            packages = with pkgs; [ nodejs nodePackages.pnpm ];
+            packages = with pkgs; [ nodejs_22 pnpm ];
           };
         });
     };

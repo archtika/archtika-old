@@ -5,12 +5,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json -w",
-    "format:lint": "pnpm biome check --apply ."
+    "format:lint": "pnpm biome check --write ."
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.1",
+    "@biomejs/biome": "1.8.2",
     "@tsconfig/node20": "^20.1.4",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.2"
   },
   "dependencies": {
     "isomorphic-dompurify": "^2.12.0",

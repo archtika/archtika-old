@@ -8,21 +8,21 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "format:lint": "pnpm biome check --apply ."
+    "format:lint": "pnpm biome check --write ."
   },
   "devDependencies": {
-    "@biomejs/biome": "1.7.3",
-    "@sveltejs/adapter-auto": "^3.0.0",
-    "@sveltejs/kit": "^2.5.7",
-    "@sveltejs/vite-plugin-svelte": "^3.1.0",
-    "@types/node": "^20.12.11",
+    "@biomejs/biome": "1.8.2",
+    "@sveltejs/adapter-auto": "^3.2.2",
+    "@sveltejs/kit": "^2.5.17",
+    "@sveltejs/vite-plugin-svelte": "^3.1.1",
+    "@types/node": "^20.14.7",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
-    "svelte": "^4.2.16",
-    "svelte-check": "^3.7.1",
-    "tslib": "^2.4.1",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.11"
+    "svelte": "^4.2.18",
+    "svelte-check": "^3.8.1",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1"
   },
   "type": "module",
   "dependencies": {
