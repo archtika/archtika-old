@@ -28,7 +28,7 @@
     "@fastify/type-provider-typebox": "^4.0.0",
     "@fastify/websocket": "^10.0.1",
     "@lucia-auth/adapter-postgresql": "^3.1.2",
-    "@sinclair/typebox": "^0.32.33",
+    "@sinclair/typebox": "^0.32.34",
     "adm-zip": "^0.5.14",
     "arctic": "^1.9.1",
     "common": "link:../common",

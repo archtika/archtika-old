@@ -46,7 +46,7 @@ importers:
         version: 4.0.0
       '@fastify/type-provider-typebox':
         specifier: ^4.0.0
-        version: 4.0.0(@sinclair/typebox@0.32.33)
+        version: 4.0.0(@sinclair/typebox@0.32.34)
       '@fastify/websocket':
         specifier: ^10.0.1
         version: 10.0.1
@@ -54,8 +54,8 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2(lucia@3.2.0)(pg@8.12.0)
       '@sinclair/typebox':
-        specifier: ^0.32.33
-        version: 0.32.33
+        specifier: ^0.32.34
+        version: 0.32.34
       adm-zip:
         specifier: ^0.5.14
         version: 0.5.14
@@ -467,8 +467,8 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@sinclair/typebox@0.32.33':
-    resolution: {integrity: sha512-jM50BfkKA0fwfj0uRRO6asfNfbU0oZipJIb/bL2+BUH/THjuEf2BMiqBOvKfBji5Z9t59NboZQGNfKZbdV50Iw==}
+  '@sinclair/typebox@0.32.34':
+    resolution: {integrity: sha512-a3Z3ytYl6R/+7ldxx04PO1semkwWlX/8pTqxsPw4quIcIXDFPZhOc1Wx8azWmkU26ccK3mHwcWenn0avNgAKQg==}
 
   '@tsconfig/node20@20.1.4':
     resolution: {integrity: sha512-sqgsT69YFeLWf5NtJ4Xq/xAF8p4ZQHlmGW74Nu2tD4+g5fAsposc4ZfaaPixVu4y01BEiDCWLRDCvDM5JOsRxg==}
@@ -1805,9 +1805,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@fastify/type-provider-typebox@4.0.0(@sinclair/typebox@0.32.33)':
+  '@fastify/type-provider-typebox@4.0.0(@sinclair/typebox@0.32.34)':
     dependencies:
-      '@sinclair/typebox': 0.32.33
+      '@sinclair/typebox': 0.32.34
 
   '@fastify/websocket@10.0.1':
     dependencies:
@@ -1970,7 +1970,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@sinclair/typebox@0.32.33': {}
+  '@sinclair/typebox@0.32.34': {}
 
   '@tsconfig/node20@20.1.4': {}
 
