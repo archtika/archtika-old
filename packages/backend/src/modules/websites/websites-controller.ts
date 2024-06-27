@@ -4,6 +4,7 @@ import AdmZip from "adm-zip";
 import { ElementFactory, nestComponents } from "common";
 import type { Component } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import jsBeautify from "js-beautify";
 import { sql } from "kysely";
 import { getAllComponents, getAllPages } from "../../utils/queries.js";
 import type {
@@ -183,28 +184,34 @@ export async function generateWebsite(
     }
 
     const content = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width" />
-	<link rel="stylesheet" href="styles.css" />
-	<meta name="description" content="${page.meta_description}">
-	<title>${page.title}</title>
-</head>
-<body>
-  ${headerContent}
-  <main>
-    ${mainContent}
-  </main>
-  ${footerContent}
-</body>
-</html>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width" />
+        <link rel="stylesheet" href="styles.css" />
+        <meta name="description" content="${page.meta_description}">
+        <title>${page.title}</title>
+      </head>
+      <body>
+        ${headerContent}
+        <main>
+          ${mainContent}
+        </main>
+        ${footerContent}
+      </body>
+      </html>
 		`;
 
-    zip.addFile(fileName, Buffer.from(content));
+    const formattedContent = jsBeautify.html(content, {
+      indent_size: 2,
+      wrap_line_length: 80,
+      preserve_newlines: false,
+    });
 
-    fileContents.push(Buffer.from(content));
+    zip.addFile(fileName, Buffer.from(formattedContent));
+
+    fileContents.push(Buffer.from(formattedContent));
   }
 
   const cssData = await fetch("http://localhost:5173/api/styles", {
@@ -220,9 +227,11 @@ export async function generateWebsite(
     }
   `;
 
-  zip.addFile("styles.css", Buffer.from(css));
+  const formattedCss = jsBeautify.css(css, { indent_size: 2 });
 
-  fileContents.push(Buffer.from(css));
+  zip.addFile("styles.css", Buffer.from(formattedCss));
+
+  fileContents.push(Buffer.from(formattedCss));
 
   const buffer = zip.toBuffer();
 
