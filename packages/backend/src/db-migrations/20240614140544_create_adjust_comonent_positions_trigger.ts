@@ -32,17 +32,12 @@ export async function up(db: Kysely<DB>) {
       SET row_start = row_start - row_span,
           row_end = row_end - row_span
       FROM components.component c
+      JOIN structure.page p ON c.page_id = p.id
       WHERE cp.row_start > deleted_row_end
       AND cp.component_id = c.id
       AND c.type != 'footer'
-      AND (
-        OLD.type = 'header' AND EXISTS (
-          SELECT 1
-          FROM structure.website w
-          WHERE w.id = current_website_id
-        )
-        OR c.page_id = current_page_id
-      );
+      AND p.website_id = current_website_id
+      AND (OLD.type = 'header' OR c.page_id = current_page_id);
       
       RETURN OLD;
     END;
@@ -74,56 +69,42 @@ export async function up(db: Kysely<DB>) {
       FROM structure.page
       WHERE id = current_page_id;
 
-      SELECT COALESCE(MAX(row_end), 0) + 1 INTO new_row_start
+      SELECT COALESCE(MAX(cp.row_end), 0) + 1 INTO new_row_start
       FROM components.component_position cp
       JOIN components.component c ON cp.component_id = c.id
+      JOIN structure.page p ON c.page_id = p.id
       WHERE c.type IN ('header', 'section')
-      AND EXISTS (
-        SELECT 1
-        FROM structure.website w
-        WHERE w.id = current_website_id
-      );
+      AND p.website_id = current_website_id;
 
       new_row_end := new_row_start + 1;
 
-      SELECT row_start, row_end INTO footer_row_start, footer_row_end
+      SELECT cp.row_start, cp.row_end INTO footer_row_start, footer_row_end
       FROM components.component_position cp
       JOIN components.component c ON cp.component_id = c.id
+      JOIN structure.page p ON c.page_id = p.id
       WHERE c.type = 'footer'
-      AND EXISTS (
-        SELECT 1
-        FROM structure.website w
-        WHERE w.id = current_website_id
-      );
+      AND p.website_id = current_website_id;
 
       IF NEW.type = 'header' THEN
-        UPDATE components.component_position
+        UPDATE components.component_position cp
         SET row_start = row_start + 2,
             row_end = row_end + 2
-        WHERE component_id IN (
-          SELECT id FROM components.component
-          WHERE type = 'section'
-          AND EXISTS (
-            SELECT 1
-            FROM structure.website w
-            WHERE w.id = current_website_id
-          )
-        );
+        FROM components.component c
+        JOIN structure.page p ON c.page_id = p.id
+        WHERE cp.component_id = c.id
+        AND c.type = 'section'
+        AND p.website_id = current_website_id;
       END IF;
 
       IF footer_row_start IS NOT NULL AND footer_row_start <= new_row_end THEN
-        UPDATE components.component_position
+        UPDATE components.component_position cp
         SET row_start = new_row_end + 1,
             row_end = new_row_end + footer_row_end - footer_row_start + 1
-        WHERE component_id = (
-          SELECT id FROM components.component
-          WHERE type = 'footer'
-          AND EXISTS (
-            SELECT 1
-            FROM structure.website w
-            WHERE w.id = current_website_id
-          )
-        );
+        FROM components.component c
+        JOIN structure.page p ON c.page_id = p.id
+        WHERE cp.component_id = c.id
+        AND c.type = 'footer'
+        AND p.website_id = current_website_id;
       END IF;
 
       RETURN NEW;
@@ -169,17 +150,12 @@ export async function up(db: Kysely<DB>) {
         SET row_start = row_start + row_span,
             row_end = row_end + row_span
         FROM components.component c
-        WHERE cp.row_start > OLD.row_end
-        AND cp.component_id = c.id
+        JOIN structure.page p ON c.page_id = p.id
+        WHERE cp.component_id = c.id
+        AND cp.row_start > OLD.row_end
         AND c.type IN ('section', 'footer')
-        AND (
-          component_type = 'header' AND EXISTS (
-            SELECT 1
-            FROM structure.website w
-            WHERE w.id = current_website_id
-          )
-          OR c.page_id = current_page_id
-        );
+        AND p.website_id = current_website_id
+        AND (component_type = 'header' OR c.page_id = current_page_id);
       END IF;
 
       RETURN NEW;
