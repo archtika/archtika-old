@@ -204,6 +204,7 @@ export async function getAllComponents(req: FastifyRequest, pageId: string) {
     `)
     .orderBy("components.component_position.row_start")
     .orderBy("components.component_position.col_start")
+    .orderBy("created_at", "desc")
     .execute();
 
   return allComponents;

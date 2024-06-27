@@ -106,7 +106,9 @@ export async function generateWebsite(
 
     const allComponentsNested = nestComponents(allComponents as Component[]);
 
-    let components = "";
+    let headerContent = "";
+    let mainContent = "";
+    let footerContent = "";
 
     for (const component of allComponentsNested as Component[]) {
       const assetPaths = [];
@@ -145,7 +147,7 @@ export async function generateWebsite(
       }
 
       cssClasses += allComponents
-        .filter((c) => c.parent_id === component.id)
+        .filter((c) => c.parent_id === component.id || c.id === component.id)
         .map(({ type, id, row_start, col_start, row_end, col_end }) => {
           if (!["header", "section", "footer"].includes(type)) {
             return `.${type}-${id} {
@@ -159,7 +161,25 @@ export async function generateWebsite(
         })
         .join("\n\n");
 
-      components += element.createElement(component, assetPaths);
+      const componentContent = element.createElement(component, assetPaths);
+
+      switch (component.type) {
+        case "header":
+          {
+            headerContent += componentContent;
+          }
+          break;
+        case "footer":
+          {
+            footerContent += componentContent;
+          }
+          break;
+        default:
+          {
+            mainContent += componentContent;
+          }
+          break;
+      }
     }
 
     const content = `
@@ -167,12 +187,17 @@ export async function generateWebsite(
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width" />
 	<link rel="stylesheet" href="styles.css" />
 	<meta name="description" content="${page.meta_description}">
 	<title>${page.title}</title>
 </head>
 <body>
-	${components}
+  ${headerContent}
+  <main>
+    ${mainContent}
+  </main>
+  ${footerContent}
 </body>
 </html>
 		`;

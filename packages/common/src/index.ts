@@ -141,7 +141,9 @@ export class ElementFactory {
     const renderer = new Renderer();
 
     renderer.html = (html) => {
-      return DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
+      return DOMPurify.sanitize(html as unknown as string, {
+        ALLOWED_TAGS: [],
+      });
     };
 
     let purifiedTextContent = "";
