@@ -286,6 +286,46 @@ export async function generateWebsite(
   return reply.status(201).send("Website generated successfully.");
 }
 
+export async function getComponentMaxRow(
+  req: FastifyRequest<{ Params: WebsiteParamsSchemaType }>,
+  reply: FastifyReply,
+) {
+  const { id } = req.params;
+
+  const result = await req.server.kysely.db
+    .selectFrom("components.component_position as cp")
+    .select(sql<number>`COALESCE(MAX(cp.row_end), 0) + 1`.as("new_row_start"))
+    .innerJoin("components.component as c", "cp.component_id", "c.id")
+    .innerJoin("structure.page as p", "c.page_id", "p.id")
+    .where("c.type", "in", ["header", "section"])
+    .where("p.website_id", "=", id)
+    .where(({ exists, and, selectFrom, or }) =>
+      or([
+        exists(
+          selectFrom("structure.website").where(
+            and({
+              id,
+              user_id: req.user?.id,
+            }),
+          ),
+        ),
+        exists(
+          selectFrom("collaboration.collaborator")
+            .where(
+              and({
+                user_id: req.user?.id,
+                website_id: id,
+              }),
+            )
+            .where("permission_level", ">=", 10),
+        ),
+      ]),
+    )
+    .executeTakeFirstOrThrow();
+
+  return result.new_row_start;
+}
+
 export async function updateWebsite(
   req: FastifyRequest<{
     Params: WebsiteParamsSchemaType;

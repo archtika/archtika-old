@@ -22,12 +22,16 @@ export const load: PageServerLoad = async ({
   const componentsData = await fetch(
     `http://localhost:3000/api/v1/pages/${params.pageId}/components`,
   );
+  const componentsMaxRowData = await fetch(
+    `http://localhost:3000/api/v1/websites/${params.websiteId}/component_max_row`
+  )
   const mediaData = await fetch("http://localhost:3000/api/v1/media");
 
   const { website } = await parent();
   const page = await pageData.json();
   const pages = await pagesData.json();
   const components = await componentsData.json();
+  const componentsMaxRow = await componentsMaxRowData.json()
   const media = await mediaData.json();
 
   return {
@@ -35,6 +39,7 @@ export const load: PageServerLoad = async ({
     page,
     pages,
     components,
+    componentsMaxRow,
     media,
     account: locals.account,
   };

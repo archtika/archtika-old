@@ -155,9 +155,8 @@ export async function getAllComponents(req: FastifyRequest, pageId: string) {
     ])
     .where(({ or, eb }) =>
       or([
-        eb("page_id", "=", pageId),
-        eb("is_public", "=", true),
-        eb("parent_id", "is not", null),
+        eb("components.component.page_id", "=", pageId),
+        eb("components.component.is_public", "=", true),
       ]),
     )
     .where(({ or, exists, selectFrom }) =>

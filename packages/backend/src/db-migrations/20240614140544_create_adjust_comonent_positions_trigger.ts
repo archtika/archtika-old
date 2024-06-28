@@ -155,7 +155,7 @@ export async function up(db: Kysely<DB>) {
         AND cp.row_start > OLD.row_end
         AND c.type IN ('section', 'footer')
         AND p.website_id = current_website_id
-        AND (component_type = 'header' OR c.page_id = current_page_id);
+        AND (component_type = 'header' OR c.page_id = current_page_id OR c.type = 'footer');
       END IF;
 
       RETURN NEW;

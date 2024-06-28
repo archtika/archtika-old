@@ -60,11 +60,11 @@
       colEnd = 2;
     }
 
-    const header = $components.find((c) => c.type === "header");
-    const sections = $components.filter((c) => c.type === "section");
-    const sectionsAndHeader = header ? sections.concat(header) : sections;
+    const sectionsAndHeader = $components.filter(
+      (c) => c.type === "header" || c.type === "section"
+    );  
 
-    if (["section", "footer"].includes(formData.get("type") as string)) {
+    if (formData.get("type") === "section") {
       const lastSectionEnding =
         sectionsAndHeader.length > 0
           ? Math.max(...sectionsAndHeader.map((c) => c.row_end))
@@ -73,6 +73,9 @@
       rowStart = lastSectionEnding === 1 ? 1 : lastSectionEnding + 1;
       rowEnd =
         lastSectionEnding === 1 ? lastSectionEnding + 1 : lastSectionEnding + 2;
+    } else if (formData.get("type") === "footer") {
+      rowStart = data.componentsMaxRow
+      rowEnd = data.componentsMaxRow + 1
     }
 
     const initialPosition = JSON.stringify({
