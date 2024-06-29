@@ -163,29 +163,6 @@ describe("components", async () => {
     });
   });
 
-  describe("POST /api/v1/components/{id}/position", () => {
-    it("should return 200 when a component position object is returned", async () => {
-      const res = await app.inject({
-        method: "POST",
-        url: `/api/v1/components/${componentIdPosition}/position`,
-        headers: {
-          origin: "http://localhost:3000",
-          host: "localhost:3000",
-        },
-        payload: {
-          row_start: 1,
-          col_start: 1,
-          row_end: 1,
-          col_end: 1,
-          row_end_span: 9,
-          col_end_span: 0,
-        },
-      });
-
-      assert.deepStrictEqual(res.statusCode, 201);
-    });
-  });
-
   describe("PATCH /api/v1/components/{id}/position", () => {
     it("should return 200 when a component position object is returned", async () => {
       const res = await app.inject({

@@ -22,16 +22,12 @@ export const load: PageServerLoad = async ({
   const componentsData = await fetch(
     `http://localhost:3000/api/v1/pages/${params.pageId}/components`,
   );
-  const componentsMaxRowData = await fetch(
-    `http://localhost:3000/api/v1/websites/${params.websiteId}/component_max_row`
-  )
   const mediaData = await fetch("http://localhost:3000/api/v1/media");
 
   const { website } = await parent();
   const page = await pageData.json();
   const pages = await pagesData.json();
   const components = await componentsData.json();
-  const componentsMaxRow = await componentsMaxRowData.json()
   const media = await mediaData.json();
 
   return {
@@ -39,7 +35,6 @@ export const load: PageServerLoad = async ({
     page,
     pages,
     components,
-    componentsMaxRow,
     media,
     account: locals.account,
   };
@@ -78,7 +73,6 @@ export const actions: Actions = {
   },
   createComponent: async ({ request, fetch, params }) => {
     const data = await request.formData();
-    const initialPosition = JSON.parse(data.get("initial-position") as string);
 
     let body: ComponentApiPayload = {
       type: "",
@@ -168,29 +162,12 @@ export const actions: Actions = {
         break;
     }
 
-    const createdComponentRes = await fetch(
+    await fetch(
       `http://localhost:3000/api/v1/pages/${params.pageId}/components`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
-      },
-    );
-    const createdComponent = await createdComponentRes.json();
-
-    await fetch(
-      `http://localhost:3000/api/v1/components/${createdComponent.id}/position`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          row_start: initialPosition.rowStart,
-          col_start: initialPosition.colStart,
-          row_end: initialPosition.rowEnd,
-          col_end: initialPosition.colEnd,
-          row_end_span: 0,
-          col_end_span: 0,
-        }),
       },
     );
   },

@@ -5,7 +5,6 @@ import {
   getAllComponents,
   getAllComponentsWebsocket,
   getComponent,
-  setComponentPosition,
   updateComponent,
   updateComponentPosition,
 } from "./components-controller.js";
@@ -75,18 +74,6 @@ export default async function (fastify: FastifyInstance) {
       schema: { tags: commonSchema.schema.tags },
     },
     deleteComponent,
-  );
-
-  fastify.post(
-    "/components/:id/position",
-    {
-      schema: {
-        tags: commonSchema.schema.tags,
-        params: singleParamsSchema,
-        body: componentPositionSchema,
-      },
-    },
-    setComponentPosition,
   );
 
   fastify.patch(

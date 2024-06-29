@@ -72,15 +72,6 @@
       '';
       enableTCPIP = true;
     };
-    redis.servers = {
-      archtika = {
-        enable = true;
-        bind = null;
-        requirePass = "dev";
-        port = 6379;
-        openFirewall = true;
-      };
-    };
     minio = {
       enable = true;
       listenAddress = "0.0.0.0:9000";

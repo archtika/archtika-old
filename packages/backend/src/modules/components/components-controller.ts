@@ -4,6 +4,8 @@ import { sql } from "kysely";
 import type WebSocket from "ws";
 import {
   getExistingPresignedUrl,
+  sendNotify,
+  setupPgNotifyListener,
   updateLastModifiedByColumn,
 } from "../../utils/queries.js";
 import { getAllComponents as getAllComponentsUtil } from "../../utils/queries.js";
@@ -41,7 +43,7 @@ export async function createComponent(
     .execute(async (trx) => {
       updateLastModifiedByColumn(req, trx);
 
-      return await trx
+      const component = await trx
         .insertInto("components.component")
         .values(({ selectFrom }) => ({
           page_id: selectFrom("structure.page")
@@ -80,27 +82,81 @@ export async function createComponent(
               }
             : {}),
           is_public: isPublic,
-          parent_id: req.body.parent_id,
+          parent_id: req.body.parent_id
         }))
         .returningAll()
         .executeTakeFirstOrThrow();
+
+        return component
     });
 
-  const componentWithUrl = {
+  let rowStart = 1
+  let rowEnd = 2
+
+  if (component.type === "footer") {
+    const website = await req.server.kysely.db
+      .selectFrom('structure.page')
+      .select('website_id')
+      .where('id', '=', id)
+      .executeTakeFirstOrThrow()
+
+    const componentMaxRow = await req.server.kysely.db
+      .selectFrom("components.component_position as cp")
+      .select(sql<number>`COALESCE(MAX(cp.row_end), 0) + 1`.as("new_row_start"))
+      .innerJoin("components.component as c", "cp.component_id", "c.id")
+      .innerJoin("structure.page as p", "c.page_id", "p.id")
+      .where("c.type", "in", ["header", "section"])
+      .where("p.website_id", "=", website.website_id)
+      .executeTakeFirstOrThrow();
+
+    rowStart = componentMaxRow.new_row_start
+    rowEnd = componentMaxRow.new_row_start + 1
+
+  } else if (component.type === "section") {
+    const lastSectionEnding = await req.server.kysely.db
+      .selectFrom("components.component_position as cp")
+      .select(sql<number>`COALESCE(MAX(cp.row_end), 0) + 1`.as("new_row_start"))
+      .innerJoin("components.component as c", "cp.component_id", "c.id")
+      .innerJoin("structure.page as p", "c.page_id", "p.id")
+      .where("c.type", "in", ["header", "section"])
+      .where("c.page_id", "=", id)
+      .executeTakeFirstOrThrow();
+
+    rowStart = lastSectionEnding.new_row_start
+    rowEnd = lastSectionEnding.new_row_start + 1
+  }
+
+  const componentPositionData = await req.server.kysely.db
+    .insertInto('components.component_position')
+    .values({
+      component_id: component.id,
+      row_start: rowStart,
+      col_start: 1,
+      row_end: rowEnd,
+      col_end: 13,
+      row_end_span: 0,
+      col_end_span: 0,
+    })
+    .returningAll()
+    .executeTakeFirst()
+
+  const componentWithUrlAndPosition = {
     ...component,
+    ...componentPositionData,
     url: await getExistingPresignedUrl(req, component.asset_id),
   };
 
-  await req.server.redis.pub.publish(
+  await sendNotify(
+    req,
     `components_${id}`,
     JSON.stringify({
       operation_type: "create",
-      data: componentWithUrl,
+      data: componentWithUrlAndPosition,
       senderId: req.user?.id,
     }),
   );
 
-  return reply.status(201).send(componentWithUrl);
+  return reply.status(201).send(componentWithUrlAndPosition);
 }
 
 export async function getAllComponents(
@@ -132,7 +188,7 @@ export async function getAllComponentsWebsocket(
   const channelName = `components_${id}`;
 
   socket.on("message", async (message) => {
-    await req.server.redis.pub.publish(channelName, message.toString());
+    await sendNotify(req, channelName, message.toString());
   });
 
   for (const client of req.server.websocketServer.clients as Set<
@@ -143,26 +199,7 @@ export async function getAllComponentsWebsocket(
     }
   }
 
-  await req.server.redis.sub.subscribe(channelName, (err) => {
-    if (err) {
-      console.error(`Error subscribing to ${channelName}: ${err.message}`);
-    }
-  });
-
-  req.server.redis.sub.on("message", (channel, message) => {
-    if (channel === channelName) {
-      for (const client of req.server.websocketServer.clients as Set<
-        WebSocket & { id?: string }
-      >) {
-        if (
-          client.readyState === 1 &&
-          client.id !== JSON.parse(message).senderId
-        ) {
-          client.send(message);
-        }
-      }
-    }
-  });
+  await setupPgNotifyListener(req, channelName);
 }
 
 export async function getComponent(
@@ -287,7 +324,8 @@ export async function updateComponent(
     url: await getExistingPresignedUrl(req, component.asset_id),
   };
 
-  await req.server.redis.pub.publish(
+  await sendNotify(
+    req,
     `components_${pageId}`,
     JSON.stringify({
       operation_type: "update",
@@ -359,7 +397,8 @@ export async function deleteComponent(
     url: await getExistingPresignedUrl(req, component.asset_id),
   };
 
-  await req.server.redis.pub.publish(
+  await sendNotify(
+    req,
     `components_${pageId}`,
     JSON.stringify({
       operation_type: "delete",
@@ -369,72 +408,6 @@ export async function deleteComponent(
   );
 
   return reply.status(200).send(componentWithUrl);
-}
-
-export async function setComponentPosition(
-  req: FastifyRequest<{
-    Params: SingleParamsSchemaType;
-    Body: ComponentPositionSchemaType;
-  }>,
-  reply: FastifyReply,
-) {
-  const { id } = req.params;
-  const { row_start, col_start, row_end, col_end, row_end_span, col_end_span } =
-    req.body;
-
-  const componentPositon = await req.server.kysely.db
-    .transaction()
-    .execute(async (trx) => {
-      updateLastModifiedByColumn(req, trx);
-
-      return await trx
-        .insertInto("components.component_position")
-        .values(({ selectFrom }) => ({
-          component_id: selectFrom("components.component")
-            .select("id")
-            .where("id", "=", id)
-            .where(({ or, exists, ref }) =>
-              or([
-                exists(
-                  selectFrom("structure.website").where(({ and }) =>
-                    and({
-                      id: selectFrom("structure.page")
-                        .select("website_id")
-                        .where("id", "=", ref("components.component.page_id")),
-                      user_id: req.user?.id,
-                    }),
-                  ),
-                ),
-                exists(
-                  selectFrom("collaboration.collaborator")
-                    .where(({ and }) =>
-                      and({
-                        website_id: selectFrom("structure.page")
-                          .select("website_id")
-                          .where(
-                            "id",
-                            "=",
-                            ref("components.component.page_id"),
-                          ),
-                        user_id: req.user?.id,
-                      }),
-                    )
-                    .where("permission_level", ">=", 20),
-                ),
-              ]),
-            ),
-          row_start,
-          col_start,
-          row_end,
-          col_end,
-          row_end_span,
-          col_end_span,
-        }))
-        .returningAll()
-        .executeTakeFirstOrThrow();
-    });
-
-  return reply.status(201).send(componentPositon);
 }
 
 export async function updateComponentPosition(
@@ -503,7 +476,8 @@ export async function updateComponentPosition(
 
   const { component_id, ...rest } = componentPosition;
 
-  await req.server.redis.pub.publish(
+  await sendNotify(
+    req,
     `components_${pageId?.page_id}`,
     JSON.stringify({
       operation_type: "update-position",

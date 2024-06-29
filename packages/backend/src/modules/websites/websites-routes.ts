@@ -4,7 +4,6 @@ import {
   deleteWebsite,
   generateWebsite,
   getAllWebsites,
-  getComponentMaxRow,
   getWebsite,
   updateWebsite,
 } from "./websites-controller.js";
@@ -53,17 +52,6 @@ export default async function (fastify: FastifyInstance) {
       },
     },
     getWebsite,
-  );
-
-  fastify.get(
-    "/:id/component_max_row",
-    {
-      schema: {
-        params: websiteParamsSchema,
-        tags: commonSchema.schema.tags,
-      },
-    },
-    getComponentMaxRow,
   );
 
   fastify.get(

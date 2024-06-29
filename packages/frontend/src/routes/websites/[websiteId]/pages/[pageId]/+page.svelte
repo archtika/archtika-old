@@ -45,49 +45,6 @@
     }
   }
 
-  const enhanceCreateComponentForm: SubmitFunction = async ({ formData }) => {
-    let rowStart = 1;
-    let rowEnd = 2;
-    let colStart = 1;
-    let colEnd = 13;
-
-    if (
-      !["header", "section", "footer"].includes(formData.get("type") as string)
-    ) {
-      rowStart = 1;
-      rowEnd = 2;
-      colStart = 1;
-      colEnd = 2;
-    }
-
-    const sectionsAndHeader = $components.filter(
-      (c) => c.type === "header" || c.type === "section"
-    );  
-
-    if (formData.get("type") === "section") {
-      const lastSectionEnding =
-        sectionsAndHeader.length > 0
-          ? Math.max(...sectionsAndHeader.map((c) => c.row_end))
-          : 1;
-
-      rowStart = lastSectionEnding === 1 ? 1 : lastSectionEnding + 1;
-      rowEnd =
-        lastSectionEnding === 1 ? lastSectionEnding + 1 : lastSectionEnding + 2;
-    } else if (formData.get("type") === "footer") {
-      rowStart = data.componentsMaxRow
-      rowEnd = data.componentsMaxRow + 1
-    }
-
-    const initialPosition = JSON.stringify({
-      rowStart,
-      colStart,
-      rowEnd,
-      colEnd,
-    });
-
-    formData.append("initial-position", initialPosition);
-  };
-
   let ws: WebSocket;
 
   if (browser) {
@@ -103,6 +60,8 @@
       const { operation_type, data: newComponent } = JSON.parse(data);
 
       console.log("Websocket event triggered!");
+      console.log(operation_type, newComponent)
+      console.log([...$components, newComponent])
 
       switch (operation_type) {
         case "create":
@@ -352,7 +311,7 @@
           <form
             action="?/createComponent"
             method="post"
-            use:enhance={enhanceCreateComponentForm}
+            use:enhance
           >
             <input
               type="hidden"
@@ -382,7 +341,7 @@
           <form
             action="?/createComponent"
             method="post"
-            use:enhance={enhanceCreateComponentForm}
+            use:enhance
           >
             <input
               type="hidden"
@@ -425,7 +384,7 @@
             <form
               action="?/createComponent"
               method="post"
-              use:enhance={enhanceCreateComponentForm}
+              use:enhance
               enctype="multipart/form-data"
             >
               <input
@@ -552,7 +511,7 @@
       <form
         action="?/createComponent"
         method="post"
-        use:enhance={enhanceCreateComponentForm}
+        use:enhance
       >
         <input
           type="hidden"
@@ -565,7 +524,7 @@
       <form
         action="?/createComponent"
         method="post"
-        use:enhance={enhanceCreateComponentForm}
+        use:enhance
       >
         <input
           type="hidden"
@@ -578,7 +537,7 @@
       <form
         action="?/createComponent"
         method="post"
-        use:enhance={enhanceCreateComponentForm}
+        use:enhance
       >
         <input
           type="hidden"
