@@ -13,13 +13,17 @@ export async function up(db: Kysely<DB>) {
       deleted_row_start INT;
       deleted_row_end INT;
       row_span INT;
+      channel_name TEXT;
+      payload JSON;
+      sender_id UUID;
     BEGIN
       current_page_id := OLD.page_id;
 
-      SELECT website_id
-      INTO current_website_id
-      FROM structure.page
-      WHERE id = current_page_id;
+      SELECT website_id, last_modified_by
+      INTO current_website_id, sender_id
+      FROM structure.page p
+      JOIN structure.website w ON p.website_id = w.id
+      WHERE p.id = current_page_id;
     
       SELECT row_start, row_end
       INTO deleted_row_start, deleted_row_end
@@ -38,6 +42,15 @@ export async function up(db: Kysely<DB>) {
       AND c.type != 'footer'
       AND p.website_id = current_website_id
       AND (OLD.type = 'header' OR c.page_id = current_page_id);
+
+      channel_name := 'channel_' || current_page_id;
+      payload := json_build_object(
+        'operation_type', 'shift-positions',
+        'data', json_build_object(),
+        'senderId', sender_id
+      );
+
+      PERFORM pg_notify(channel_name, payload::text);
       
       RETURN OLD;
     END;

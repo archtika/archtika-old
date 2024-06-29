@@ -1,45 +1,15 @@
 import type { FastifyRequest } from "fastify";
 import { type Transaction, sql } from "kysely";
 import type { DB } from "kysely-codegen";
-import type WebSocket from "ws";
 
 export async function sendNotify(
   req: FastifyRequest,
   channel: string,
   payload: string,
 ) {
-  await sql`SELECT pg_notify(${sql.lit(channel)}, ${sql.lit(payload)})`.execute(
+  await sql`PERFORM pg_notify(${sql.lit(channel)}, ${sql.lit(payload)})`.execute(
     req.server.kysely.db,
   );
-}
-
-export async function setupPgNotifyListener(
-  req: FastifyRequest,
-  channelName: string,
-) {
-  const client = await req.server.pg.pool.connect();
-
-  try {
-    await client.query(`LISTEN "${channelName}"`);
-
-    client.on("notification", (msg) => {
-      const payload = JSON.parse(msg.payload ?? "");
-
-      for (const wsClient of req.server.websocketServer.clients as Set<
-        WebSocket & { id?: string }
-      >) {
-        if (wsClient.readyState === 1 && wsClient.id !== payload.senderId) {
-          wsClient.send(msg.payload ?? "");
-        }
-      }
-    });
-  } catch (error) {
-    console.error(
-      `Error setting up PostgreSQL LISTEN for ${channelName}:`,
-      error,
-    );
-    client.release();
-  }
 }
 
 export async function updateLastModifiedByColumn(

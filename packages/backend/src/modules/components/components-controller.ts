@@ -5,7 +5,6 @@ import type WebSocket from "ws";
 import {
   getExistingPresignedUrl,
   sendNotify,
-  setupPgNotifyListener,
   updateLastModifiedByColumn,
 } from "../../utils/queries.js";
 import { getAllComponents as getAllComponentsUtil } from "../../utils/queries.js";
@@ -82,23 +81,23 @@ export async function createComponent(
               }
             : {}),
           is_public: isPublic,
-          parent_id: req.body.parent_id
+          parent_id: req.body.parent_id,
         }))
         .returningAll()
         .executeTakeFirstOrThrow();
 
-        return component
+      return component;
     });
 
-  let rowStart = 1
-  let rowEnd = 2
+  let rowStart = 1;
+  let rowEnd = 2;
 
   if (component.type === "footer") {
     const website = await req.server.kysely.db
-      .selectFrom('structure.page')
-      .select('website_id')
-      .where('id', '=', id)
-      .executeTakeFirstOrThrow()
+      .selectFrom("structure.page")
+      .select("website_id")
+      .where("id", "=", id)
+      .executeTakeFirstOrThrow();
 
     const componentMaxRow = await req.server.kysely.db
       .selectFrom("components.component_position as cp")
@@ -109,9 +108,8 @@ export async function createComponent(
       .where("p.website_id", "=", website.website_id)
       .executeTakeFirstOrThrow();
 
-    rowStart = componentMaxRow.new_row_start
-    rowEnd = componentMaxRow.new_row_start + 1
-
+    rowStart = componentMaxRow.new_row_start;
+    rowEnd = componentMaxRow.new_row_start + 1;
   } else if (component.type === "section") {
     const lastSectionEnding = await req.server.kysely.db
       .selectFrom("components.component_position as cp")
@@ -122,12 +120,12 @@ export async function createComponent(
       .where("c.page_id", "=", id)
       .executeTakeFirstOrThrow();
 
-    rowStart = lastSectionEnding.new_row_start
-    rowEnd = lastSectionEnding.new_row_start + 1
+    rowStart = lastSectionEnding.new_row_start;
+    rowEnd = lastSectionEnding.new_row_start + 1;
   }
 
   const componentPositionData = await req.server.kysely.db
-    .insertInto('components.component_position')
+    .insertInto("components.component_position")
     .values({
       component_id: component.id,
       row_start: rowStart,
@@ -138,7 +136,7 @@ export async function createComponent(
       col_end_span: 0,
     })
     .returningAll()
-    .executeTakeFirst()
+    .executeTakeFirst();
 
   const componentWithUrlAndPosition = {
     ...component,
@@ -187,19 +185,25 @@ export async function getAllComponentsWebsocket(
 
   const channelName = `components_${id}`;
 
+  const client = await req.server.pg.pool.connect();
+  await client.query(`LISTEN "${channelName}"`);
+
+  client.on("notification", (msg) => {
+    const payload = JSON.parse(msg.payload ?? "");
+
+    if (payload.senderId !== req.user?.id) {
+      socket.send(msg.payload ?? "");
+    }
+  });
+
   socket.on("message", async (message) => {
     await sendNotify(req, channelName, message.toString());
   });
 
-  for (const client of req.server.websocketServer.clients as Set<
-    WebSocket & { id?: string }
-  >) {
-    if (!client.id) {
-      client.id = req.user?.id;
-    }
-  }
-
-  await setupPgNotifyListener(req, channelName);
+  socket.on("close", async () => {
+    await client.query(`UNLISTEN "${channelName}"`);
+    client.release();
+  });
 }
 
 export async function getComponent(
