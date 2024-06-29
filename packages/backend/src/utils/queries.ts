@@ -7,7 +7,7 @@ export async function sendNotify(
   channel: string,
   payload: string,
 ) {
-  await sql`PERFORM pg_notify(${sql.lit(channel)}, ${sql.lit(payload)})`.execute(
+  await sql`SELECT pg_notify(${sql.lit(channel)}, ${sql.lit(payload)})`.execute(
     req.server.kysely.db,
   );
 }

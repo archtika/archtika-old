@@ -1,7 +1,6 @@
 <script lang="ts">
   import { browser } from "$app/environment";
-  import { applyAction, deserialize, enhance } from "$app/forms";
-  import { invalidateAll } from "$app/navigation";
+  import { enhance } from "$app/forms";
   import { page } from "$app/stores";
   import RenderComponent from "$lib/components/RenderComponent.svelte";
   import { components, selectedComponent } from "$lib/stores";
@@ -9,7 +8,6 @@
   import { mimeTypes } from "common";
   import { nestComponents } from "common";
   import type { PageServerData } from "./$types";
-  import type { SubmitFunction } from "./$types";
 
   export let data: PageServerData;
 
@@ -61,7 +59,6 @@
 
       console.log("Websocket event triggered!");
       console.log(operation_type, newComponent)
-      console.log([...$components, newComponent])
 
       switch (operation_type) {
         case "create":
@@ -79,7 +76,7 @@
           $components = $components.filter((component) => {
             return component.id !== newComponent.id;
           });
-          break;
+          break;          
       }
     };
 

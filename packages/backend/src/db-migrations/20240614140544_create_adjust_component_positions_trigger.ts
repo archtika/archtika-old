@@ -43,7 +43,7 @@ export async function up(db: Kysely<DB>) {
       AND p.website_id = current_website_id
       AND (OLD.type = 'header' OR c.page_id = current_page_id);
 
-      channel_name := 'channel_' || current_page_id;
+      channel_name := 'components_' || current_page_id;
       payload := json_build_object(
         'operation_type', 'shift-positions',
         'data', json_build_object(),
@@ -74,13 +74,17 @@ export async function up(db: Kysely<DB>) {
       new_row_end INT;
       footer_row_start INT;
       footer_row_end INT;
+      channel_name TEXT;
+      payload JSON;
+      sender_id UUID;
     BEGIN
       current_page_id := NEW.page_id;
 
-      SELECT website_id
-      INTO current_website_id
-      FROM structure.page
-      WHERE id = current_page_id;
+      SELECT website_id, last_modified_by
+      INTO current_website_id, sender_id
+      FROM structure.page p
+      JOIN structure.website w ON p.website_id = w.id
+      WHERE p.id = current_page_id;
 
       SELECT COALESCE(MAX(cp.row_end), 0) + 1 INTO new_row_start
       FROM components.component_position cp
@@ -120,6 +124,15 @@ export async function up(db: Kysely<DB>) {
         AND p.website_id = current_website_id;
       END IF;
 
+      channel_name := 'components_' || current_page_id;
+      payload := json_build_object(
+        'operation_type', 'shift-positions',
+        'data', json_build_object(),
+        'senderId', sender_id
+      );
+
+      PERFORM pg_notify(channel_name, payload::text);
+
       RETURN NEW;
     END;
     $$;
@@ -140,6 +153,9 @@ export async function up(db: Kysely<DB>) {
       current_website_id UUID;
       row_span INT;
       component_type TEXT;
+      channel_name TEXT;
+      payload JSON;
+      sender_id UUID;
     BEGIN
       SELECT type
       INTO component_type
@@ -152,10 +168,11 @@ export async function up(db: Kysely<DB>) {
         FROM components.component
         WHERE id = NEW.component_id;
 
-        SELECT website_id
-        INTO current_website_id
-        FROM structure.page
-        WHERE id = current_page_id;
+        SELECT website_id, last_modified_by
+        INTO current_website_id, sender_id
+        FROM structure.page p
+        JOIN structure.website w ON p.website_id = w.id
+        WHERE p.id = current_page_id;
 
         row_span := NEW.row_end - OLD.row_end;
 
@@ -170,6 +187,15 @@ export async function up(db: Kysely<DB>) {
         AND p.website_id = current_website_id
         AND (component_type = 'header' OR c.page_id = current_page_id OR c.type = 'footer');
       END IF;
+
+      channel_name := 'components_' || current_page_id;
+      payload := json_build_object(
+        'operation_type', 'shift-positions',
+        'data', json_build_object(),
+        'senderId', sender_id
+      );
+
+      PERFORM pg_notify(channel_name, payload::text);
 
       RETURN NEW;
     END;
