@@ -54,29 +54,47 @@
       console.log("Websocket connected");
     };
 
-    ws.onmessage = ({ data }) => {
-      const { operation_type, data: newComponent } = JSON.parse(data);
+    ws.onmessage = async ({ data }) => {
+      const { operation_type, data: newComponentData } = JSON.parse(data);
 
       console.log("Websocket event triggered!");
-      console.log(operation_type, newComponent)
+      console.log(operation_type, newComponentData);
 
       switch (operation_type) {
         case "create":
-          $components = [...$components, newComponent];
+          $components = [...$components, newComponentData];
           break;
         case "update":
         case "update-position":
           $components = $components.map((component) =>
-            component.id === newComponent.id
-              ? { ...component, ...newComponent }
+            component.id === newComponentData.id
+              ? { ...component, ...newComponentData }
               : component
           );
           break;
         case "delete":
           $components = $components.filter((component) => {
-            return component.id !== newComponent.id;
+            return component.id !== newComponentData.id;
           });
-          break;          
+          break;
+        case "shift-positions":
+          {
+            console.log("Shift positions!");
+            /*
+            const dataMap = new Map<string, Component>(
+              newComponentData.map((item: Component) => [item.id, item])
+            );
+
+            $components = $components.reduce<Component[]>((acc, component) => {
+              if (dataMap.has(component.id)) {
+                acc.push({ ...component, ...dataMap.get(component.id) });
+              } else {
+                acc.push(component);
+              }
+              return acc;
+            }, []); */
+          }
+          break;
       }
     };
 
@@ -305,11 +323,7 @@
 
         <details>
           <summary>Text</summary>
-          <form
-            action="?/createComponent"
-            method="post"
-            use:enhance
-          >
+          <form action="?/createComponent" method="post" use:enhance>
             <input
               type="hidden"
               id="create-component-text-type"
@@ -335,11 +349,7 @@
         </details>
         <details>
           <summary>Button</summary>
-          <form
-            action="?/createComponent"
-            method="post"
-            use:enhance
-          >
+          <form action="?/createComponent" method="post" use:enhance>
             <input
               type="hidden"
               id="create-component-button-type"
@@ -505,11 +515,7 @@
 
       <h3>Structure</h3>
 
-      <form
-        action="?/createComponent"
-        method="post"
-        use:enhance
-      >
+      <form action="?/createComponent" method="post" use:enhance>
         <input
           type="hidden"
           id="create-component-header-type"
@@ -518,11 +524,7 @@
         />
         <button type="submit">Header</button>
       </form>
-      <form
-        action="?/createComponent"
-        method="post"
-        use:enhance
-      >
+      <form action="?/createComponent" method="post" use:enhance>
         <input
           type="hidden"
           id="create-component-footer-type"
@@ -531,11 +533,7 @@
         />
         <button type="submit">Footer</button>
       </form>
-      <form
-        action="?/createComponent"
-        method="post"
-        use:enhance
-      >
+      <form action="?/createComponent" method="post" use:enhance>
         <input
           type="hidden"
           id="create-component-section-type"
