@@ -13,6 +13,7 @@ export async function up(db: Kysely<DB>) {
       deleted_row_start INT;
       deleted_row_end INT;
       row_span INT;
+      updated_data JSON;
       channel_name TEXT;
       payload JSON;
       sender_id UUID;
@@ -32,21 +33,27 @@ export async function up(db: Kysely<DB>) {
     
       row_span := deleted_row_end - deleted_row_start + 1;
 
-      UPDATE components.component_position cp
-      SET row_start = row_start - row_span,
-          row_end = row_end - row_span
-      FROM components.component c
-      JOIN structure.page p ON c.page_id = p.id
-      WHERE cp.row_start > deleted_row_end
-      AND cp.component_id = c.id
-      AND c.type != 'footer'
-      AND p.website_id = current_website_id
-      AND (OLD.type = 'header' OR c.page_id = current_page_id);
+      WITH updated_rows AS (
+        UPDATE components.component_position cp
+        SET row_start = row_start - row_span,
+            row_end = row_end - row_span
+        FROM components.component c
+        JOIN structure.page p ON c.page_id = p.id
+        WHERE cp.row_start > deleted_row_end
+        AND cp.component_id = c.id
+        AND c.type != 'footer'
+        AND p.website_id = current_website_id
+        AND (OLD.type = 'header' OR c.page_id = current_page_id)
+        RETURNING cp.component_id AS id, cp.row_start, cp.row_end
+      )
+
+      SELECT json_agg(row_to_json(updated_rows)) INTO updated_data
+      FROM updated_rows;
 
       channel_name := 'components_' || current_page_id;
       payload := json_build_object(
         'operation_type', 'shift-positions',
-        'data', json_build_object(),
+        'data', updated_data,
         'senderId', sender_id
       );
 
@@ -74,6 +81,7 @@ export async function up(db: Kysely<DB>) {
       new_row_end INT;
       footer_row_start INT;
       footer_row_end INT;
+      updated_data JSONB;
       channel_name TEXT;
       payload JSON;
       sender_id UUID;
@@ -103,31 +111,48 @@ export async function up(db: Kysely<DB>) {
       AND p.website_id = current_website_id;
 
       IF NEW.type = 'header' THEN
-        UPDATE components.component_position cp
-        SET row_start = row_start + 2,
-            row_end = row_end + 2
-        FROM components.component c
-        JOIN structure.page p ON c.page_id = p.id
-        WHERE cp.component_id = c.id
-        AND c.type = 'section'
-        AND p.website_id = current_website_id;
+        WITH updated_rows AS (
+          UPDATE components.component_position cp
+          SET row_start = row_start + 2,
+              row_end = row_end + 2
+          FROM components.component c
+          JOIN structure.page p ON c.page_id = p.id
+          WHERE cp.component_id = c.id
+          AND c.type = 'section'
+          AND p.website_id = current_website_id
+          RETURNING cp.component_id AS id, cp.row_start, cp.row_end
+        )
+
+        SELECT jsonb_agg(row_to_json(updated_rows)) INTO updated_data
+        FROM updated_rows;
       END IF;
 
       IF footer_row_start IS NOT NULL AND footer_row_start <= new_row_end THEN
-        UPDATE components.component_position cp
-        SET row_start = new_row_end + 1,
-            row_end = new_row_end + footer_row_end - footer_row_start + 1
-        FROM components.component c
-        JOIN structure.page p ON c.page_id = p.id
-        WHERE cp.component_id = c.id
-        AND c.type = 'footer'
-        AND p.website_id = current_website_id;
+        WITH updated_rows AS (
+          UPDATE components.component_position cp
+          SET row_start = new_row_end + 1,
+              row_end = new_row_end + footer_row_end - footer_row_start + 1
+          FROM components.component c
+          JOIN structure.page p ON c.page_id = p.id
+          WHERE cp.component_id = c.id
+          AND c.type = 'footer'
+          AND p.website_id = current_website_id
+          RETURNING cp.component_id AS id, cp.row_start, cp.row_end
+        )
+
+        SELECT 
+          CASE
+            WHEN updated_data IS NULL THEN jsonb_agg(row_to_json(updated_rows))
+            ELSE updated_data || jsonb_agg(row_to_json(updated_rows))
+          END
+        INTO updated_data
+        FROM updated_rows;
       END IF;
 
       channel_name := 'components_' || current_page_id;
       payload := json_build_object(
         'operation_type', 'shift-positions',
-        'data', json_build_object(),
+        'data', updated_data,
         'senderId', sender_id
       );
 
@@ -153,6 +178,7 @@ export async function up(db: Kysely<DB>) {
       current_website_id UUID;
       row_span INT;
       component_type TEXT;
+      updated_data JSON;
       channel_name TEXT;
       payload JSON;
       sender_id UUID;
@@ -176,26 +202,32 @@ export async function up(db: Kysely<DB>) {
 
         row_span := NEW.row_end - OLD.row_end;
 
-        UPDATE components.component_position cp
-        SET row_start = row_start + row_span,
-            row_end = row_end + row_span
-        FROM components.component c
-        JOIN structure.page p ON c.page_id = p.id
-        WHERE cp.component_id = c.id
-        AND cp.row_start > OLD.row_end
-        AND c.type IN ('section', 'footer')
-        AND p.website_id = current_website_id
-        AND (component_type = 'header' OR c.page_id = current_page_id OR c.type = 'footer');
+        WITH updated_rows AS (
+          UPDATE components.component_position cp
+          SET row_start = row_start + row_span,
+              row_end = row_end + row_span
+          FROM components.component c
+          JOIN structure.page p ON c.page_id = p.id
+          WHERE cp.component_id = c.id
+          AND cp.row_start > OLD.row_end
+          AND c.type IN ('section', 'footer')
+          AND p.website_id = current_website_id
+          AND (component_type = 'header' OR c.page_id = current_page_id OR c.type = 'footer')
+          RETURNING cp.component_id AS id, cp.row_start, cp.row_end
+        )
+
+        SELECT json_agg(row_to_json(updated_rows)) INTO updated_data
+        FROM updated_rows;
+
+        channel_name := 'components_' || current_page_id;
+        payload := json_build_object(
+          'operation_type', 'shift-positions',
+          'data', updated_data,
+          'senderId', sender_id
+        );
+
+        PERFORM pg_notify(channel_name, payload::text);
       END IF;
-
-      channel_name := 'components_' || current_page_id;
-      payload := json_build_object(
-        'operation_type', 'shift-positions',
-        'data', json_build_object(),
-        'senderId', sender_id
-      );
-
-      PERFORM pg_notify(channel_name, payload::text);
 
       RETURN NEW;
     END;

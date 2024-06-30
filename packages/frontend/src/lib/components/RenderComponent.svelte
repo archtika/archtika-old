@@ -124,8 +124,6 @@
         component.row_start > oldRowEnd &&
         ["header", "section"].includes($components[index].type)
       ) {
-        console.log(component.type);
-
         component.row_start += rowShift;
         component.row_end += rowShift;
       }

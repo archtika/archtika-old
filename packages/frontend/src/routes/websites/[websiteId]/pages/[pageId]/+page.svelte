@@ -57,9 +57,6 @@
     ws.onmessage = async ({ data }) => {
       const { operation_type, data: newComponentData } = JSON.parse(data);
 
-      console.log("Websocket event triggered!");
-      console.log(operation_type, newComponentData);
-
       switch (operation_type) {
         case "create":
           $components = [...$components, newComponentData];
@@ -79,20 +76,23 @@
           break;
         case "shift-positions":
           {
-            console.log("Shift positions!");
-            /*
-            const dataMap = new Map<string, Component>(
-              newComponentData.map((item: Component) => [item.id, item])
-            );
+            if (Array.isArray(newComponentData)) {
+              const dataMap = new Map<string, Component>(
+                newComponentData.map((item: Component) => [item.id, item])
+              );
 
-            $components = $components.reduce<Component[]>((acc, component) => {
-              if (dataMap.has(component.id)) {
-                acc.push({ ...component, ...dataMap.get(component.id) });
-              } else {
-                acc.push(component);
-              }
-              return acc;
-            }, []); */
+              $components = $components.reduce<Component[]>(
+                (acc, component) => {
+                  if (dataMap.has(component.id)) {
+                    acc.push({ ...component, ...dataMap.get(component.id) });
+                  } else {
+                    acc.push(component);
+                  }
+                  return acc;
+                },
+                []
+              );
+            }
           }
           break;
       }
