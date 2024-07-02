@@ -1,7 +1,11 @@
 <script lang="ts">
   import { applyAction, deserialize } from "$app/forms";
   import { invalidateAll } from "$app/navigation";
-  import { components, selectedComponent } from "$lib/stores";
+  import {
+    components,
+    selectedComponent,
+    draggedComponentId,
+  } from "$lib/stores";
   import type { Component } from "common";
   import { ElementFactory } from "common";
   import Resizer from "./Resizer.svelte";
@@ -135,14 +139,8 @@
     componentId?: string,
     isRemoval = false
   ) {
-    const componentContainer = target.closest(
-      ".component-container"
-    ) as HTMLElement;
-
     if (isRemoval) {
-      for (const zoneElement of componentContainer.querySelectorAll(
-        "[data-zone]"
-      )) {
+      for (const zoneElement of document.querySelectorAll("[data-zone]")) {
         (zoneElement as HTMLElement).style.border = "";
       }
 
@@ -156,6 +154,10 @@
     const { row_end_span, col_end_span } = componentData;
 
     const targetZone = Number.parseInt(target.getAttribute("data-zone") ?? "");
+
+    const componentContainer = target.closest(
+      ".component-container"
+    ) as HTMLElement;
 
     for (let row = 0; row < row_end_span; row++) {
       for (let col = 0; col < col_end_span; col++) {
@@ -172,15 +174,13 @@
     }
   }
 
-  let draggedComponentId: string | null = null;
-
   function handleDragStart(event: DragEvent) {
     const componentId = (event.target as HTMLElement).getAttribute(
       "data-component-id"
     );
 
     if (componentId) {
-      draggedComponentId = componentId;
+      $draggedComponentId = componentId;
       event.dataTransfer?.setData("text/plain", componentId);
     }
   }
@@ -192,7 +192,7 @@
   function handleDragEnter(event: DragEvent) {
     const target = event.target as HTMLElement;
     const componentId =
-      event.dataTransfer?.getData("text/plain") || draggedComponentId;
+      event.dataTransfer?.getData("text/plain") || $draggedComponentId;
 
     if (!componentId) return;
 
@@ -203,12 +203,12 @@
   function handleDragEnd(event: DragEvent) {
     const target = event.target as HTMLElement;
     const componentId =
-      event.dataTransfer?.getData("text/plain") || draggedComponentId;
+      event.dataTransfer?.getData("text/plain") || $draggedComponentId;
 
     if (!componentId) return;
 
     highlightDragArea(target, componentId, true);
-    draggedComponentId = null;
+    $draggedComponentId = null;
   }
 
   async function handleDrop(
@@ -222,7 +222,7 @@
 
     const target = event.target as HTMLElement;
     const componentId =
-      event.dataTransfer?.getData("text/plain") || draggedComponentId;
+      event.dataTransfer?.getData("text/plain") || $draggedComponentId;
 
     const index = $components.findIndex((component: Component) => {
       return component.id === componentId;
@@ -284,7 +284,7 @@
     applyAction(updateComponentResult);
     applyAction(result);
 
-    draggedComponentId = null;
+    $draggedComponentId = null;
   }
 </script>
 
