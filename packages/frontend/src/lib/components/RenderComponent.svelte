@@ -69,7 +69,7 @@
       Math.max(1, Math.round(newHeight / gridCellHeight)) * gridCellHeight;
 
     if (["header", "section", "footer"].includes(component.type)) {
-      cols = 12;
+      cols = 32;
       rows = newHeight / gridCellHeight;
     } else {
       newWidth =
@@ -161,7 +161,7 @@
 
     for (let row = 0; row < row_end_span; row++) {
       for (let col = 0; col < col_end_span; col++) {
-        const zoneNumber = targetZone + row * 12 + col;
+        const zoneNumber = targetZone + row * 32 + col;
 
         const zoneElement = componentContainer?.querySelector(
           `[data-zone="${zoneNumber}"]`
@@ -300,7 +300,9 @@
   class:non-nested={!["header", "footer", "section"].includes(component.type)}
   role="presentation"
   style="grid-area: {component.row_start ?? 1} / {component.col_start ??
-    1} / {component.row_end ?? 1} / {component.col_end ?? 1}"
+    1} / {component.row_end ?? 1} / {component.col_end ??
+    1}; grid-template-rows: repeat({component.row_end -
+    component.row_start}, 2.5rem)"
   data-component-type={component.type}
   data-component-id={component.id}
   data-component-parent-id={component.parent_id}
@@ -315,9 +317,9 @@
       </small>
     </p>
 
-    {#each Array((component.row_end - component.row_start || 1) * 12) as _, i}
-      {@const row = Math.floor(i / 12) + 1}
-      {@const col = (i % 12) + 1}
+    {#each Array((component.row_end - component.row_start || 1) * 32) as _, i}
+      {@const row = Math.floor(i / 32) + 1}
+      {@const col = (i % 32) + 1}
 
       <div
         style="grid-area: {row} / {col} / {row} / {col}"
@@ -350,8 +352,7 @@
 
   .component-container {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    grid-auto-rows: 2.5rem;
+    grid-template-columns: repeat(32, minmax(0, 1fr));
   }
 
   .selected {

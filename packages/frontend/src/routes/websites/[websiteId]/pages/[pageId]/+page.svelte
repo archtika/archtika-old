@@ -550,7 +550,7 @@
     data-content-container
   >
     {#each Array(totalRows) as _, i}
-      <div style="grid-area: {i + 1} / 1 / {i + 1} / 13" data-row={i + 1} />
+      <div style="grid-area: {i + 1} / 1 / {i + 1} / 33" data-row={i + 1} />
     {/each}
     {#each nestComponents($components) as component, i (i)}
       <RenderComponent {component} />
@@ -561,7 +561,7 @@
 <style>
   .editor-wrapper {
     display: grid;
-    grid-template-columns: 30ch minmax(min(50vw, 30ch), 1fr);
+    grid-template-columns: 1fr calc(1280px + 2rem + (4 * 0.125rem));
   }
 
   div[data-sidebar],
@@ -572,6 +572,7 @@
   }
 
   div[data-content-container] {
+    display: grid;
     padding-inline: 1rem;
     padding-block: 2rem;
   }
