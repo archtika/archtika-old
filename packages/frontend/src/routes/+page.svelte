@@ -40,7 +40,7 @@
 {#if data.websites.length === 0}
   <p>No websites created yet.</p>
 {:else}
-  <div class="grid">
+  <div>
     {#each data.websites as { id, title, created_at, updated_at, last_modified_by }}
       <div>
         <h3>{title}</h3>

@@ -546,7 +546,7 @@
   </div>
 
   <div
-    style="grid-template-rows: repeat({totalRows}, 2.5rem"
+    style="grid-template-rows: repeat({totalRows}, 2.5rem)"
     data-content-container
   >
     {#each Array(totalRows) as _, i}
@@ -578,9 +578,5 @@
 
   div[data-sidebar] {
     padding-inline: 0.5rem;
-  }
-
-  div[data-content-container] {
-    display: grid;
   }
 </style>

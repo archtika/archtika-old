@@ -3,8 +3,8 @@
   import { invalidateAll } from "$app/navigation";
   import {
     components,
-    selectedComponent,
     draggedComponentId,
+    selectedComponent,
   } from "$lib/stores";
   import type { Component } from "common";
   import { ElementFactory } from "common";

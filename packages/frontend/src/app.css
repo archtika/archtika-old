@@ -14,11 +14,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-header, section, footer {
-  padding-inline: 1rem;
-  padding-block: 2rem;
-}
-
 img,
 picture,
 video,
@@ -48,16 +43,4 @@ h6 {
 #root,
 #__next {
   isolation: isolate;
-}
-
-.grid-container {
-  display: grid;
-  column-gap: 2rem;
-  row-gap: 0.5rem;
-}
-
-@media (min-width: 480px) {
-  .grid-container {
-    grid-template-columns: repeat(12, 1fr);
-  }
 }

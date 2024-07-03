@@ -98,7 +98,6 @@ export async function generateWebsite(
   const element = new ElementFactory();
 
   const fileContents = [];
-  let cssClasses = "";
 
   for (const page of allPages) {
     const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
@@ -146,21 +145,6 @@ export async function generateWebsite(
 
         fileContents.push(buffer);
       }
-
-      cssClasses += allComponents
-        .filter((c) => c.parent_id === component.id || c.id === component.id)
-        .map(({ type, id, row_start, col_start, row_end, col_end }) => {
-          if (!["header", "section", "footer"].includes(type)) {
-            return `.${type}-${id} {
-              grid-area: ${row_start} / ${col_start} / ${row_end} / ${col_end};
-            }`;
-          }
-
-          return `.${type}-${id} {
-            grid-template-rows: repeat(${row_end - row_start}, 40px)
-          }`;
-        })
-        .join("\n\n");
 
       const componentContent = element.createElement(component, assetPaths);
 
@@ -219,13 +203,7 @@ export async function generateWebsite(
       Cookie: `auth_session=${req.cookies.auth_session}`,
     },
   });
-  const css = `
-    ${await cssData.text()}
-
-    @media (min-width: 480px) {
-      ${cssClasses}
-    }
-  `;
+  const css = await cssData.text();
 
   const formattedCss = jsBeautify.css(css, { indent_size: 2 });
 
