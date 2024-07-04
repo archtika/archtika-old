@@ -35,44 +35,48 @@
   </form>
 </details>
 
-<h2>Your creations</h2>
+<section>
+  <h2>Your creations</h2>
 
-{#if data.websites.length === 0}
-  <p>No websites created yet.</p>
-{:else}
-  <div>
-    {#each data.websites as { id, title, created_at, updated_at, last_modified_by }}
+  {#if data.websites.length === 0}
+    <p>No websites created yet.</p>
+  {:else}
+    <div>
+      {#each data.websites as { id, title, created_at, updated_at, last_modified_by }}
+        <div>
+          <h3>{title}</h3>
+          <p>
+            {#if updated_at}
+              Last modified at: <DateTime date={updated_at} />
+            {:else}
+              Created at: <DateTime date={created_at} />
+            {/if}
+          </p>
+          <a href="/websites/{id}">Edit</a>
+        </div>
+      {/each}
+    </div>
+  {/if}
+</section>
+
+<section>
+  <h2>Shared with you</h2>
+
+  {#if data.sharedWebsites.length === 0}
+    <p>No websites shared with you.</p>
+  {:else}
+    {#each data.sharedWebsites as { id, title, created_at, updated_at }}
       <div>
         <h3>{title}</h3>
         <p>
-          {#if updated_at}
-            Last modified at: <DateTime date={updated_at} />
-          {:else}
-            Created at: <DateTime date={created_at} />
-          {/if}
+          {@html updated_at
+            ? `Last modified at: <time datetime="${new Date(updated_at).toLocaleString("sv").replace(" ", "T")}">${new Date(updated_at).toLocaleString()}</time>`
+            : `Created at: <time datetime="${new Date(created_at).toLocaleString("sv").replace(" ", "T")}">${new Date(created_at).toLocaleString()}`}
         </p>
-        <a href="/websites/{id}">Edit</a>
+        <div>
+          <a href="/websites/{id}">Edit</a>
+        </div>
       </div>
     {/each}
-  </div>
-{/if}
-
-<h2>Shared with you</h2>
-
-{#if data.sharedWebsites.length === 0}
-  <p>No websites shared with you.</p>
-{:else}
-  {#each data.sharedWebsites as { id, title, created_at, updated_at }}
-    <div>
-      <h3>{title}</h3>
-      <p>
-        {@html updated_at
-          ? `Last modified at: <time datetime="${new Date(updated_at).toLocaleString("sv").replace(" ", "T")}">${new Date(updated_at).toLocaleString()}</time>`
-          : `Created at: <time datetime="${new Date(created_at).toLocaleString("sv").replace(" ", "T")}">${new Date(created_at).toLocaleString()}`}
-      </p>
-      <div>
-        <a href="/websites/{id}">Edit</a>
-      </div>
-    </div>
-  {/each}
-{/if}
+  {/if}
+</section>

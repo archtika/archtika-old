@@ -92,13 +92,13 @@ export async function createComponent(
   let rowStart = 1;
   let rowEnd = 2;
 
-  if (component.type === "footer") {
-    const website = await req.server.kysely.db
-      .selectFrom("structure.page")
-      .select("website_id")
-      .where("id", "=", id)
-      .executeTakeFirstOrThrow();
+  const website = await req.server.kysely.db
+    .selectFrom("structure.page")
+    .select("website_id")
+    .where("id", "=", id)
+    .executeTakeFirstOrThrow();
 
+  if (component.type === "footer") {
     const componentMaxRow = await req.server.kysely.db
       .selectFrom("components.component_position as cp")
       .select(sql<number>`COALESCE(MAX(cp.row_end), 0) + 1`.as("new_row_start"))
@@ -117,7 +117,18 @@ export async function createComponent(
       .innerJoin("components.component as c", "cp.component_id", "c.id")
       .innerJoin("structure.page as p", "c.page_id", "p.id")
       .where("c.type", "in", ["header", "section"])
-      .where("c.page_id", "=", id)
+      .where(({ or, and }) =>
+        or([
+          and({
+            "c.type": "header",
+            "p.website_id": website.website_id,
+          }),
+          and({
+            "c.type": "section",
+            "c.page_id": id,
+          }),
+        ]),
+      )
       .executeTakeFirstOrThrow();
 
     rowStart = lastSectionEnding.new_row_start;

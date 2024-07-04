@@ -1,0 +1,62 @@
+header, main, footer {
+  padding: 1rem;
+}
+
+main, section {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  border-block: 0.125rem solid hsl(0 0% 90%);
+  gap: 1rem;
+}
+
+section {
+  gap: 0.5rem;
+}
+
+form, label {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+form {
+  gap: 0.5rem;
+}
+
+label {
+  gap: 0.125rem;
+}
+
+input, textarea, select {
+  border-radius: 0.125rem;
+  border: 0.0625rem solid hsl(0 0% 50%);
+  padding-inline: 0.5rem;
+  padding-block: 0.25rem;
+}
+
+textarea {
+  min-block-size: 10rem;
+}
+
+button, summary, select {
+  background-color: hsl(0 0% 95%);
+  border: 0.0625rem solid hsl(0 0% 85%);
+  padding-inline: 0.5rem;
+  padding-block: 0.25rem;
+  max-inline-size: fit-content;
+  cursor: pointer;
+  border-radius: 0.125rem;
+}
+
+summary {
+  margin-block-end: 0.5rem;
+}
+
+.container {
+  inline-size: 1024px;
+  max-inline-size: 100%;
+  margin-inline: auto;
+}

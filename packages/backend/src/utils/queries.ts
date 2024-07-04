@@ -167,6 +167,7 @@ export async function getAllComponents(req: FastifyRequest, pageId: string) {
       or([
         eb("components.component.page_id", "=", pageId),
         eb("components.component.is_public", "=", true),
+        eb("components.component.parent_id", "is not", null),
       ]),
     )
     .where(({ or, exists, selectFrom }) =>
@@ -213,7 +214,7 @@ export async function getAllComponents(req: FastifyRequest, pageId: string) {
     `)
     .orderBy("components.component_position.row_start")
     .orderBy("components.component_position.col_start")
-    .orderBy("created_at", "desc")
+    .orderBy("created_at")
     .execute();
 
   return allComponents;
