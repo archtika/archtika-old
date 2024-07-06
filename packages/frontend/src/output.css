@@ -1,13 +1,6 @@
-body, div[class^="text-"], div[class^="container-"] {
+body {
   display: flex;
   flex-direction: column;
-}
-
-div[class^="text-"], div[class^="container-"] {
-  align-items: start;
-}
-
-body {
   min-block-size: 100vh;
 }
 
@@ -15,20 +8,25 @@ header, section, footer {
   padding-block: 2rem;
 }
 
+div[class^="container-"] > * + *, div[class^="text-"] > * + * {
+  margin-block-start: 1rem;
+}
+
 div[class^="container-"] {
   max-inline-size: min(1280px, 100vw - 2rem);
   margin-inline: auto;
-  gap: 1rem;
 }
 
 footer {
   margin-block-start: auto;
 }
 
-div[class^="text-"] {
-  gap: 1rem;
-}
-
 p {
   max-inline-size: 65ch;
+}
+
+.grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 30ch), 1fr))
 }

@@ -116,9 +116,34 @@ export class ElementFactory {
     }
 
     if (component.children && component.children.length > 0) {
-      const childrenElements = component.children
-        .map((child) => this.createElement(child, assetPaths))
+      const groupedChildrenElements = component.children.reduce(
+        (acc: Record<number, Component[]>, child) => {
+          const key = child.row_start;
+
+          if (!acc[key]) {
+            acc[key] = [];
+          }
+
+          acc[key].push(child);
+          return acc;
+        },
+        {},
+      );
+
+      const childrenElements = Object.entries(groupedChildrenElements)
+        .map(([rowStart, children]) => {
+          const childrenHtml = children
+            .map((child) => this.createElement(child, assetPaths))
+            .join("");
+
+          if (children.length > 1) {
+            return `<div class="grid">${childrenHtml}</div>`;
+          }
+
+          return childrenHtml;
+        })
         .join("");
+
       element = element.replace("</", `${childrenElements}</`);
     }
 
