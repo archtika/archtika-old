@@ -92,6 +92,7 @@
 
           handle {
             root * /var/www/archtika-websites
+            try_files {path} {path}.html
             file_server
           }
 
