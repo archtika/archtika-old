@@ -6,7 +6,8 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "lib": ["es2023", "dom"]
   },
   "extends": "@tsconfig/node20/tsconfig.json"
 }

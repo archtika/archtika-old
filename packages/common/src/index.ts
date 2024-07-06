@@ -177,15 +177,22 @@ export class ElementFactory {
       });
     };
 
-    let purifiedTextContent = "";
+    const purifiedTextDOM = DOMPurify.sanitize(
+      parse(content, { renderer }) as string,
+      { RETURN_DOM_FRAGMENT: true },
+    );
 
-    purifiedTextContent = DOMPurify.sanitize(
+    const purifiedTextContent = DOMPurify.sanitize(
       parse(content, { renderer }) as string,
     );
 
-    return `<div class="text-${componentId}">
-      ${purifiedTextContent}
-    </div>`;
+    if (purifiedTextDOM.childElementCount > 1) {
+      return `<div class="text-${componentId}">
+        ${purifiedTextContent}
+      </div>`;
+    }
+
+    return purifiedTextContent;
   }
 
   private createButton(
