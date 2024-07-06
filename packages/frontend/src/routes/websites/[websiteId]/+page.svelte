@@ -84,55 +84,13 @@
     </form>
   </details>
 
-  {#if data.collaborators.length === 0}
-    <p>No collaborators added yet</p>
-  {:else}
-    {#each data.collaborators as { user_id, permission_level }}
-      <div>
-        <p>User id: {user_id}</p>
-        <p>Permission level: {permission_level}</p>
-        <details>
-          <summary>Change permissions</summary>
-          <form method="post" action="?/updateCollaborator" use:enhance>
-            <input
-              type="hidden"
-              id="update-collaborator-user-id"
-              name="user-id"
-              value={user_id}
-            />
-            <label>
-              Permission level:
-              <select
-                id="update-collaborator-permission-level"
-                name="permission-level"
-                required
-              >
-                <option value="10">View</option>
-                <option value="20">Edit</option>
-                <option value="30">Manage</option>
-              </select>
-            </label>
-            <button type="submit">Save</button>
-          </form>
-        </details>
-        <form method="post" action="?/removeCollaborator" use:enhance>
-          <input
-            type="hidden"
-            id="remove-collaborator-user-id"
-            name="user-id"
-            value={user_id}
-          />
-          <button type="submit">Remove</button>
-        </form>
-      </div>
-    {/each}
-  {/if}
+  <a href="/websites/{$page.params.websiteId}/collaborators">View collaborators</a>
 </section>
 
 <section>
   <h2>Logs</h2>
 
-  <a href="/websites/{$page.params.websiteId}/logs">View full change-log</a>
+  <a href="/websites/{$page.params.websiteId}/logs">View change-log</a>
 </section>
 
 <section>
@@ -143,7 +101,7 @@
   </form>
 
   <a href="/websites/{$page.params.websiteId}/deployments"
-    >View all deployments</a
+    >View deployments</a
   >
 </section>
 

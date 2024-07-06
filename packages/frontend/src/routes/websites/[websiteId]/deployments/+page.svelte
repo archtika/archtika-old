@@ -23,8 +23,7 @@
   <section>
     <h2>History</h2>
     {#each data.deployments as { user_id, generation, file_hash, created_at }}
-      <hr />
-      <ul>
+      <ul class="deployment">
         <li>
           <strong>Date and time:</strong>
           <DateTime date={created_at} />
@@ -51,3 +50,11 @@
     {/each}
   </section>
 {/if}
+
+<style>
+  .deployment {
+    margin-block-start: 1rem;
+    padding-block-start: 1rem;
+    border-block-start: 0.125rem solid hsl(0 0% 50%);
+  }
+</style>

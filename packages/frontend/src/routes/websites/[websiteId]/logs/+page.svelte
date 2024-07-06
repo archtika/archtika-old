@@ -62,8 +62,7 @@
   <p>No logs yet.</p>
 {:else}
   {#each data.logs as { created_at, user_id, change_summary, previous_value, new_value }}
-    <hr />
-    <ul>
+    <ul class="log">
       <li>
         <strong>Date and time:</strong>
         <DateTime date={created_at} />
@@ -80,3 +79,11 @@
     </ul>
   {/each}
 {/if}
+
+<style>
+  .log {
+    margin-block-start: 1rem;
+    padding-block-start: 1rem;
+    border-block-start: 0.125rem solid hsl(0 0% 50%);
+  }
+</style>
