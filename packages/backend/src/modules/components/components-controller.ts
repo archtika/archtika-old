@@ -142,9 +142,9 @@ export async function createComponent(
       row_start: rowStart,
       col_start: 1,
       row_end: rowEnd,
-      col_end: 33,
-      row_end_span: 0,
-      col_end_span: 0,
+      col_end: 25,
+      row_end_span: 1,
+      col_end_span: 24,
     })
     .returningAll()
     .executeTakeFirst();

@@ -69,7 +69,7 @@
       Math.max(1, Math.round(newHeight / gridCellHeight)) * gridCellHeight;
 
     if (["header", "section", "footer"].includes(component.type)) {
-      cols = 32;
+      cols = 24;
       rows = newHeight / gridCellHeight;
     } else {
       newWidth =
@@ -161,7 +161,7 @@
 
     for (let row = 0; row < row_end_span; row++) {
       for (let col = 0; col < col_end_span; col++) {
-        const zoneNumber = targetZone + row * 32 + col;
+        const zoneNumber = targetZone + row * 24 + col;
 
         const zoneElement = componentContainer?.querySelector(
           `[data-zone="${zoneNumber}"]`
@@ -317,9 +317,9 @@
       </small>
     </p>
 
-    {#each Array((component.row_end - component.row_start || 1) * 32) as _, i}
-      {@const row = Math.floor(i / 32) + 1}
-      {@const col = (i % 32) + 1}
+    {#each Array((component.row_end - component.row_start || 1) * 24) as _, i}
+      {@const row = Math.floor(i / 24) + 1}
+      {@const col = (i % 24) + 1}
 
       <div
         style="grid-area: {row} / {col} / {row} / {col}"
@@ -352,7 +352,7 @@
 
   .component-container {
     display: grid;
-    grid-template-columns: repeat(32, minmax(0, 1fr));
+    grid-template-columns: repeat(24, minmax(0, 1fr));
   }
 
   .selected {

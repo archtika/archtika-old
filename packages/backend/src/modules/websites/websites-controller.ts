@@ -106,6 +106,8 @@ export async function generateWebsite(
 
     const allComponentsNested = nestComponents(allComponents as Component[]);
 
+    console.log(JSON.stringify(allComponentsNested));
+
     let headerContent = "";
     let mainContent = "";
     let footerContent = "";

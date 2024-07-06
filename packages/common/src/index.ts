@@ -126,15 +126,21 @@ export class ElementFactory {
   }
 
   private createHeader(componentId: string) {
-    return `<header class="header-${componentId}"></header>`;
+    return `<header class="header-${componentId}">
+      <div class="container-${componentId}"></div>
+    </header>`;
   }
 
   private createFooter(componentId: string) {
-    return `<footer class="footer-${componentId}"></footer>`;
+    return `<footer class="footer-${componentId}">
+      <div class="container-${componentId}"></div>
+    </footer>`;
   }
 
   private createSection(componentId: string) {
-    return `<section class="section-${componentId}"></section>`;
+    return `<section class="section-${componentId}">
+      <div class="container-${componentId}"></div>
+    </section>`;
   }
 
   private createText(componentId: string, content: string) {

@@ -142,10 +142,16 @@
         <p>Selected component:</p>
         <ul>
           <li>
+            Unique id: <code>{componentData?.id}</code>
+          </li>
+          <li>
             Type: <strong>{componentData?.type}</strong>
           </li>
           <li>
-            Unique id: <code>{componentData?.id}</code>
+            Height (rows): <code>{componentData?.row_end_span}</code> 
+          </li>
+          <li>
+            Width (columns): <code>{componentData?.col_end_span}</code> 
           </li>
         </ul>
 
@@ -552,7 +558,7 @@
     data-content-container
   >
     {#each Array(totalRows) as _, i}
-      <div style="grid-area: {i + 1} / 1 / {i + 1} / 33" data-row={i + 1} />
+      <div style="grid-area: {i + 1} / 1 / {i + 1} / 25" data-row={i + 1} />
     {/each}
     {#each nestComponents($components) as component, i (i)}
       <RenderComponent {component} />
