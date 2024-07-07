@@ -1,17 +1,11 @@
 import { error, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ fetch, params, parent }) => {
-  const pagesData = await fetch(
-    `http://localhost:3000/api/v1/websites/${params.websiteId}/pages`,
-  );
-
+export const load: PageServerLoad = async ({ parent }) => {
   const { website } = await parent();
-  const pages = await pagesData.json();
 
   return {
     website,
-    pages,
   };
 };
 

@@ -11,38 +11,41 @@
 <section>
   <h2>Website settings</h2>
 
-  <form
-    method="post"
-    action="?/updateWebsite"
-    use:enhance={() => {
-      return async ({ update }) => {
-        await update({ reset: false });
-      };
-    }}
-  >
-    <label>
-      Title:
-      <input
-        type="text"
-        id="update-website-title"
-        name="title"
-        value={data.website.title}
-        minlength="5"
-        maxlength="50"
-        required
-      />
-    </label>
-    <label>
-      Description:
-      <textarea
-        id="update-website-description"
-        name="description"
-        minlength="10"
-        maxlength="200">{data.website.meta_description}</textarea
-      >
-    </label>
-    <button type="submit">Save</button>
-  </form>
+  <details>
+    <summary>Update</summary>
+    <form
+      method="post"
+      action="?/updateWebsite"
+      use:enhance={() => {
+        return async ({ update }) => {
+          await update({ reset: false });
+        };
+      }}
+    >
+      <label>
+        Title:
+        <input
+          type="text"
+          id="update-website-title"
+          name="title"
+          value={data.website.title}
+          minlength="5"
+          maxlength="50"
+          required
+        />
+      </label>
+      <label>
+        Description:
+        <textarea
+          id="update-website-description"
+          name="description"
+          minlength="10"
+          maxlength="200">{data.website.meta_description}</textarea
+        >
+      </label>
+      <button type="submit">Save</button>
+    </form>
+  </details>
 
   <details>
     <summary>Delete</summary>
@@ -84,7 +87,9 @@
     </form>
   </details>
 
-  <a href="/websites/{$page.params.websiteId}/collaborators">View collaborators</a>
+  <a href="/websites/{$page.params.websiteId}/collaborators"
+    >View collaborators</a
+  >
 </section>
 
 <section>
@@ -100,9 +105,7 @@
     <button type="submit">Deploy website</button>
   </form>
 
-  <a href="/websites/{$page.params.websiteId}/deployments"
-    >View deployments</a
-  >
+  <a href="/websites/{$page.params.websiteId}/deployments">View deployments</a>
 </section>
 
 <section>
@@ -147,14 +150,5 @@
     </form>
   </details>
 
-  {#if data.pages.length === 0}
-    <p>No pages created yet.</p>
-  {:else}
-    {#each data.pages as { id, title }}
-      <div>
-        <h3>{title}</h3>
-        <a href="/websites/{$page.params.websiteId}/pages/{id}">Edit</a>
-      </div>
-    {/each}
-  {/if}
+  <a href="/websites/{$page.params.websiteId}/pages">View pages</a>
 </section>

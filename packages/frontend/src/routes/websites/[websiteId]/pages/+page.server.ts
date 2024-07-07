@@ -1,15 +1,15 @@
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ fetch, params, parent }) => {
-  const logsData = await fetch(
-    `http://localhost:3000/api/v1/websites/${params.websiteId}/change-log`,
+  const pagesData = await fetch(
+    `http://localhost:3000/api/v1/websites/${params.websiteId}/pages`,
   );
 
-  const logs = await logsData.json();
+  const pages = await pagesData.json();
   const { website } = await parent();
 
   return {
-    logs,
     website,
+    pages,
   };
 };

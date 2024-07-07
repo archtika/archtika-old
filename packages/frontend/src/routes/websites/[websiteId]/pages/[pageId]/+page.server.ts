@@ -24,11 +24,11 @@ export const load: PageServerLoad = async ({
   );
   const mediaData = await fetch("http://localhost:3000/api/v1/media");
 
-  const { website } = await parent();
   const page = await pageData.json();
   const pages = await pagesData.json();
   const components = await componentsData.json();
   const media = await mediaData.json();
+  const { website } = await parent();
 
   return {
     website,

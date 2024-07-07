@@ -5,8 +5,8 @@ export const load: PageServerLoad = async ({ fetch, params, parent }) => {
     `http://localhost:3000/api/v1/websites/${params.websiteId}/collaborators`,
   );
 
-  const { website } = await parent();
   const collaborators = await collaboratorData.json();
+  const { website } = await parent();
 
   return {
     collaborators,
