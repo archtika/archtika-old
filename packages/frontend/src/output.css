@@ -30,3 +30,18 @@ p {
   gap: 2rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 30ch), 1fr))
 }
+
+.flex-next {
+  display: flex;
+  column-gap: 2rem;
+  row-gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  column-gap: 2rem;
+  row-gap: 1rem;
+  flex-wrap: wrap;
+}

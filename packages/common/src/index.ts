@@ -132,12 +132,39 @@ export class ElementFactory {
 
       const childrenElements = Object.entries(groupedChildrenElements)
         .map(([rowStart, children]) => {
+          let containerClass = "";
+
+          const isGrid = children.every((child, index) => {
+            const childSpan = child.col_end - child.col_start;
+            return (
+              childSpan === 24 / children.length &&
+              child.col_start === index * childSpan + 1
+            );
+          });
+
+          if (isGrid) {
+            containerClass = "grid";
+          } else if (children.length > 1) {
+            const totalSpan = children.reduce(
+              (sum, child) => sum + (child.col_end - child.col_start),
+              0,
+            );
+            const hasGap = children.some((child, index) => {
+              if (index === children.length - 1) return false;
+              return children[index + 1].col_start - child.col_end > 0;
+            });
+
+            if (totalSpan < 24) {
+              containerClass = hasGap ? "flex-between" : "flex-next";
+            }
+          }
+
           const childrenHtml = children
             .map((child) => this.createElement(child, assetPaths))
             .join("");
 
-          if (children.length > 1) {
-            return `<div class="grid">${childrenHtml}</div>`;
+          if (containerClass) {
+            return `<div class="${containerClass}">${childrenHtml}</div>`;
           }
 
           return childrenHtml;

@@ -69,3 +69,7 @@ details[open] > summary {
 ul {
   padding-inline-start: 1rem;
 }
+
+details > ul {
+  list-style: none;
+}
