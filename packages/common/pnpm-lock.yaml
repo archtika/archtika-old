@@ -12,8 +12,8 @@ importers:
         specifier: ^2.12.0
         version: 2.12.0
       marked:
-        specifier: ^13.0.1
-        version: 13.0.1
+        specifier: ^13.0.2
+        version: 13.0.2
     devDependencies:
       '@biomejs/biome':
         specifier: 1.8.3
@@ -167,8 +167,8 @@ packages:
       canvas:
         optional: true
 
-  marked@13.0.1:
-    resolution: {integrity: sha512-7kBohS6GrZKvCsNXZyVVXSW7/hGBHe49ng99YPkDCckSUrrG7MSFLCexsRxptzOmyW2eT5dySh4Md1V6my52fA==}
+  marked@13.0.2:
+    resolution: {integrity: sha512-J6CPjP8pS5sgrRqxVRvkCIkZ6MFdRIjDkwUwgJ9nL2fbmM6qGQeB2C16hi8Cc9BOzj6xXzy0jyi0iPIfnMHYzA==}
     engines: {node: '>= 18'}
     hasBin: true
 
@@ -424,7 +424,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  marked@13.0.1: {}
+  marked@13.0.2: {}
 
   mime-db@1.52.0: {}
 
