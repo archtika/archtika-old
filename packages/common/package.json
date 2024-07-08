@@ -10,7 +10,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
     "@tsconfig/node20": "^20.1.4",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.3"
   },
   "dependencies": {
     "isomorphic-dompurify": "^2.12.0",
