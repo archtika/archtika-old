@@ -73,3 +73,7 @@ ul {
 details > ul {
   list-style: none;
 }
+
+div[data-row], div[data-col] {
+  border: 0.03125rem solid hsl(0 0% 95%)
+}

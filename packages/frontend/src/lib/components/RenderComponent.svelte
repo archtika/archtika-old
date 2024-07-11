@@ -32,7 +32,6 @@
 
   function handleResize(event: MouseEvent) {
     event.preventDefault();
-
     const element = event.target as HTMLElement;
 
     if (!element.parentElement) return;
@@ -55,12 +54,12 @@
     const dx = event.clientX - startX;
     const dy = event.clientY - startY;
 
-    const gridCellSize = document.querySelector(`[data-zone="1"]`);
-    if (!gridCellSize) return;
-
-    const rect = gridCellSize.getBoundingClientRect();
-    const gridCellWidth = rect.width;
-    const gridCellHeight = rect.height;
+    const gridCellWidth = (
+      document.querySelector('[data-col="1"]') as HTMLElement
+    ).offsetWidth;
+    const gridCellHeight = (
+      document.querySelector('[data-row="1"]') as HTMLElement
+    ).offsetHeight;
 
     let newWidth = startWidth + dx;
     let newHeight = startHeight + dy;
@@ -136,42 +135,56 @@
 
   function highlightDragArea(
     target: HTMLElement,
+    event?: DragEvent,
     componentId?: string,
     isRemoval = false
   ) {
     if (isRemoval) {
-      for (const zoneElement of document.querySelectorAll("[data-zone]")) {
-        (zoneElement as HTMLElement).style.border = "";
-      }
+      const highlighterElements = document.querySelectorAll(
+        ".drag-area-highlighter"
+      );
 
-      return;
+      for (const element of highlighterElements) {
+        element.parentElement?.removeChild(element);
+      }
     }
 
     const componentData = $components.find((c) => c.id === componentId);
-
     if (!componentData) return;
 
     const { row_end_span, col_end_span } = componentData;
 
-    const targetZone = Number.parseInt(target.getAttribute("data-zone") ?? "");
+    const column = Number.parseInt(target.getAttribute("data-col") ?? "");
 
-    const componentContainer = target.closest(
-      ".component-container"
-    ) as HTMLElement;
+    const rect = target.parentElement?.getBoundingClientRect();
+    if (!rect || !event) return;
 
-    for (let row = 0; row < row_end_span; row++) {
-      for (let col = 0; col < col_end_span; col++) {
-        const zoneNumber = targetZone + row * 24 + col;
+    const y = event.clientY - rect.top;
 
-        const zoneElement = componentContainer?.querySelector(
-          `[data-zone="${zoneNumber}"]`
-        ) as HTMLElement;
+    const gridCellHeight = (
+      target.parentElement?.querySelector('[data-row="1"]') as HTMLElement
+    ).offsetHeight;
 
-        if (zoneElement) {
-          zoneElement.style.border = "0.125rem solid black";
-        }
-      }
+    const row = Math.floor(y / gridCellHeight) + 1;
+
+    if (!target.parentElement?.querySelector(".drag-area-highlighter")) {
+      const highlighter = document.createElement("div");
+      highlighter.className = "drag-area-highlighter";
+      highlighter.style.backgroundColor = "hsl(0 0% 95%)";
+      highlighter.style.border = "0.125rem solid hsl(0 0% 85%)";
+      highlighter.style.gridArea = `${row} / ${column} / ${row + row_end_span} / ${column + col_end_span}`;
+      highlighter.style.pointerEvents = "none";
+
+      target.parentElement?.appendChild(highlighter);
+      return;
     }
+
+    (
+      target.parentElement.querySelector(
+        ".drag-area-highlighter"
+      ) as HTMLElement
+    ).style.gridArea =
+      `${row} / ${column} / ${row + row_end_span} / ${column + col_end_span}`;
   }
 
   function handleDragStart(event: DragEvent) {
@@ -187,42 +200,30 @@
 
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
-  }
 
-  function handleDragEnter(event: DragEvent) {
     const target = event.target as HTMLElement;
+    /* Logical OR is required here because of the security model of the drag-and-drop API,
+    which restricts access to the data during certain events */
     const componentId =
       event.dataTransfer?.getData("text/plain") || $draggedComponentId;
 
     if (!componentId) return;
 
-    highlightDragArea(target, componentId, true);
-    highlightDragArea(target, componentId);
+    highlightDragArea(target, event, componentId);
   }
 
   function handleDragEnd(event: DragEvent) {
     const target = event.target as HTMLElement;
-    const componentId =
-      event.dataTransfer?.getData("text/plain") || $draggedComponentId;
-
-    if (!componentId) return;
-
-    highlightDragArea(target, componentId, true);
-    $draggedComponentId = null;
+    highlightDragArea(target, undefined, undefined, true);
   }
 
-  async function handleDrop(
-    event: DragEvent,
-    rowStart: number,
-    colStart: number,
-    rowEnd: number,
-    colEnd: number
-  ) {
+  async function handleDrop(event: DragEvent, column: number) {
     event.preventDefault();
 
     const target = event.target as HTMLElement;
-    const componentId =
-      event.dataTransfer?.getData("text/plain") || $draggedComponentId;
+    const componentId = event.dataTransfer?.getData("text/plain");
+
+    highlightDragArea(target, undefined, undefined, true);
 
     const index = $components.findIndex((component: Component) => {
       return component.id === componentId;
@@ -231,12 +232,23 @@
     const parentId =
       target.parentElement?.getAttribute("data-component-id") ?? "";
 
+    const rect = target.parentElement?.getBoundingClientRect();
+    if (!rect) return;
+
+    const y = event.clientY - rect.top;
+
+    const gridCellHeight = (
+      target.parentElement?.querySelector('[data-row="1"]') as HTMLElement
+    ).offsetHeight;
+
+    const row = Math.floor(y / gridCellHeight) + 1;
+
     $components[index] = {
       ...$components[index],
-      row_start: rowStart,
-      col_start: colStart,
-      row_end: rowEnd + ($components[index].row_end_span ?? 0),
-      col_end: colEnd + ($components[index].col_end_span ?? 0),
+      row_start: row,
+      col_start: column,
+      row_end: row + ($components[index].row_end_span ?? 0),
+      col_end: column + ($components[index].col_end_span ?? 0),
       parent_id: parentId,
     };
 
@@ -283,8 +295,6 @@
 
     applyAction(updateComponentResult);
     applyAction(result);
-
-    $draggedComponentId = null;
   }
 </script>
 
@@ -302,7 +312,8 @@
   style="grid-area: {component.row_start ?? 1} / {component.col_start ??
     1} / {component.row_end ?? 1} / {component.col_end ??
     1}; grid-template-rows: repeat({component.row_end -
-    component.row_start}, 2.5rem)"
+    component.row_start}, 2.5rem); min-block-size: calc({component.row_end -
+    component.row_start} * 2.5rem + 0.25rem)"
   data-component-type={component.type}
   data-component-id={component.id}
   data-component-parent-id={component.parent_id}
@@ -317,17 +328,19 @@
       </small>
     </p>
 
-    {#each Array((component.row_end - component.row_start || 1) * 24) as _, i}
-      {@const row = Math.floor(i / 24) + 1}
-      {@const col = (i % 24) + 1}
+    {#each Array(component.row_end - component.row_start) as _, i}
+      {@const row = i + 1}
+
+      <div style="grid-area: {row} / 1 / {row + 1} / -1" data-row={row} />
+    {/each}
+    {#each Array(24) as _, i}
+      {@const col = i + 1}
 
       <div
-        style="grid-area: {row} / {col} / {row} / {col}"
-        data-zone={i + 1}
+        style="grid-area: 1 / {col} / -1 / {col + 1};"
+        data-col={col}
         on:dragover={handleDragOver}
-        on:dragenter={handleDragEnter}
-        on:drop={(event) => handleDrop(event, row, col, row, col)}
-        on:drag
+        on:drop={(event) => handleDrop(event, col)}
         role="presentation"
       />
     {/each}

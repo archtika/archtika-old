@@ -90,7 +90,7 @@ export async function createComponent(
     });
 
   let rowStart = 1;
-  let rowEnd = 2;
+  let rowEnd = component.type === "header" ? 4 : 2;
 
   const website = await req.server.kysely.db
     .selectFrom("structure.page")
@@ -109,7 +109,7 @@ export async function createComponent(
       .executeTakeFirstOrThrow();
 
     rowStart = componentMaxRow.new_row_start;
-    rowEnd = componentMaxRow.new_row_start + 1;
+    rowEnd = componentMaxRow.new_row_start + 3;
   } else if (component.type === "section") {
     const lastSectionEnding = await req.server.kysely.db
       .selectFrom("components.component_position as cp")
@@ -132,7 +132,7 @@ export async function createComponent(
       .executeTakeFirstOrThrow();
 
     rowStart = lastSectionEnding.new_row_start;
-    rowEnd = lastSectionEnding.new_row_start + 1;
+    rowEnd = lastSectionEnding.new_row_start + 3;
   }
 
   const componentPositionData = await req.server.kysely.db
