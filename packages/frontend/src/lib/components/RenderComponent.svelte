@@ -134,23 +134,26 @@
   }
 
   function highlightDragArea(
-    target: HTMLElement,
-    event?: DragEvent,
+    event: DragEvent,
     componentId?: string,
     isRemoval = false
   ) {
+    const componentData = $components.find((c) => c.id === componentId);
+    if (!componentData) return;
+
     if (isRemoval) {
       const highlighterElements = document.querySelectorAll(
         ".drag-area-highlighter"
       );
 
       for (const element of highlighterElements) {
-        element.parentElement?.removeChild(element);
+        (element as HTMLElement).style.display = "none";
       }
+
+      return;
     }
 
-    const componentData = $components.find((c) => c.id === componentId);
-    if (!componentData) return;
+    const target = event.target as HTMLElement;
 
     const { row_end_span, col_end_span } = componentData;
 
@@ -167,7 +170,11 @@
 
     const row = Math.floor(y / gridCellHeight) + 1;
 
-    if (!target.parentElement?.querySelector(".drag-area-highlighter")) {
+    const existingHighlighter = target.parentElement?.querySelector(
+      ".drag-area-highlighter"
+    ) as HTMLElement;
+
+    if (!existingHighlighter) {
       const highlighter = document.createElement("div");
       highlighter.className = "drag-area-highlighter";
       highlighter.style.backgroundColor = "hsl(0 0% 95%)";
@@ -176,15 +183,12 @@
       highlighter.style.pointerEvents = "none";
 
       target.parentElement?.appendChild(highlighter);
+
       return;
     }
 
-    (
-      target.parentElement.querySelector(
-        ".drag-area-highlighter"
-      ) as HTMLElement
-    ).style.gridArea =
-      `${row} / ${column} / ${row + row_end_span} / ${column + col_end_span}`;
+    existingHighlighter.style.display = "";
+    existingHighlighter.style.gridArea = `${row} / ${column} / ${row + row_end_span} / ${column + col_end_span}`;
   }
 
   function handleDragStart(event: DragEvent) {
@@ -209,12 +213,18 @@
 
     if (!componentId) return;
 
-    highlightDragArea(target, event, componentId);
+    highlightDragArea(event, componentId, true);
+    highlightDragArea(event, componentId);
   }
 
   function handleDragEnd(event: DragEvent) {
     const target = event.target as HTMLElement;
-    highlightDragArea(target, undefined, undefined, true);
+    const componentId =
+      event.dataTransfer?.getData("text/plain") || $draggedComponentId;
+
+    if (!componentId) return;
+
+    highlightDragArea(event, componentId, true);
   }
 
   async function handleDrop(event: DragEvent, column: number) {
@@ -222,8 +232,6 @@
 
     const target = event.target as HTMLElement;
     const componentId = event.dataTransfer?.getData("text/plain");
-
-    highlightDragArea(target, undefined, undefined, true);
 
     const index = $components.findIndex((component: Component) => {
       return component.id === componentId;
