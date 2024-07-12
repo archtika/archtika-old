@@ -52,9 +52,9 @@ export async function createMedia(
     .executeTakeFirstOrThrow();
 
   const bucketName = "media";
-  const objectName = `${req.user?.id}/${randomId}.${
-    media.mimetype.split("/")[1]
-  }`;
+  const objectName = `${req.user?.id}/${randomId}.${media.mimetype
+    .split("/")[1]
+    .replace("svg+xml", "svg")}`;
 
   await req.server.minio.client.putObject(
     bucketName,
@@ -148,7 +148,7 @@ export async function deleteMedia(
 
   await req.server.minio.client.removeObject(
     "media",
-    `${req.user?.id}/${media.id}.${media.mimetype.split("/")[1]}`,
+    `${req.user?.id}/${media.id}.${media.mimetype.split("/")[1].replace("svg+xml", "svg")}`,
   );
 
   return reply.status(200).send(media);

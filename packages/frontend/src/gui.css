@@ -2,18 +2,25 @@ header, main, footer {
   padding: 1rem;
 }
 
-main, section {
+body, main, section {
   display: flex;
   flex-direction: column;
 }
 
+body {
+  min-block-size: 100vh;
+}
+
 main {
-  border-block: 0.125rem solid hsl(0 0% 90%);
   gap: 1rem;
 }
 
 section {
   gap: 0.5rem;
+}
+
+footer {
+  margin-block-start: auto;
 }
 
 form, label {

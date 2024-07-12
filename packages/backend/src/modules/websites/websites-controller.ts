@@ -101,6 +101,7 @@ export async function generateWebsite(
 
   for (const page of allPages) {
     const fileName = page.route === "/" ? "index.html" : `${page.route}.html`;
+    const relativePath = "../".repeat(page.depth);
 
     const allComponents = await getAllComponents(req, page.id);
 
@@ -124,7 +125,9 @@ export async function generateWebsite(
           .where("id", "=", comp.asset_id ?? "")
           .executeTakeFirst();
 
-        const mimeTypeExtension = media?.mimetype.split("/")[1];
+        const mimeTypeExtension = media?.mimetype
+          .split("/")[1]
+          .replace("svg+xml", "svg");
 
         const dataStream = await req.server.minio.client.getObject(
           "media",
@@ -140,7 +143,7 @@ export async function generateWebsite(
 
         zip.addFile(`assets/${comp.asset_id}.${mimeTypeExtension}`, buffer);
 
-        const path = `./assets/${comp.asset_id}.${mimeTypeExtension}`;
+        const path = `${relativePath}assets/${comp.asset_id}.${mimeTypeExtension}`;
         assetPaths.push(path);
 
         fileContents.push(buffer);
@@ -173,7 +176,7 @@ export async function generateWebsite(
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width" />
-        <link rel="stylesheet" href="styles.css" />
+        <link rel="stylesheet" href="${relativePath}styles.css" />
         <meta name="description" content="${page.meta_description}">
         <title>${page.title}</title>
       </head>

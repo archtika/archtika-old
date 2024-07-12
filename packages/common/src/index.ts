@@ -142,9 +142,11 @@ export class ElementFactory {
             );
           });
 
-          if (isGrid) {
-            containerClass = "grid";
-          } else if (children.length > 1) {
+          if (children.length > 1) {
+            if (isGrid) {
+              containerClass = "grid";
+            }
+
             const totalSpan = children.reduce(
               (sum, child) => sum + (child.col_end - child.col_start),
               0,
@@ -234,8 +236,9 @@ export class ElementFactory {
 
   private createImage(componentId: string, src: string, alt: string) {
     const draggable = src.includes("X-Amz-Algorithm");
+    const newSrc = src.replace("svg+xml", "svg");
 
-    return `<img src="${src}" ${
+    return `<img src="${newSrc}" ${
       draggable ? 'draggable="false"' : ""
     } alt="${alt}" class="image-${componentId}" />`;
   }

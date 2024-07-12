@@ -61,6 +61,11 @@
 {#if data.logs.length === 0}
   <p>No logs yet.</p>
 {:else}
+  <p>
+    <strong>Total log count:</strong>
+    {new Intl.NumberFormat().format(data.logs.length)} entries
+  </p>
+
   {#each data.logs as { created_at, user_id, change_summary, previous_value, new_value }}
     <ul class="log">
       <li>

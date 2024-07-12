@@ -5,8 +5,7 @@
   import RenderComponent from "$lib/components/RenderComponent.svelte";
   import { components, selectedComponent } from "$lib/stores";
   import type { Component } from "common";
-  import { mimeTypes } from "common";
-  import { nestComponents } from "common";
+  import { mimeTypes, nestComponents } from "common";
   import type { PageServerData } from "./$types";
 
   export let data: PageServerData;
@@ -123,7 +122,8 @@
     <details>
       <summary>Pages</summary>
       <ul>
-        {#each data.pages as { id, title }}
+        {#each data.pages as { id, title, depth }}
+          {depth}
           <li>
             <a href="/websites/{$page.params.websiteId}/pages/{id}">{title}</a>
           </li>
@@ -148,10 +148,10 @@
             Type: <strong>{componentData?.type}</strong>
           </li>
           <li>
-            Height (rows): <code>{componentData?.row_end_span}</code> 
+            Height (rows): <code>{componentData?.row_end_span}</code>
           </li>
           <li>
-            Width (columns): <code>{componentData?.col_end_span}</code> 
+            Width (columns): <code>{componentData?.col_end_span}</code>
           </li>
         </ul>
 
@@ -553,13 +553,7 @@
     </section>
   </div>
 
-  <div
-    style="grid-template-rows: repeat({totalRows}, 2.5rem)"
-    data-content-container
-  >
-    {#each Array(totalRows) as _, i}
-      <div style="grid-area: {i + 1} / 1 / {i + 1} / 25" data-row={i + 1} />
-    {/each}
+  <div data-content-container>
     {#each nestComponents($components) as component, i (i)}
       <RenderComponent {component} />
     {/each}
@@ -569,7 +563,8 @@
 <style>
   .editor-wrapper {
     display: grid;
-    grid-template-columns: 1fr calc(1280px + 2rem + (4 * 0.125rem));
+    grid-template-columns: 1fr 1280px;
+    block-size: 80vh;
   }
 
   div[data-sidebar],
@@ -577,6 +572,7 @@
     max-block-size: 100vh;
     overflow-y: auto;
     border: 0.125rem solid black;
+    gap: 2rem;
   }
 
   div[data-sidebar] {
@@ -588,7 +584,8 @@
   }
 
   div[data-content-container] {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     padding-inline: 1rem;
     padding-block: 2rem;
   }

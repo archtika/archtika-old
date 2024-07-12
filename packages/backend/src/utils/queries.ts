@@ -54,7 +54,7 @@ export async function getExistingPresignedUrl(
 
       presignedUrl = await req.server.minio.client.presignedGetObject(
         "media",
-        `${req.user?.id}/${assetId}.${media?.mimetype.split("/")[1]}`,
+        `${req.user?.id}/${assetId}.${media?.mimetype.split("/")[1].replace("svg+xml", "svg")}`,
       );
 
       await req.server.kysely.db

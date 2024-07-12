@@ -177,8 +177,10 @@
     if (!existingHighlighter) {
       const highlighter = document.createElement("div");
       highlighter.className = "drag-area-highlighter";
-      highlighter.style.backgroundColor = "hsl(0 0% 95%)";
-      highlighter.style.border = "0.125rem solid hsl(0 0% 85%)";
+      highlighter.style.backgroundColor = "black";
+      highlighter.style.opacity = "0.5";
+      highlighter.style.outline = "0.125rem solid black";
+      highlighter.style.outlineOffset = "0.25rem";
       highlighter.style.gridArea = `${row} / ${column} / ${row + row_end_span} / ${column + col_end_span}`;
       highlighter.style.pointerEvents = "none";
 
@@ -205,7 +207,6 @@
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
 
-    const target = event.target as HTMLElement;
     /* Logical OR is required here because of the security model of the drag-and-drop API,
     which restricts access to the data during certain events */
     const componentId =
@@ -218,7 +219,6 @@
   }
 
   function handleDragEnd(event: DragEvent) {
-    const target = event.target as HTMLElement;
     const componentId =
       event.dataTransfer?.getData("text/plain") || $draggedComponentId;
 
@@ -232,6 +232,8 @@
 
     const target = event.target as HTMLElement;
     const componentId = event.dataTransfer?.getData("text/plain");
+
+    highlightDragArea(event, componentId, true);
 
     const index = $components.findIndex((component: Component) => {
       return component.id === componentId;
@@ -320,8 +322,7 @@
   style="grid-area: {component.row_start ?? 1} / {component.col_start ??
     1} / {component.row_end ?? 1} / {component.col_end ??
     1}; grid-template-rows: repeat({component.row_end -
-    component.row_start}, 2.5rem); min-block-size: calc({component.row_end -
-    component.row_start} * 2.5rem + 0.25rem)"
+    component.row_start}, 2.5rem)"
   data-component-type={component.type}
   data-component-id={component.id}
   data-component-parent-id={component.parent_id}
@@ -377,7 +378,7 @@
   }
 
   .selected {
-    outline: 0.5rem solid yellow;
+    outline: 0.25rem solid yellow;
   }
 
   .non-nested {

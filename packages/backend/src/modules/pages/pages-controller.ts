@@ -46,6 +46,7 @@ export async function createPage(
             ]),
           ),
         route,
+        depth: (route.match(/\//g) || []).length - 1,
         title,
         meta_description: metaDescription,
       }))
@@ -95,6 +96,7 @@ export async function updatePage(
       .updateTable("structure.page")
       .set({
         ...(route ? { route } : {}),
+        depth: (route?.match(/\//g) || []).length - 1,
         title,
         meta_description: metaDescription,
         updated_at: sql`now()`,
