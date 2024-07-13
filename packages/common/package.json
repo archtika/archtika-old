@@ -4,11 +4,9 @@
   "main": "./js-output/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "build:watch": "tsc -p tsconfig.json -w",
-    "format:lint": "npx @biomejs/biome check --write ."
+    "build:watch": "tsc -p tsconfig.json -w"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.3",
     "@tsconfig/node20": "^20.1.4",
     "typescript": "^5.5.2"
   },

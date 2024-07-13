@@ -29,6 +29,7 @@
           default = pkgs.mkShell {
             packages = with pkgs; [ nodejs_22 biome ];
             shellHook = ''
+              alias formatlint="biome check --write ."
               alias datestring="TZ=UTC date '+%Y%m%d%H%M%S'"
             '';
           };
