@@ -123,8 +123,8 @@
       <summary>Pages</summary>
       <ul>
         {#each data.pages as { id, title, depth }}
-          {depth}
           <li>
+            {"─".repeat(depth)}
             <a href="/websites/{$page.params.websiteId}/pages/{id}">{title}</a>
           </li>
         {/each}

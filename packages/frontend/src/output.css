@@ -8,10 +8,6 @@ header, section, footer {
   padding-block: 2rem;
 }
 
-div[class^="container-"] > * + *, div[class^="text-"] > * + * {
-  margin-block-start: 1rem;
-}
-
 div[class^="container-"] {
   max-inline-size: min(1280px, 100vw - 2rem);
   margin-inline: auto;
@@ -19,10 +15,6 @@ div[class^="container-"] {
 
 footer {
   margin-block-start: auto;
-}
-
-p {
-  max-inline-size: 65ch;
 }
 
 .grid {

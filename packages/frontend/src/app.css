@@ -8,6 +8,10 @@
   margin: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   line-height: 1.6;
   font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -49,4 +53,51 @@ h6 {
 
 h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
+}
+
+div[class^="container-"] > * + *, div[class^="text-"] > * + * {
+  margin-block-start: 1rem;
+}
+
+p {
+  max-inline-size: 65ch;
+}
+
+button, summary, select {
+  background-color: hsl(0 0% 95%);
+  border: 0.0625rem solid hsl(0 0% 85%);
+  padding-inline: 0.5rem;
+  padding-block: 0.25rem;
+  max-inline-size: fit-content;
+  cursor: pointer;
+  border-radius: 0.125rem;
+  color: inherit;
+}
+
+table {
+  display: block;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+td, th {
+  border: 0.125rem solid black;
+  padding-inline: 0.5rem;
+  padding-block: 0.25rem;
+}
+
+pre {
+  background-color: hsl(0 0% 95%);
+  padding: 1rem;
+  border: 0.0625rem solid hsl(0 0% 85%);
+}
+
+ul, ol {
+  padding-inline-start: 1rem;
+}
+
+blockquote {
+  margin-inline-start: 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 0.0625rem solid hsl(0 0% 85%);
 }

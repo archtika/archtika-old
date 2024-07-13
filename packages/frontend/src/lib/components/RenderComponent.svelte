@@ -383,6 +383,8 @@
 
   .non-nested {
     z-index: 10;
+    padding-inline: 0.5rem;
+    padding-block: 0.25rem;
   }
 
   .component-indicator {

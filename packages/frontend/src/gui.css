@@ -48,16 +48,6 @@ textarea {
   min-block-size: 10rem;
 }
 
-button, summary, select {
-  background-color: hsl(0 0% 95%);
-  border: 0.0625rem solid hsl(0 0% 85%);
-  padding-inline: 0.5rem;
-  padding-block: 0.25rem;
-  max-inline-size: fit-content;
-  cursor: pointer;
-  border-radius: 0.125rem;
-}
-
 details[open] > :not(summary) {
   border-inline-start: 0.125rem solid hsl(0 0% 85%);
   padding-inline-start: 1rem;
@@ -73,11 +63,7 @@ details[open] > summary {
   margin-inline: auto;
 }
 
-ul {
-  padding-inline-start: 1rem;
-}
-
-details > ul {
+details > ul, details > ol {
   list-style: none;
 }
 

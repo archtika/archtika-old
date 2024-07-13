@@ -41,21 +41,19 @@
   {#if data.websites.length === 0}
     <p>No websites created yet.</p>
   {:else}
-    <div>
-      {#each data.websites as { id, title, created_at, updated_at, last_modified_by }}
-        <div>
-          <h3>{title}</h3>
-          <p>
-            {#if updated_at}
-              Last modified at: <DateTime date={updated_at} />
-            {:else}
-              Created at: <DateTime date={created_at} />
-            {/if}
-          </p>
-          <a href="/websites/{id}">Edit</a>
-        </div>
-      {/each}
-    </div>
+    {#each data.websites as { id, title, created_at, updated_at, last_modified_by }}
+      <div>
+        <h3>{title}</h3>
+        <p>
+          {#if updated_at}
+            Last modified at: <DateTime date={updated_at} />
+          {:else}
+            Created at: <DateTime date={created_at} />
+          {/if}
+        </p>
+        <a href="/websites/{id}">Edit</a>
+      </div>
+    {/each}
   {/if}
 </section>
 

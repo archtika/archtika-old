@@ -103,6 +103,7 @@ export async function getAllPages(req: FastifyRequest, websiteId: string) {
       ]),
     )
     .where("website_id", "=", id)
+    .orderBy("route")
     .execute();
 
   return allPages;
