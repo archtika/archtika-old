@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json -w",
-    "format:lint": "pnpm biome check --write ."
+    "format:lint": "npx @biomejs/biome check --write ."
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
