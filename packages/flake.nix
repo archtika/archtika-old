@@ -26,7 +26,19 @@
       devShells = forAllSystems (system:
         let pkgs = nixpkgs.legacyPackages.${system};
         in {
-          default = pkgs.mkShell {
+          common = pkgs.mkShell {
+            packages = with pkgs; [ nodejs_22 biome ];
+            shellHook = ''
+              alias formatlint="biome check --write ."
+            '';
+          };
+          frontend = pkgs.mkShell {
+            packages = with pkgs; [ nodejs_22 biome ];
+            shellHook = ''
+              alias formatlint="biome check --write ."
+            '';
+          };
+          backend = pkgs.mkShell {
             packages = with pkgs; [ nodejs_22 biome ];
             shellHook = ''
               alias formatlint="biome check --write ."
@@ -34,9 +46,28 @@
             '';
           };
         });
-      packages = forAllSystems (system: {
-        dev-vm = self.nixosConfigurations.${system}.config.system.build.vm;
-      });
+      packages = forAllSystems (system:
+        let pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          frontend = pkgs.buildNpmPackage {
+            name = "archtika-frontend";
+            src = ./frontend;
+
+            npmDepsHash = "sha256-SBrRo4Ez5EsKsbNeJ/A7cXKUI4lGEDV0VMA09nD4d8Y=";
+
+            installPhase = ''
+              mkdir $out
+              cp -r build/* $out
+              cp package.json $out
+              cp -r node_modules $out
+            '';
+          };
+          backend = pkgs.buildNpmPackage {
+
+          };
+          dev-vm = self.nixosConfigurations.${system}.config.system.build.vm;
+        }
+      );
 
       nixosConfigurations = forAllSystems
         (system: nixpkgs.lib.nixosSystem (makeNixosConfiguration system));
