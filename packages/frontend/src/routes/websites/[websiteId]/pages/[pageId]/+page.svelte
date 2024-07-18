@@ -6,7 +6,7 @@
   import { components, selectedComponent } from "$lib/stores";
   import type { Component } from "common";
   import { mimeTypes, nestComponents } from "common";
-  import type { PageServerData } from "./$types";
+  import type { ActionData, PageServerData } from "./$types";
 
   export let data: PageServerData;
 
@@ -15,21 +15,6 @@
   function getMimeTypes(type: string): string[] {
     return mimeTypes[type as "image" | "audio" | "video"];
   }
-
-  $: getMedia = (
-    type: string,
-    updatedComponent: undefined | Component = undefined
-  ) => {
-    if (!data.media[type]) return [];
-
-    if (updatedComponent) {
-      return data.media[type].filter(
-        (media: { id: string }) => media.id !== updatedComponent.asset_id
-      );
-    }
-
-    return data.media[type];
-  };
 
   function handleWindowClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -106,7 +91,39 @@
     };
   }
 
-  $: totalRows = Math.max(0, ...$components.map((item) => item.row_end)) + 12;
+  async function handlePaste(event: ClipboardEvent) {
+    const clipboardItems = Array.from(event.clipboardData?.items || []);
+    const mediaItem = clipboardItems.find(
+      (item) => item.type.startsWith("image/") || item.type.startsWith("video/")
+    );
+
+    if (!mediaItem) return;
+
+    event.preventDefault();
+    const fileObject = mediaItem.getAsFile();
+
+    if (!fileObject) return;
+
+    const formData = new FormData();
+    formData.append("file", fileObject);
+
+    const response = await fetch("?/createPasteMedia", {
+      method: "POST",
+      body: formData,
+    });
+
+    const responseJson = await response.json();
+    const responseData = JSON.parse(responseJson.data);
+    const fileId = responseData[1];
+    const mimeTypeExtension = responseData[2]
+      .split("/")[1]
+      .replace("svg+xml", "svg");
+
+    const imageUrl = `http://localhost:19000/media/${data.account.id}/${fileId}.${mimeTypeExtension}`;
+
+    const target = event.target as HTMLTextAreaElement;
+    target.value += `![](${imageUrl})`;
+  }
 </script>
 
 <svelte:window
@@ -182,6 +199,7 @@
               <textarea
                 id="update-component-{$selectedComponent}-content"
                 name="updated-content"
+                on:paste={handlePaste}
                 required>{componentData?.content.textContent}</textarea
               >
             </label>
@@ -265,24 +283,6 @@
                 accept={getMimeTypes(componentData?.type ?? "image").join(", ")}
               />
             </label>
-            {#if getMedia(componentData?.type ?? "", componentData).length > 0}
-              <fieldset>
-                <legend>Select existing {componentData?.type}:</legend>
-                <div>
-                  {#each getMedia(componentData?.type ?? "", componentData) as media}
-                    <label>
-                      <input
-                        type="radio"
-                        id="update-component-{componentData?.id}-existing-file-{media.id}"
-                        name="existing-file"
-                        value={media.id}
-                      />
-                      {media.name}
-                    </label>
-                  {/each}
-                </div>
-              </fieldset>
-            {/if}
             <label>
               Alt text:
               <input
@@ -422,24 +422,6 @@
                     accept={mimes.join(", ")}
                   />
                 </label>
-                {#if getMedia(type).length > 0}
-                  <fieldset>
-                    <legend>Select existing {type}:</legend>
-                    <div>
-                      {#each getMedia(type) as media}
-                        <label>
-                          <input
-                            id="create-component-{type}-existing-file-{media.id}"
-                            type="radio"
-                            name="existing-file"
-                            value={media.id}
-                          />
-                          {media.name}
-                        </label>
-                      {/each}
-                    </div>
-                  </fieldset>
-                {/if}
                 <label>
                   Alt text:
                   <input

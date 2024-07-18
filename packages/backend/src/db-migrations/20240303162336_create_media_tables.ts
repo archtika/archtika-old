@@ -26,7 +26,6 @@ export async function up(db: Kysely<DB>) {
     .addColumn("created_at", "timestamptz", (col) =>
       col.notNull().defaultTo(sql`now()`),
     )
-    .addUniqueConstraint("uniqueFileHash", ["file_hash", "user_id"])
     .execute();
 }
 

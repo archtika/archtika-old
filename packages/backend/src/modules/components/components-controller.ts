@@ -3,7 +3,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { sql } from "kysely";
 import type WebSocket from "ws";
 import {
-  getExistingPresignedUrl,
+  getMediaUrl,
   sendNotify,
   updateLastModifiedByColumn,
 } from "../../utils/queries.js";
@@ -152,7 +152,7 @@ export async function createComponent(
   const componentWithUrlAndPosition = {
     ...component,
     ...componentPositionData,
-    url: await getExistingPresignedUrl(req, component.asset_id),
+    url: await getMediaUrl(req, component.asset_id),
   };
 
   await sendNotify(
@@ -180,7 +180,7 @@ export async function getAllComponents(
     allComponents.map(async (component) => {
       return {
         ...component,
-        url: await getExistingPresignedUrl(req, component.asset_id),
+        url: await getMediaUrl(req, component.asset_id),
       };
     }),
   );
@@ -262,7 +262,7 @@ export async function getComponent(
 
   const componentWithUrl = {
     ...component,
-    url: await getExistingPresignedUrl(req, component.asset_id),
+    url: await getMediaUrl(req, component.asset_id),
   };
 
   return reply.status(200).send(componentWithUrl);
@@ -336,7 +336,7 @@ export async function updateComponent(
 
   const componentWithUrl = {
     ...component,
-    url: await getExistingPresignedUrl(req, component.asset_id),
+    url: await getMediaUrl(req, component.asset_id),
   };
 
   await sendNotify(
@@ -409,7 +409,7 @@ export async function deleteComponent(
 
   const componentWithUrl = {
     ...component,
-    url: await getExistingPresignedUrl(req, component.asset_id),
+    url: await getMediaUrl(req, component.asset_id),
   };
 
   await sendNotify(

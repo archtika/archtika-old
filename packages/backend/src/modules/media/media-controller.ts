@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { mimeTypes } from "common";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { getExistingPresignedUrl } from "../../utils/queries.js";
+import { getMediaUrl } from "../../utils/queries.js";
 import type {
   ParamsSchemaType,
   multipartFileSchemaType,
@@ -47,7 +47,6 @@ export async function createMedia(
       mimetype: data.mimetype,
       file_hash: createHash("sha256").update(buffer).digest("hex"),
     })
-    .onConflict((oc) => oc.constraint("uniqueFileHash").doNothing())
     .returningAll()
     .executeTakeFirstOrThrow();
 
@@ -82,7 +81,7 @@ export async function getAllMedia(req: FastifyRequest, reply: FastifyReply) {
     media.map(async (asset) => {
       return {
         ...asset,
-        url: await getExistingPresignedUrl(req, asset.id),
+        url: await getMediaUrl(req, asset.id),
       };
     }),
   );
@@ -128,7 +127,7 @@ export async function getMedia(
 
   const assetWithPresignedUrl = {
     ...media,
-    url: await getExistingPresignedUrl(req, media.id),
+    url: await getMediaUrl(req, media.id),
   };
 
   return reply.status(200).send(assetWithPresignedUrl);

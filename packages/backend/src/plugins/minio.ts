@@ -23,6 +23,28 @@ async function minio(fastify: FastifyInstance) {
           await minioClient.makeBucket(bucket, "us-east-1");
 
           console.log(`Bucket "${bucket}" created successfully`);
+
+          if (bucket !== "media") return;
+
+          const policy = {
+            Version: "2012-10-17",
+            Statement: [
+              {
+                Effect: "Deny",
+                Principal: "*",
+                Action: "s3:ListBucket",
+                Resource: `arn:aws:s3:::${bucket}`,
+              },
+              {
+                Effect: "Allow",
+                Principal: "*",
+                Action: "s3:GetObject",
+                Resource: `arn:aws:s3:::${bucket}/*`,
+              },
+            ],
+          };
+
+          await minioClient.setBucketPolicy(bucket, JSON.stringify(policy));
         }
       }
     } catch (err) {

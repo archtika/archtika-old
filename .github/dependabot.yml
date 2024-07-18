@@ -9,6 +9,6 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "npm"
-    directory: "/packages-frontend"
+    directory: "/packages/frontend"
     schedule:
       interval: "weekly"

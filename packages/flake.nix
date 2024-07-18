@@ -26,19 +26,7 @@
       devShells = forAllSystems (system:
         let pkgs = nixpkgs.legacyPackages.${system};
         in {
-          common = pkgs.mkShell {
-            packages = with pkgs; [ nodejs_22 biome ];
-            shellHook = ''
-              alias formatlint="biome check --write ."
-            '';
-          };
-          frontend = pkgs.mkShell {
-            packages = with pkgs; [ nodejs_22 biome ];
-            shellHook = ''
-              alias formatlint="biome check --write ."
-            '';
-          };
-          backend = pkgs.mkShell {
+          default = pkgs.mkShell {
             packages = with pkgs; [ nodejs_22 biome ];
             shellHook = ''
               alias formatlint="biome check --write ."
@@ -47,13 +35,19 @@
           };
         });
       packages = forAllSystems (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          src = ./.;
         in {
           frontend = pkgs.buildNpmPackage {
             name = "archtika-frontend";
-            src = ./frontend;
+            src = src;
 
-            npmDepsHash = "sha256-SBrRo4Ez5EsKsbNeJ/A7cXKUI4lGEDV0VMA09nD4d8Y=";
+            npmDeps = pkgs.importNpmLock {
+              npmRoot = "${src}/frontend";
+            };
+
+            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
 
             installPhase = ''
               mkdir $out

@@ -22,12 +22,10 @@ export const load: PageServerLoad = async ({
   const componentsData = await fetch(
     `http://localhost:3000/api/v1/pages/${params.pageId}/components`,
   );
-  const mediaData = await fetch("http://localhost:3000/api/v1/media");
 
   const page = await pageData.json();
   const pages = await pagesData.json();
   const components = await componentsData.json();
-  const media = await mediaData.json();
   const { website } = await parent();
 
   return {
@@ -35,7 +33,6 @@ export const load: PageServerLoad = async ({
     page,
     pages,
     components,
-    media,
     account: locals.account,
   };
 };
@@ -126,23 +123,13 @@ export const actions: Actions = {
           const formData = new FormData();
           formData.append("file", data.get("file") as File);
 
-          const existingFile = data.get("existing-file");
-          let assetId: string | undefined;
+          const imageData = await fetch("http://localhost:3000/api/v1/media", {
+            method: "POST",
+            body: formData,
+          });
 
-          if (typeof existingFile === "string") {
-            assetId = existingFile;
-          } else {
-            const imageData = await fetch(
-              "http://localhost:3000/api/v1/media",
-              {
-                method: "POST",
-                body: formData,
-              },
-            );
-
-            const image = await imageData.json();
-            assetId = image.id;
-          }
+          const image = await imageData.json();
+          const assetId = image.id;
 
           body = {
             type: data.get("type") as string,
@@ -203,23 +190,13 @@ export const actions: Actions = {
           const formData = new FormData();
           formData.append("file", data.get("file") as File);
 
-          const existingFile = data.get("existing-file");
-          let assetId: string | undefined;
+          const imageData = await fetch("http://localhost:3000/api/v1/media", {
+            method: "POST",
+            body: formData,
+          });
 
-          if (typeof existingFile === "string") {
-            assetId = existingFile;
-          } else {
-            const imageData = await fetch(
-              "http://localhost:3000/api/v1/media",
-              {
-                method: "POST",
-                body: formData,
-              },
-            );
-
-            const image = await imageData.json();
-            assetId = image.id;
-          }
+          const image = await imageData.json();
+          const assetId = image.id;
 
           body = {
             type: data.get("type") as string,
@@ -287,5 +264,16 @@ export const actions: Actions = {
         }),
       },
     );
+  },
+  createPasteMedia: async ({ request, fetch }) => {
+    const data = await request.formData();
+
+    const file = await fetch("http://localhost:3000/api/v1/media", {
+      method: "POST",
+      body: data,
+    });
+    const fileData = await file.json();
+
+    return { fileId: fileData.id, mimetype: fileData.mimetype };
   },
 };
