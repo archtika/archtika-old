@@ -31,7 +31,7 @@
     "arctic": "^1.9.1",
     "common": "file:../common",
     "fastify": "^4.28.0",
-    "fastify-cli": "^6.2.1",
+    "fastify-cli": "^7.0.1",
     "fastify-plugin": "^4.5.1",
     "js-beautify": "^1.15.1",
     "kysely": "^0.27.3",
